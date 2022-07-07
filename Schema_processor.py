@@ -49,7 +49,7 @@ def loadSchema(dda):
     wb.save("assets" + "\\SchemaForAllWorksheets.xlsx")
 
 
-#getCurrentSchema()
+
 
 
 
