@@ -3,5 +3,3 @@
 Update test
  New branch testing
 New branch test 2
-
-This is a new patch.
