@@ -16,7 +16,8 @@ if __name__ == '__main__':
         exit(9)
     if guiwindow.verification_specs[4][13] == 1:
         import runner
-        #hellow world
+        #hello world
+        #Adding this statement from github
 
 
         exit(45)
