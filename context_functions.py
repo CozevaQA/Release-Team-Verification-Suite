@@ -818,7 +818,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 patients[0].find_element_by_class_name('pat_name').click()
             else:
                 ws.append(['Mspl has no patients: ' + global_search_prov])
-
+            #Add clause to check for no patients
             driver.switch_to.window(driver.window_handles[1])
             window_switched = 1
             start_time = time.perf_counter()
