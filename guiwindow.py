@@ -518,7 +518,7 @@ def launchgui():
     except Exception as e:
         warninglabel.grid(row=10, columnspan=5, sticky="w")
         time.sleep(1)
-        #driver.quit()
+
 
 
 
