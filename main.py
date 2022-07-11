@@ -17,6 +17,7 @@ if __name__ == '__main__':
     if guiwindow.verification_specs[4][13] == 1:
         import runner
         #ugh how this work
+        #testing testing
 
 
         exit(45)
