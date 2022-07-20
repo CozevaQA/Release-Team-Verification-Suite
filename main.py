@@ -16,10 +16,6 @@ if __name__ == '__main__':
         exit(9)
     if guiwindow.verification_specs[4][13] == 1:
         import runner
-        #ugh how this work
-        #testing testing
-
-
         exit(45)
     driver_created = 0
     setups.driver_setup()
