@@ -3106,3 +3106,20 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+def group_menubar(driver, workbook, logger, screenshot_path, run_from):
+    x=0
+
+def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
+    x=0
+
+def training_resources(driver, workbook, logger, screenshot_path, run_from):
+    x=0
+
+def new_launch_time_capsule(driver, workbook, logger, screenshot_path, run_from):
+    x=0
+
+def patient_timeline(driver, workbook, logger, screenshot_path, run_from):
+    x=0
+
+

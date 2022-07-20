@@ -209,6 +209,15 @@ def generate_summary(wb):
     ws = wb['Sheet1']
     
 
+def new_launch():
+    report_folder = create_folders("Cozeva Support")
+    workbook = create_reporting_workbook(report_folder)
+    logger = logger_setup(report_folder)
+    switch_customer_context(guiwindow.verification_specs[1])
+    ws = None
+    run_from = "Cozeva Support"
+    checklist = guiwindow.verification_specs[4]
+    context_functions.init_global_search()
 
 
 def cozeva_support():
