@@ -383,7 +383,7 @@ class MedicareRAF:
                         ele.click()
                         drill_name = ele.get_attribute("drill_down_name")
                         print(drill_name)
-                        WebDriverWait(self.driver, 20).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         if self.check_exists_byclass("nodata"):
                             # print("No data found first , value of j is ", j)
