@@ -15,6 +15,10 @@ if __name__ == '__main__':
     print("Hello World")
     guiwindow.launchgui()
     print(guiwindow.verification_specs)
+    launchstyle= "Def"
+    if 'NC' in guiwindow.verification_specs[0]:
+        launchstyle = "NC"
+    print(launchstyle)
     if guiwindow.verification_specs[0] == 'Name' or guiwindow.verification_specs[0] == 'Customer' and guiwindow.verification_specs[4][13] == 0:
         exit(9)
     if guiwindow.verification_specs[4][13] == 1:
@@ -29,7 +33,10 @@ if __name__ == '__main__':
     driver_created = 1
     setups.login_to_cozeva()
     if guiwindow.verification_specs[2] == "Onshore":
-        setups.cozeva_support()
+        if launchstyle == "Def":
+            setups.cozeva_support()
+        elif launchstyle == "NC":
+            setups.new_launch()
     elif guiwindow.verification_specs[2] == "Offshore":
         roleset = guiwindow.verification_specs[3]
         for roles in roleset:
