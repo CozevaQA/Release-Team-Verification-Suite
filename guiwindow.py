@@ -8,7 +8,7 @@ from selenium import webdriver
 import ExcelProcessor as db
 import Schema_processor as sp
 
-checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
 Window_location = 1 #1 = left, 0 = Right
@@ -53,18 +53,20 @@ def launchgui():
     12 = Accordion Verification
     13 = Analytics Full
     14 = Measure Validation LOBwise
-    15 = Provider's tab (Check columns)
-    16 = LoB count and patient count under LoBs
-    17 = Check default LoB and default CE from mastersheet, Customer name too and CE on/off score change
-    18 = Check patient Medications
-    19 = Mark as pending
-    20 = Apptray access check
-    21 = Training/Resources tab
-    22 = Userlist and User creation dropdown
-    23 = User Creation (Offshore only)
-    24 = Banner/announcement
-    25 = Coding tool, submit delete buttons
-    26 = Check denom eligblity on CBP or HbA1c
+    15 = Metric Specific Provider List
+    16 = Cozeva Market sheet( Check default LoB and default CE from mastersheet, Customer name too and CE on/off score change)
+    17 = Check patient Medications
+    18 = Mark as pending
+    19 = Apptray access check
+    20 = Training/Resources tab
+    21 = Userlist and User creation dropdown
+    22 = Banner/announcement
+    23 = CE Toggle States
+    24 = Sticket and contact Log
+    25 = Patient Dashboard and Timeline Redirection
+    26 = Coding tool
+    27 = Denominator Eligblity for CBP/HbA1c
+    28 = Group1/2 sidemenus
 
 
     """
@@ -121,18 +123,8 @@ def launchgui():
             input_frame_2.pack()
             insert_into_entrybox(default_usernames)
         if config_var.get() == 2 and app_config_var.get() != 1:
-            for i in range(14, 27):
-                checklist[i] = 1
-            checklist[11] = 1
-            checklist[7] = 1
-            checklist[9] = 1
-            checklist[12] = 1
-            verification_specs[4] = checklist
-            #root.destroy()
             remove_frames()
             new_launch_frame.pack()
-            print(verification_specs)
-            return
         if app_config_var.get() == 1 and config_var.get() == 1:
             remove_frames()
             checklist[13] = 1
@@ -174,7 +166,11 @@ def launchgui():
         input_frame_2.pack()
 
     def nlnext():
-        x=0
+        create_NL_checklist()
+        verification_specs[4] = checklist
+        verification_specs[1] = str(NL_custID.get())
+        verification_specs[0] = "NC_"+verification_specs[1]
+        root.destroy()
 
     def delete_from_entrybox():
         limited_cozeva_support_textbox.delete(0, 'end')
@@ -236,6 +232,32 @@ def launchgui():
         checklist[9] = time_capsule_var.get()
         checklist[10] = secure_messaging_var.get()
         checklist[12] = accordion_verification_var.get()
+
+    def create_NL_checklist():
+        if all_navigation_var.get() == 1:
+            checklist[0] = 1
+            checklist[1] = 1
+            checklist[2] = 1
+            checklist[4] = 1
+            checklist[5] = 1
+            checklist[6] = 1
+            checklist[28] = 1
+        checklist[14] = LoB_Measure_var.get()
+        checklist[15] = provider_tab_var.get()
+        checklist[16] = market_sheet_var.get()
+        checklist[17] = patient_medication_var.get()
+        checklist[18] = MaP_var.get()
+        checklist[19] = apptray_var.get()
+        checklist[20] = train_resource_var.get()
+        checklist[21] = userlist_var.get()
+        checklist[22] = banner_announce_var.get()
+        checklist[23] = ce_toggle_var.get()
+        checklist[12] = NL_accordion_verification_var.get()
+        checklist[7] = NL_global_search_var.get()
+        checklist[24] = sticket_var.get()
+        checklist[25] = NL_patient_dashboard_var.get()
+        checklist[26] = coding_tool_var.get()
+        checklist[27] = denom_eligibility_var.get()
 
     def select_all():
         if select_var.get() == 1:
@@ -452,6 +474,7 @@ def launchgui():
     NL_select_var = IntVar()
     NL_select_checkbox = Checkbutton(new_launch_frame, text="Select All", variable=NL_select_var, command=NL_select_all, font=("Nunito Sans", 10))
     NL_next_button = Button(new_launch_frame, text="Begin Test", command=nlnext, font=("Nunito Sans", 10))
+    NL_custID = Entry(new_launch_frame, text="Customer ID")
 
     def buildExistingSchema():
         global grid_row
@@ -626,7 +649,8 @@ def launchgui():
     NL_patient_dashboard_checkbox.grid(row=16, column=0, columnspan=5, sticky="w")
     coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
     denom_eligibility_checkbox.grid(row=18, column=0, columnspan=5, sticky="w")
-    NL_next_button.grid(row=19, column=0, columnspan=5)
+    NL_custID.grid(row=19, column=0, columnspan=5)
+    NL_next_button.grid(row=20, column=0, columnspan=5)
 
 
     #packing frame 1 into root
@@ -663,6 +687,6 @@ def launchgui():
 
 
 
-launchgui()
+#launchgui()
 
 
