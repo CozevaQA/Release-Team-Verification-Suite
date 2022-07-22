@@ -94,10 +94,10 @@ class CommercialCodingDiscontinuation:
 
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
-        WebDriverWait(self.driver, 10).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
+        WebDriverWait(self.driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
         if self.hasXpath(self.lob_xpath):
             for i in year:
-                WebDriverWait(self.driver, 20).until(
+                WebDriverWait(self.driver, 100).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
                 if int(selected_value) != i:
@@ -192,7 +192,7 @@ class CommercialCodingDiscontinuation:
                             # print("b value initially ,j  value initially ", b, j)
                             if b > 0:
                                 continue
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             self.driver.find_element_by_id(self.select_all_id).click()
                             drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -201,7 +201,7 @@ class CommercialCodingDiscontinuation:
                             ele.click()
                             drill_name = ele.get_attribute("drill_down_name")
                             print(drill_name)
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             if self.check_exists_byclass("nodata"):
                                 # print("No data found first , value of j is ", j)
@@ -225,7 +225,7 @@ class CommercialCodingDiscontinuation:
                                     prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                     prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                     prev_drill.click()
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     self.driver.find_element_by_id(self.select_all_id).click()
                                     next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -233,7 +233,7 @@ class CommercialCodingDiscontinuation:
                                     next_drill.click()
                                     drill_name2 = next_drill.get_attribute("drill_down_name")
                                     print(drill_name2)
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     if self.check_exists_byclass("nodata"):
                                         # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -271,7 +271,7 @@ class CommercialCodingDiscontinuation:
                                 j = j + 1
                             # print("j value in the end ",j)
                         loader_element = 'sm_download_cssload_loader_wrap'
-                        WebDriverWait(self.driver, 30).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                         self.driver.find_element_by_xpath(self.overview_xpath).click()
                         count = count + 1
@@ -279,7 +279,7 @@ class CommercialCodingDiscontinuation:
 
         else:
             for i in year:
-                WebDriverWait(self.driver, 20).until(
+                WebDriverWait(self.driver, 100).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
                 if int(selected_value) != int(i):
@@ -350,7 +350,7 @@ class CommercialCodingDiscontinuation:
                             # print("b value initially ,j  value initially ", b, j)
                             if b > 0:
                                 continue
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             self.driver.find_element_by_id(self.select_all_id).click()
                             drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -359,7 +359,7 @@ class CommercialCodingDiscontinuation:
                             ele.click()
                             drill_name = ele.get_attribute("drill_down_name")
                             print(drill_name)
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             if self.check_exists_byclass("nodata"):
                                 # print("No data found first , value of j is ", j)
@@ -385,7 +385,7 @@ class CommercialCodingDiscontinuation:
                                     prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                     prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                     prev_drill.click()
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     self.driver.find_element_by_id(self.select_all_id).click()
                                     next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -393,7 +393,7 @@ class CommercialCodingDiscontinuation:
                                     next_drill.click()
                                     drill_name2 = next_drill.get_attribute("drill_down_name")
                                     print(drill_name2)
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     if self.check_exists_byclass("nodata"):
                                         # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -431,7 +431,7 @@ class CommercialCodingDiscontinuation:
                                 j = j + 1
                             # print("j value in the end ",j)
                         loader_element = 'sm_download_cssload_loader_wrap'
-                        WebDriverWait(self.driver, 30).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                         self.driver.find_element_by_xpath(self.overview_xpath).click()
 
