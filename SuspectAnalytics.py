@@ -161,7 +161,7 @@ class SuspectAnalytics:
                             not_closed = not_closed + 1
                         except (ElementNotInteractableException, NoSuchElementException) as e:
                             print(e)
-                    self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
+                    self.action_click(self.driver.find_element_by_xpath(self.apply_filter_xpath))
                     # essential wait for loading page
                     WebDriverWait(self.driver, 100).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
@@ -204,7 +204,7 @@ class SuspectAnalytics:
                 #         i) + "Suspect" + "Analytics" + ".png"  # naming convention is year-lob-drill.png
                 #     self.driver.save_screenshot(ss_name)
                 #     print("data found")
-                WebDriverWait(self.driver, 20).until(
+                WebDriverWait(self.driver, 200).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
                 #print("In without LOB ",selected_value)
@@ -268,7 +268,7 @@ class SuspectAnalytics:
                             not_closed = not_closed + 1
                         except (ElementNotInteractableException, NoSuchElementException) as e:
                             print(e)
-                self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
+                self.action_click(self.driver.find_element_by_xpath(self.apply_filter_xpath))
 
 
 
