@@ -240,7 +240,7 @@ class CohortAnalyzer:
                     drop_down = self.driver.find_element_by_xpath(drop_down_xpath)
 
                     try:
-                        element = WebDriverWait(self.driver, 30).until(
+                        element = WebDriverWait(self.driver, 300).until(
                             EC.element_to_be_clickable((By.XPATH,drop_down_xpath)))
                     except ElementNotInteractableException as e:
                         print(e)

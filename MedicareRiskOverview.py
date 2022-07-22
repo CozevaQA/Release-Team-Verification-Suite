@@ -98,13 +98,13 @@ class MedicareRiskOverview:
 
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
-        WebDriverWait(self.driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
+        WebDriverWait(self.driver, 300).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
         if self.hasXpath(self.lob_xpath):
             for i in year:
                 x=int(i)
                 if(customer=="1600"):
                     i=self.yearconverter(i)
-                WebDriverWait(self.driver, 100).until(
+                WebDriverWait(self.driver, 300).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
                 if int(selected_value) != i:
@@ -130,7 +130,7 @@ class MedicareRiskOverview:
                 print("Number of LOBs ", len(lob_elements))
                 count = 1
                 for lob_element in lob_elements:
-                    WebDriverWait(self.driver, 20).until(
+                    WebDriverWait(self.driver, 300).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                     if (count > 1):
                         self.action_click(lob)
@@ -170,7 +170,7 @@ class MedicareRiskOverview:
                     apply_filter=self.driver.find_element_by_xpath(self.apply_filter_xpath)
                     self.action_click(apply_filter)
                     # essential wait for loading page
-                    WebDriverWait(self.driver, 100).until(
+                    WebDriverWait(self.driver, 300).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                     if self.check_exists_byclass("nodata"):
                         print("No data found in {} for lob {}".format(i, val))
@@ -196,7 +196,7 @@ class MedicareRiskOverview:
                             # print("b value initially ,j  value initially ", b, j)
                             if b > 0:
                                 continue
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 300).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             self.driver.find_element_by_id(self.select_all_id).click()
                             drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -205,7 +205,7 @@ class MedicareRiskOverview:
                             ele.click()
                             drill_name = ele.get_attribute("drill_down_name")
                             print(drill_name)
-                            WebDriverWait(self.driver, 100).until(
+                            WebDriverWait(self.driver, 300).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             if self.check_exists_byclass("nodata"):
                                 # print("No data found first , value of j is ", j)
@@ -229,7 +229,7 @@ class MedicareRiskOverview:
                                     prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                     prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                     self.action_click(prev_drill)
-                                    WebDriverWait(self.driver, 100).until(
+                                    WebDriverWait(self.driver, 300).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     self.driver.find_element_by_id(self.select_all_id).click()
                                     next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -237,7 +237,7 @@ class MedicareRiskOverview:
                                     self.action_click(next_drill)
                                     drill_name2 = next_drill.get_attribute("drill_down_name")
                                     print(drill_name2)
-                                    WebDriverWait(self.driver, 100).until(
+                                    WebDriverWait(self.driver, 300).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     if self.check_exists_byclass("nodata"):
                                         # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -275,7 +275,7 @@ class MedicareRiskOverview:
                                 j = j + 1
                             # print("j value in the end ",j)
                         loader_element = 'sm_download_cssload_loader_wrap'
-                        WebDriverWait(self.driver, 100).until(
+                        WebDriverWait(self.driver, 300).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                         overview=self.driver.find_element_by_xpath(self.overview_xpath)
                         self.action_click(overview)
@@ -287,7 +287,7 @@ class MedicareRiskOverview:
                 x=int(i)
                 if (customer == "1600"):
                     i = self.yearconverter(i)
-                WebDriverWait(self.driver, 100).until(
+                WebDriverWait(self.driver, 300).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
                 if str(selected_value) != str(i):
@@ -333,7 +333,7 @@ class MedicareRiskOverview:
                     except (ElementNotInteractableException, NoSuchElementException) as e:
                         print(e)
                 self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
-                WebDriverWait(self.driver, 100).until(
+                WebDriverWait(self.driver, 300).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 if self.check_exists_byclass("nodata"):
                     print("No data found in {} ".format(i))
@@ -360,7 +360,7 @@ class MedicareRiskOverview:
                         # print("b value initially ,j  value initially ", b, j)
                         if b > 0:
                             continue
-                        WebDriverWait(self.driver, 20).until(
+                        WebDriverWait(self.driver, 300).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         select_all=self.driver.find_element_by_id(self.select_all_id)
                         self.action_click(select_all)
@@ -370,7 +370,7 @@ class MedicareRiskOverview:
                         self.action_click(ele)
                         drill_name = ele.get_attribute("drill_down_name")
                         print(drill_name)
-                        WebDriverWait(self.driver, 100).until(
+                        WebDriverWait(self.driver, 300).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         if self.check_exists_byclass("nodata"):
                             # print("No data found first , value of j is ", j)
@@ -396,7 +396,7 @@ class MedicareRiskOverview:
                                 prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                 prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                 self.action_click(prev_drill)
-                                WebDriverWait(self.driver, 100).until(
+                                WebDriverWait(self.driver, 300).until(
                                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                 self.driver.find_element_by_id(self.select_all_id).click()
                                 next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -404,7 +404,7 @@ class MedicareRiskOverview:
                                 self.action_click(next_drill)
                                 drill_name2 = next_drill.get_attribute("drill_down_name")
                                 print(drill_name2)
-                                WebDriverWait(self.driver, 100).until(
+                                WebDriverWait(self.driver, 300).until(
                                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                 if self.check_exists_byclass("nodata"):
                                     # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -441,7 +441,7 @@ class MedicareRiskOverview:
                             j = j + 1
                         # print("j value in the end ",j)
                     loader_element = 'sm_download_cssload_loader_wrap'
-                    WebDriverWait(self.driver, 100).until(
+                    WebDriverWait(self.driver, 300).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                     overview=self.driver.find_element_by_xpath(self.overview_xpath)
                     self.action_click(overview)

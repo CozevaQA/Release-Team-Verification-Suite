@@ -115,7 +115,7 @@ class MedicareRiskByHierarchy:
                 elif i == 2021:
                     j = "2021 (PY 2022)"
                 elif i == 2022:
-                    j = "2021 (PY 2022)"
+                    j = "2022 (PY 2023)"
 
 
                 WebDriverWait(self.driver, 100).until(
@@ -144,7 +144,7 @@ class MedicareRiskByHierarchy:
                 print("Number of LOBs ", len(lob_elements))
                 count = 1
                 for lob_element in lob_elements:
-                    WebDriverWait(self.driver, 20).until(
+                    WebDriverWait(self.driver, 100).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                     if (count > 1):
                         lob.click()
@@ -179,7 +179,7 @@ class MedicareRiskByHierarchy:
                             print(e)
                     self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
                     # essential wait for loading page
-                    WebDriverWait(self.driver, 20).until(
+                    WebDriverWait(self.driver, 100).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                     if self.check_exists_byclass("nodata"):
                         print("No data found in {} for lob {}".format(i, val))
@@ -202,7 +202,7 @@ class MedicareRiskByHierarchy:
                             # print("b value initially ,j  value initially ", b, j)
                             if b > 0:
                                 continue
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             self.driver.find_element_by_id(self.select_all_id).click()
                             drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -211,7 +211,7 @@ class MedicareRiskByHierarchy:
                             ele.click()
                             drill_name = ele.get_attribute("drill_down_name")
                             print(drill_name)
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             if self.check_exists_byclass("nodata"):
                                 # print("No data found first , value of j is ", j)
@@ -236,7 +236,7 @@ class MedicareRiskByHierarchy:
                                     prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                     prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                     prev_drill.click()
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     self.driver.find_element_by_id(self.select_all_id).click()
                                     next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -244,7 +244,7 @@ class MedicareRiskByHierarchy:
                                     next_drill.click()
                                     drill_name2 = next_drill.get_attribute("drill_down_name")
                                     print(drill_name2)
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     if self.check_exists_byclass("nodata"):
                                         # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -277,7 +277,7 @@ class MedicareRiskByHierarchy:
                                 j = j + 1
                             # print("j value in the end ",j)
                         loader_element = 'sm_download_cssload_loader_wrap'
-                        WebDriverWait(self.driver, 30).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                         self.driver.find_element_by_xpath(self.overview_xpath).click()
                         count = count + 1
@@ -358,7 +358,7 @@ class MedicareRiskByHierarchy:
                         # print("b value initially ,j  value initially ", b, j)
                         if b > 0:
                             continue
-                        WebDriverWait(self.driver, 20).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         self.driver.find_element_by_id(self.select_all_id).click()
                         drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -367,7 +367,7 @@ class MedicareRiskByHierarchy:
                         ele.click()
                         drill_name = ele.get_attribute("drill_down_name")
                         print(drill_name)
-                        WebDriverWait(self.driver, 20).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         if self.check_exists_byclass("nodata"):
                             # print("No data found first , value of j is ", j)
@@ -394,7 +394,7 @@ class MedicareRiskByHierarchy:
                                 prev_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (a)
                                 prev_drill = self.driver.find_element_by_xpath(prev_drill_xpath)
                                 prev_drill.click()
-                                WebDriverWait(self.driver, 20).until(
+                                WebDriverWait(self.driver, 100).until(
                                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                 self.driver.find_element_by_id(self.select_all_id).click()
                                 next_drill_xpath = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (b)
@@ -402,7 +402,7 @@ class MedicareRiskByHierarchy:
                                 next_drill.click()
                                 drill_name2 = next_drill.get_attribute("drill_down_name")
                                 print(drill_name2)
-                                WebDriverWait(self.driver, 20).until(
+                                WebDriverWait(self.driver, 100).until(
                                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                 if self.check_exists_byclass("nodata"):
                                     # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -439,6 +439,6 @@ class MedicareRiskByHierarchy:
                             j = j + 1
                         # print("j value in the end ",j)
                     loader_element = 'sm_download_cssload_loader_wrap'
-                    WebDriverWait(self.driver, 30).until(
+                    WebDriverWait(self.driver, 100).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                     self.driver.find_element_by_xpath(self.overview_xpath).click()

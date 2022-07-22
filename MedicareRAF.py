@@ -210,7 +210,7 @@ class MedicareRAF:
                             # print("b value initially ,j  value initially ", b, j)
                             if b > 0:
                                 continue
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 100).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             self.click(self.select_all_id)
                             drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -219,7 +219,7 @@ class MedicareRAF:
                             self.action_click(ele)
                             drill_name = ele.get_attribute("drill_down_name")
                             print(drill_name)
-                            WebDriverWait(self.driver, 20).until(
+                            WebDriverWait(self.driver, 300).until(
                                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                             if self.check_exists_byclass("nodata"):
                                 # print("No data found first , value of j is ", j)
@@ -251,7 +251,7 @@ class MedicareRAF:
                                     next_drill.click()
                                     drill_name2 = next_drill.get_attribute("drill_down_name")
                                     print(drill_name2)
-                                    WebDriverWait(self.driver, 20).until(
+                                    WebDriverWait(self.driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                     if self.check_exists_byclass("nodata"):
                                         # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -289,7 +289,7 @@ class MedicareRAF:
                                 j = j + 1
                             # print("j value in the end ",j)
                         loader_element = 'sm_download_cssload_loader_wrap'
-                        WebDriverWait(self.driver, 30).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                         self.driver.find_element_by_xpath(self.overview_xpath).click()
                         count = count + 1
@@ -374,7 +374,7 @@ class MedicareRAF:
                         # print("b value initially ,j  value initially ", b, j)
                         if b > 0:
                             continue
-                        WebDriverWait(self.driver, 20).until(
+                        WebDriverWait(self.driver, 100).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         self.click(self.select_all_id)
                         drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
@@ -383,7 +383,7 @@ class MedicareRAF:
                         ele.click()
                         drill_name = ele.get_attribute("drill_down_name")
                         print(drill_name)
-                        WebDriverWait(self.driver, 100).until(
+                        WebDriverWait(self.driver, 200).until(
                             EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                         if self.check_exists_byclass("nodata"):
                             # print("No data found first , value of j is ", j)
@@ -417,7 +417,7 @@ class MedicareRAF:
                                 next_drill.click()
                                 drill_name2 = next_drill.get_attribute("drill_down_name")
                                 print(drill_name2)
-                                WebDriverWait(self.driver, 20).until(
+                                WebDriverWait(self.driver, 300).until(
                                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                                 if self.check_exists_byclass("nodata"):
                                     # print("No data found second , value of b is {} and j is {} is ", format(b, j))
@@ -454,7 +454,7 @@ class MedicareRAF:
                             j = j + 1
                         # print("j value in the end ",j)
                     loader_element = 'sm_download_cssload_loader_wrap'
-                    WebDriverWait(self.driver, 30).until(
+                    WebDriverWait(self.driver, 100).until(
                         EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
                     self.driver.find_element_by_xpath(self.overview_xpath).click()
 
