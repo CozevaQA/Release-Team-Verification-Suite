@@ -103,7 +103,7 @@ class EDCostTrends:
         print("Number of LOBs ", len(lob_elements))
         count = 1
         for lob_element in lob_elements:
-            WebDriverWait(self.driver, 20).until(
+            WebDriverWait(self.driver, 100).until(
                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
             if (count > 1):
                 self.action_click(lob)
@@ -140,7 +140,7 @@ class EDCostTrends:
                     print(e)
             self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
             # essential wait for loading page
-            WebDriverWait(self.driver, 20).until(
+            WebDriverWait(self.driver, 100).until(
                 EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
             if self.check_exists_byclass("nodata"):
                 print("No data found  lob {}".format(val))
