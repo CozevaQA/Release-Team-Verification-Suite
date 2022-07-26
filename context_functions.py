@@ -3123,3 +3123,4 @@ def patient_timeline(driver, workbook, logger, screenshot_path, run_from):
     x=0
 
 
+
