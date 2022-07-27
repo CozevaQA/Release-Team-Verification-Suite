@@ -104,7 +104,7 @@ def setup(val, downloaddefault):
         options = webdriver.ChromeOptions()
         options.add_argument("--disable-notifications")
         options.add_argument("--start-maximized")
-        #options.add_argument(vs.chrome_profile_path)
+        options.add_argument(vs.chrome_profile_path)
         preferences = {
             "download.default_directory": downloaddefault}
         options.add_experimental_option("prefs", preferences)

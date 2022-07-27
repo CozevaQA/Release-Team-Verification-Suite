@@ -25,7 +25,7 @@ def driver_setup():
     options = webdriver.ChromeOptions()
     options.add_argument("--disable-notifications")
     options.add_argument("--start-maximized")
-    #options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
+    options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
     #options.add_argument("--headless")
     options.add_argument('--disable-gpu')
     # options.add_argument("--window-size=1920,1080")
