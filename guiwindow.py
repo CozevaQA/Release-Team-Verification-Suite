@@ -464,7 +464,7 @@ def launchgui():
     NL_global_search_var = IntVar()
     NL_global_search_checkbox = Checkbutton(new_launch_frame, text="Validate Global Search", variable=NL_global_search_var, font=("Nunito Sans", 10))
     sticket_var = IntVar()
-    sticket_checkbox = Checkbutton(new_launch_frame, text="Validate Sticket and Contact Logs", variable=sticket_var, font=("Nunito Sans", 10))
+    sticket_checkbox = Checkbutton(new_launch_frame, text="Validate Sticket Logs", variable=sticket_var, font=("Nunito Sans", 10))
     NL_patient_dashboard_var = IntVar()
     NL_patient_dashboard_checkbox = Checkbutton(new_launch_frame, text="Validate Patient Dashboard and Timeline", variable=NL_patient_dashboard_var, font=("Nunito Sans", 10))
     coding_tool_var = IntVar()
