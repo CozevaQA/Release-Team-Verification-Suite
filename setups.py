@@ -86,6 +86,28 @@ def login_to_cozeva():
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     print("Logged in to Cozeva!")
 
+def login_to_cozeva_cert():
+    driver.get(locator.logout_link_cert)
+    driver.get(locator.login_link_cert)
+    driver.maximize_window()
+    file = open(r"assets\loginInfo.txt", "r+")
+    global details
+    details = file.readlines()
+    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
+    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    file.seek(0)
+    file.close()
+    driver.find_element_by_id("edit-submit").click()
+    time.sleep(2)
+    WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
+    time.sleep(0.5)
+    driver.find_element_by_id("edit-submit").click()
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    print("Logged in to Cozeva!")
+
 
 def switch_customer_context(cusID):
     try:
@@ -98,6 +120,21 @@ def switch_customer_context(cusID):
         sf.ajax_preloader_wait(driver)
         print("Navigated to customer's context")
 
+    except Exception as e:
+        print(e)
+        #logger.exception("Exception occurred in OpenRegistryPageforCS2 block!")
+        raise
+
+def switch_customer_context_cert(cusID):
+    try:
+        sm_customer_id = (str(cusID)).strip()
+        #print(sm_customer_id)
+        session_var = 'app_id=registries&custId=' + str(sm_customer_id) + '&payerId=' + str(
+            sm_customer_id) + '&orgId=' + str(sm_customer_id)
+        encoded_string = base64.b64encode(session_var.encode('utf-8'))
+        driver.get("https://cert.cozeva.com/registries?session=" + encoded_string.decode('utf-8'))
+        sf.ajax_preloader_wait(driver)
+        print("Navigated to customer's context")
     except Exception as e:
         print(e)
         #logger.exception("Exception occurred in OpenRegistryPageforCS2 block!")
@@ -213,7 +250,7 @@ def new_launch():
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
-    switch_customer_context(guiwindow.verification_specs[1])
+    switch_customer_context_cert(guiwindow.verification_specs[1])
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
@@ -221,7 +258,11 @@ def new_launch():
     if checklist[0] == 1:
         context_functions.support_menubar(driver,workbook, ws, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[24] == 1:
+        context_functions.sticket_validation(driver, workbook, logger, report_folder, run_from, guiwindow.verification_specs[1])
+        workbook.save(report_folder + "\\Report.xlsx")
 
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def cozeva_support():
     report_folder = create_folders("Cozeva Support")

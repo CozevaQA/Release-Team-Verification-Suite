@@ -57,6 +57,10 @@ file.close()
 chrome_driver_path = "assets\\chromedriver.exe"
 login_link = "https://www.cozeva.com/user/login"
 logout_link = "https://www.cozeva.com/user/logout"
+login_link_cert = "https://cert.cozeva.com/user/login"
+logout_link_cert = "https://cert.cozeva.com/user/logout"
+login_link_stage = "https://stage.cozeva.com/user/login"
+logout_link_stage = "https://stage.cozeva.com/user/logout"
 parent_dir = "C:\\VerificationReports\\"
 
 #accordian validation stuff

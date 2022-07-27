@@ -5,11 +5,11 @@ import pytz
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
+    ElementClickInterceptedException
 import time
 import py_compile
-import datetime as dt
-from datetime import date, datetime,timedelta
+
 
 
 def date_time():
@@ -100,3 +100,9 @@ def check_exists_by_id(driver, id):
     except NoSuchElementException:
         return False
     return True
+
+def action_click(element, driver):
+    try:
+        element.click()
+    except (ElementNotInteractableException, ElementClickInterceptedException):
+        driver.execute_script("arguments[0].click();", element)
