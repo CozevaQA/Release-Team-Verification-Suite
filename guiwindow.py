@@ -8,9 +8,10 @@ from selenium import webdriver
 import ExcelProcessor as db
 import Schema_processor as sp
 
-checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
+verification_specs = ["NC_1000", '1000', 'Onshore', roleset, checklist]
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 
@@ -240,7 +241,6 @@ def launchgui():
             checklist[2] = 1
             checklist[4] = 1
             checklist[5] = 1
-            checklist[6] = 1
             checklist[28] = 1
         checklist[14] = LoB_Measure_var.get()
         checklist[15] = provider_tab_var.get()
@@ -290,40 +290,40 @@ def launchgui():
     def NL_select_all():
         if NL_select_var.get() == 1:
             all_navigation_checkbox.select()
-            LoB_Measure_checkbox.select()
+            #LoB_Measure_checkbox.select()
             provider_tab_checkbox.select()
             market_sheet_checkbox.select()
             patient_medication_checkbox.select()
             MaP_checkbox.select()
             apptray_checkbox.select()
             train_resource_checkbox.select()
-            userlist_checkbox.select()
-            banner_announce_checkbox.select()
+            #userlist_checkbox.select()
+            #banner_announce_checkbox.select()
             ce_toggle_checkbox.select()
             NL_accordion_verification_checkbox.select()
             NL_global_search_checkbox.select()
             sticket_checkbox.select()
             NL_patient_dashboard_checkbox.select()
             coding_tool_checkbox.select()
-            denom_eligibility_checkbox.select()
+            #denom_eligibility_checkbox.select()
         elif NL_select_var.get() == 0:
             all_navigation_checkbox.deselect()
-            LoB_Measure_checkbox.deselect()
+            #LoB_Measure_checkbox.deselect()
             provider_tab_checkbox.deselect()
             market_sheet_checkbox.deselect()
             patient_medication_checkbox.deselect()
             MaP_checkbox.deselect()
             apptray_checkbox.deselect()
             train_resource_checkbox.deselect()
-            userlist_checkbox.deselect()
-            banner_announce_checkbox.deselect()
+            #userlist_checkbox.deselect()
+            #banner_announce_checkbox.deselect()
             ce_toggle_checkbox.deselect()
             NL_accordion_verification_checkbox.deselect()
             NL_global_search_checkbox.deselect()
             sticket_checkbox.deselect()
             NL_patient_dashboard_checkbox.deselect()
             coding_tool_checkbox.deselect()
-            denom_eligibility_checkbox.deselect()
+            #denom_eligibility_checkbox.deselect()
 
     def cozeva_radio():
         Checkbox_cozeva.config(state="active")
@@ -634,6 +634,7 @@ def launchgui():
     NL_select_checkbox.grid(row=1, column=0, columnspan=5, sticky="w")
     all_navigation_checkbox.grid(row=2, column=0, columnspan=5, sticky="w")
     LoB_Measure_checkbox.grid(row=3, column=0, columnspan=5, sticky="w")
+    LoB_Measure_checkbox.config(state='disabled')
     provider_tab_checkbox.grid(row=4, column=0, columnspan=5, sticky="w")
     market_sheet_checkbox.grid(row=5, column=0, columnspan=5, sticky="w")
     patient_medication_checkbox.grid(row=6, column=0, columnspan=5, sticky="w")
@@ -641,7 +642,9 @@ def launchgui():
     apptray_checkbox.grid(row=8, column=0, columnspan=5, sticky="w")
     train_resource_checkbox.grid(row=9, column=0, columnspan=5, sticky="w")
     userlist_checkbox.grid(row=10, column=0, columnspan=5, sticky="w")
+    userlist_checkbox.config(state='disabled')
     banner_announce_checkbox.grid(row=11, column=0, columnspan=5, sticky="w")
+    banner_announce_checkbox.config(state='disabled')
     ce_toggle_checkbox.grid(row=12, column=0, columnspan=5, sticky="w")
     NL_accordion_verification_checkbox.grid(row=13, column=0, columnspan=5, sticky="w")
     NL_global_search_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
@@ -649,6 +652,7 @@ def launchgui():
     NL_patient_dashboard_checkbox.grid(row=16, column=0, columnspan=5, sticky="w")
     coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
     denom_eligibility_checkbox.grid(row=18, column=0, columnspan=5, sticky="w")
+    denom_eligibility_checkbox.config(state='disabled')
     NL_custID.grid(row=19, column=0, columnspan=5)
     NL_next_button.grid(row=20, column=0, columnspan=5)
 
