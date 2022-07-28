@@ -55,8 +55,8 @@ if __name__ == '__main__':
                 setups.prov(roleset[roles])
 
 if driver_created == 1:
-    #setups.driver.quit()
-    x=0
+    setups.driver.quit()
+    #x=0
 
 
 

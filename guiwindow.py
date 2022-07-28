@@ -8,10 +8,10 @@ from selenium import webdriver
 import ExcelProcessor as db
 import Schema_processor as sp
 
-checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
-verification_specs = ["NC_1000", '1000', 'Onshore', roleset, checklist]
+verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 

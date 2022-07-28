@@ -298,11 +298,14 @@ def new_launch():
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[18] == 1:
-        context_functions.map_codingtool(driver, workbook, logger, run_from)
+        context_functions.map_codingtool(driver, workbook, logger, run_from, guiwindow.verification_specs[1])
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[16] == 1:
         context_functions.market_sheet(driver, workbook,logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[23] == 1:
+        context_functions.cetoggle(driver, workbook, logger, run_from)
+
 
     workbook.save(report_folder + "\\Report.xlsx")
 
