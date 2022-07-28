@@ -4683,7 +4683,7 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
     verify_sticket(driver, workbook, logger, run_from, customer_id)
 
 
-def map_codingtool(driver, workbook, logger, run_from):
+def map_codingtool(driver, workbook, logger, run_from, customer_id):
     def apply_conditional_formatting(ws):
         red_text = Font(color="9C0006")
         red_fill = PatternFill(bgColor="FFC7CE")
@@ -4699,6 +4699,26 @@ def map_codingtool(driver, workbook, logger, run_from):
 
         ws.conditional_formatting.add('B1:B10000', rule)
         ws.conditional_formatting.add('B1:B10000', rule1)
+
+    def open_pendinglist(customer_id):
+        customer_list_url = []
+        sm_customer_id = str(customer_id)
+        sm_customer_id = sm_customer_id.split(".")[0]
+        session_var = 'app_id=registries&custId=' + str(sm_customer_id) + '&payerId=' + str(
+            sm_customer_id) + '&orgId=' + str(sm_customer_id)
+        encoded_string = base64.b64encode(session_var.encode('utf-8'))
+        customer_list_url.append(encoded_string)
+        for idx, val in enumerate(customer_list_url):
+            driver.get(config.get("runner", "URL") + "registries/pending-list?session=" + val.decode('utf-8'))
+
+    def extract_patient_id(href):
+        cozeva_id = re.search('/patient_detail/(.*)?session', href)
+        return (cozeva_id.group(1).replace("?", ""))
+
+    def format_string(s):
+        s1 = s.replace("-", '')
+        s2 = s1.replace(" ", '')
+        return s2
 
     def PatientDashboard(driver, sheet, quarter_name, lob_name, metric_name_4_patientdashboard,
                          add_supdata_flag_MSPL,
@@ -4723,22 +4743,40 @@ def map_codingtool(driver, workbook, logger, run_from):
             # Red dot count
             caregap_pt = len(driver.find_elements_by_xpath("//div[@class='non_compliant red_dot']"))
 
+            print("Metric name for patient dashboard" + str(metric_name_4_patientdashboard))
             metric_name = metric_name_4_patientdashboard
-            metrics_patientdashboard = driver.find_elements_by_xpath("//div[@class='text-bold sub-title']")
+            # list of metrics in patient_dashboard
+            hcc_counter = 0
+            if sf.check_exists_by_xpath(driver, "//table[@id='table_4']//div[@class='text-bold sub-title']"):
+                hcc_metric_patientdashboard = driver.find_elements_by_xpath(
+                    "//table[@id='table_4']//div[@class='text-bold sub-title']")
+                hcc_counter = len(hcc_metric_patientdashboard)
+                print("number of hcc metric " + str(hcc_counter))
+            # value is taken in quality so index is of quality
+            metrics_patientdashboard = driver.find_elements_by_xpath(
+                "//table[@id='table_1']//div[@class='text-bold sub-title']")
             measure_display_flag = 0
-            hcc_collapse_xpath = '//i[@class="material-icons hcc_toggle tooltipped"]'
-            if sf.check_exists_by_xpath(driver, hcc_collapse_xpath):
-                sf.action_click(driver.find_element_by_xpath(hcc_collapse_xpath), driver)
-            for metric_counter in range(len(metrics_patientdashboard)):
+            # hcc_collapse_xpath='//i[@class="material-icons hcc_toggle tooltipped"]'
+            # if(check_exists_by_xpath(driver,hcc_collapse_xpath)):
+            #     action_click(driver.find_element_by_xpath(hcc_collapse_xpath))
+            total_metric_counter = hcc_counter + len(metrics_patientdashboard)
+            print("Total metric " + str(total_metric_counter))
+            print(range(total_metric_counter))
+            for metric_counter in range(total_metric_counter):
+                print("In Metric Counter block")
                 print("Metric Counter" + str(metric_counter))
                 metric_counter1 = metric_counter + 1
-                xpath1 = "(" + "//div[@class='text-bold sub-title']" + ")" + "[" + str(metric_counter1) + "]"
+                print("Metric counter1 value " + str(metric_counter1))
+                xpath1 = "(" + "//div[@class='text-bold sub-title']" + ")" + "[" + str(
+                    hcc_counter + metric_counter1) + "]"
                 xpath_metric_row = xpath1 + "/../../../../../.."
                 xpath_pencil_patientdashboard = xpath1 + "/../../../../../../td/div/div[@class='dropdown']//child::a[@class='addSuppData-trigger pts']//child::i"
                 metric_name_patientdashboard = metrics_patientdashboard[metric_counter].text
                 print("Metric name in patient dashboard" + str(metric_name_patientdashboard))
                 metric_row = driver.find_element_by_xpath(xpath_metric_row)
                 # print(metric_name_patientdashboard)#Print all measures in Patient dashboard
+
+                driver.execute_script("arguments[0].scrollIntoView(true);", metric_row)
 
                 if metric_name_patientdashboard == metric_name:
 
@@ -4823,8 +4861,9 @@ def map_codingtool(driver, workbook, logger, run_from):
                                 sf.action_click(pencil_options[option_counter], driver)
 
                                 # click on confirm
+                                time.sleep(1)
                                 sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
-
+                                time.sleep(2)
                                 # wait for page to load
                                 sf.ajax_preloader_wait(driver)
 
@@ -4832,7 +4871,7 @@ def map_codingtool(driver, workbook, logger, run_from):
                                 restored = 0
                                 stale_icon = 0
                                 x = 1
-                                start_time1 = time.time()
+                                start_time1 = timeit.default_timer()
                                 while True:
                                     driver.refresh()
                                     sf.ajax_preloader_wait(driver)
@@ -4846,17 +4885,17 @@ def map_codingtool(driver, workbook, logger, run_from):
                                 time_elapsed1_value = timeit.default_timer() - start_time1
                                 time_elapsed1 = '{0:.2f}'.format(time_elapsed1_value)
                                 if (stale_icon == 1):
-                                    timestring = "Time taken " + str(time_elapsed1)
+                                    timestring = "Time taken(in s) " + str(time_elapsed1)
                                     sheet.append(("Mark As pending - Stale icon ", "PASS", str(timestring)))
                                 else:
-                                    timestring = "Time taken " + str(time_elapsed1)
+                                    timestring = "Time taken(in s) " + str(time_elapsed1)
                                     sheet.append(("Mark As pending -Stale icon", "FAIL", str(timestring)))
 
                                 # Keep refreshing till you see the hollow dot
                                 # Refresh 10 times to verify appearing of hollow dot
                                 start_time = timeit.default_timer()
                                 hollow_dot_found = 0
-                                dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(hcc_counter +
                                     metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
                                 dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
                                 print("Dot status " + str(dot_status))
@@ -4865,7 +4904,7 @@ def map_codingtool(driver, workbook, logger, run_from):
                                     driver.refresh()
                                     sf.ajax_preloader_wait(driver)
                                     dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
-                                        metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
+                                        hcc_counter+metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
                                     dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
                                     if (dot_status == "non_compliant hollow_dot"):
                                         print("Checking for hollow dot ")
@@ -4880,26 +4919,48 @@ def map_codingtool(driver, workbook, logger, run_from):
                                 elapsed = '{0:.2f}'.format(elapsed_value)
                                 if (hollow_dot_found == 1):  # Click on pencil icon and unmark as Pending
                                     sf.ajax_preloader_wait(driver)
-                                    timestring = "Time taken " + str(elapsed)
-                                    sheet.append(("Hollow dot ", "PASS ", str(timestring)))
+                                    timestring = "Time taken(in s) " + str(elapsed)
+                                    sheet.append(("Hollow dot ", "PASS", str(timestring)))
+
+                                    # check in pending list
+                                    # open pending list
+                                    open_pendinglist(customer_id)
+                                    sf.ajax_preloader_wait(driver)
+                                    provider_heading_xpath = '//*[text()="Provider"]'
+                                    WebDriverWait(driver, 60).until(
+                                        EC.visibility_of_element_located((By.XPATH, provider_heading_xpath)))
+                                    print("Page loaded completely ")
+                                    # extract patient cozeva id
+                                    WebDriverWait(driver, 60).until(
+                                        EC.visibility_of_element_located(
+                                            (By.XPATH, config.get("MAP", "patient_link_xpath"))))
+                                    patient_link = driver.find_element_by_xpath(config.get("MAP", "patient_link_xpath"))
+                                    cozeva_id_pending_list = extract_patient_id(patient_link.get_attribute("href"))
+                                    if (format_string(cozeva_id) == format(cozeva_id_pending_list)):
+                                        sheet.append(("Displayed in Pending List", "PASS"))
+                                    else:
+                                        sheet.append(("Displayed in Pending List", "FAIL", "Please check"))
+                                    # unmark as pending
+                                    driver.back()
+                                    sf.ajax_preloader_wait(driver)
                                     WebDriverWait(driver, 30).until(
                                         EC.element_to_be_clickable((By.XPATH, xpath_pencil_patientdashboard)))
                                     sf.action_click(driver.find_element_by_xpath(xpath_pencil_patientdashboard), driver)
                                     print("Clicked on Pencil icon")
-                                    unmark_as_pending_xpath = '(//*[text()="Unmark as Pending"])[' + str(
-                                        metric_counter1) + ']'
+                                    unmark_as_pending_xpath = '(//*[text()="Unmark as Pending"])[' + str(1) + ']'
+                                    time.sleep(3)
                                     unmark_as_pending = driver.find_element_by_xpath(unmark_as_pending_xpath)
                                     sf.action_click(unmark_as_pending, driver)
                                     print("Clicked on unmark as pending icon")
                                     sf.ajax_preloader_wait(driver)
-                                    dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                    dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(hcc_counter+
                                         metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
                                     dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
                                     z = 0
                                     while True:
                                         driver.refresh()
                                         sf.ajax_preloader_wait(driver)
-                                        dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                        dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(hcc_counter+
                                             metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
                                         dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute(
                                             "class")
@@ -4947,7 +5008,7 @@ def map_codingtool(driver, workbook, logger, run_from):
                     break
                 else:
                     print("Metric name is not equal")
-                    return False
+
             if (add_supdata_flag_pt == map_flag_pt == 1):
                 return True
             else:
@@ -5253,6 +5314,17 @@ def map_codingtool(driver, workbook, logger, run_from):
                 lobs = driver.find_elements_by_xpath("//ul[@id='filter-lob']/li[@class!='hide']")
                 quarters = driver.find_elements_by_xpath("//ul[@id='filter-quarter']/li")
 
+        rows = ws.max_row
+        cols = ws.max_column
+        for i in range(1, rows + 1):
+            for j in range(1, cols + 1):
+                if ws.cell(i, j).value == 'PASS':
+                    ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+                elif ws.cell(i, j).value == 'FAIL':
+                    ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+                elif ws.cell(i, j).value == 'Data table is empty':
+                    ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
     # store Cozeva ID
     # search the metric
     # Check options in Pencil icon
@@ -5348,6 +5420,21 @@ def market_sheet(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+
+def cetoggle(driver, workbook, logger, run_from):
+    registry_url = driver.current_url
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@id='conti_enroll']")))
+    CE_checkbox = driver.find_element_by_xpath("//*[@id='conti_enroll']")
+    # print(CE_checkbox)
+
+    if CE_checkbox.is_selected():
+        CEstatus = 'ON'
+
+    else:
+        CEstatus = 'OFF'
+
 
 
 
