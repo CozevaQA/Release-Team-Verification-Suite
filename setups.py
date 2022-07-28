@@ -247,6 +247,7 @@ def generate_summary(wb):
     
 
 def new_launch():
+    print("Entered New Launch")
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
@@ -258,8 +259,49 @@ def new_launch():
     if checklist[0] == 1:
         context_functions.support_menubar(driver,workbook, ws, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[1] == 1:
+        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[2] == 1:
+        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[4] == 1:
+        context_functions.provider_registry(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[5] == 1:
+        context_functions.practice_registry(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
     if checklist[24] == 1:
         context_functions.sticket_validation(driver, workbook, logger, report_folder, run_from, guiwindow.verification_specs[1])
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[28] == 1:
+        context_functions.group_menubar(driver, workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[15] == 1:
+        print("Practice tab ss section")
+        context_functions.practice_tab_ss(driver, workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[17] == 1:
+        context_functions.patient_medication(driver,workbook, logger, report_folder, run_from)
+    if checklist[19] == 1:
+        context_functions.apptray_access_check(driver, workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[20] == 1:
+        context_functions.training_resources(driver, workbook, logger, report_folder, run_from)
+    if checklist[7] == 1:
+        context_functions.global_search(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[25] == 1:
+        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[12] == 1:
+        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[18] == 1:
+        context_functions.map_codingtool(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[16] == 1:
+        context_functions.market_sheet(driver, workbook,logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
 
     workbook.save(report_folder + "\\Report.xlsx")

@@ -1,8 +1,11 @@
 import base64
 import configparser
+import random
 import re
+import timeit
 import traceback
 from random import randint
+from termcolor import colored
 
 from openpyxl import Workbook
 from openpyxl import load_workbook
@@ -149,8 +152,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                             datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
                             print(datatable_info)
                             test_case_id += 1
-                            if link_name == "Providers":
-                                x=1
+
 
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3)),
@@ -162,6 +164,10 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                             test_case_id += 1
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3))))
+                        if link_name == "Patients":
+                            if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
+                                test_case_id+=1
+                                ws.append((test_case_id, context_name, 'Presence of Had ER Visit Tab', 'Passed'))
 
             except Exception as e:
                 print(e)
@@ -3118,16 +3124,648 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 def group_menubar(driver, workbook, logger, screenshot_path, run_from):
-    x=0
+    workbook.create_sheet('Group Menubar')
+    ws = workbook['Group Menubar']
+    main_registry_url = driver.current_url
+    try:
+        context_dropdown_arrow = driver.find_element_by_xpath("//*[@id='context_dropdown_arrow']")
+        # print("Arrow found")
+        context_dropdown_arrow.click()
+        time.sleep(3)
+        group_list_container = driver.find_element_by_xpath("//*[@id='ul_1']")
+        group_list_element = group_list_container.find_elements_by_tag_name("li")
+        randomList = random.choices(group_list_element, k=1)  # randomly 1 group is checking
+        for i in range(0, len(randomList)):
+            print(randomList[i].text)
+            group_name = randomList[i].text
+            randomList[i].click()
+            time.sleep(5)
+            # print("Arrow found....2")
+            try:
+                group2_list_container = driver.find_element_by_xpath("//*[@id='ul_2']")
+                group2_list_element = group2_list_container.find_elements_by_tag_name("li")
+                group2_list_element_count = len(group2_list_element)
+                randomList2 = random.choices(group2_list_element, k=1)  # randomly 1 group is checking
+                for i in range(0, len(randomList2)):
+                    print(randomList2[i].text)
+                    group_name2 = randomList2[i].text
+                    group_all = (group_name + "_" + group_name2)
+                    print(group_all)
+                    try:
+                        randomList2[i].click()
+                        time.sleep(5)
+                        targetpath = driver.current_url
+                        access_check = sf.URLAccessCheck(targetpath, driver)
+                        if (access_check):
+                            sf.captureScreenshot(driver, group_name2, screenshot_path)
+                            logger.critical(
+                                "Group List ->  Access Denied found on clicking " + group_all + " .Please check.",
+                                targetpath)
+                        else:
+                            sf.captureScreenshot(driver, group_name2, screenshot_path)
+
+                            support_menubar(driver, workbook, ws, logger, run_from)
+                    except Exception as e:
+                        print(e)
+                        logger.critical(
+                            "Group Navigation -> Issue occurred while navigating to Group1-Group2 : " + group_all,
+                            targetpath)
+
+                    context_dropdown_arrow = driver.find_element_by_xpath("//*[@id='context_dropdown_arrow']")
+                    context_dropdown_arrow.click()
+                    group2_list_container = driver.find_element_by_xpath("//*[@id='ul_2']")
+                    # print("Arrow found....3")
+                    group2_list_element = group2_list_container.find_elements_by_tag_name("li")
+                    randomList2 = random.choices(group2_list_element, k=1)
+
+            except Exception as e:
+                try:
+                    targetpath = driver.current_url
+                    access_check = sf.URLAccessCheck(targetpath, driver)
+                    if access_check:
+                        sf.captureScreenshot(driver, group_name, screenshot_path)
+                        logger.critical(
+                            "Group List ->  Access Denied found on clicking " + group_name + " .Please check.",
+                            targetpath)
+                    else:
+                        sf.captureScreenshot(driver, group_name, screenshot_path)
+                        print("Test.......1")
+                        support_menubar(driver, workbook, ws, logger, run_from)
+                except Exception as e:
+                    logger.critical(
+                        "Group Navigation -> Issue occurred while navigating to Group1 : " + group_name, targetpath)
+            context_dropdown_arrow = driver.find_element_by_xpath("//*[@id='context_dropdown_arrow']")
+            context_dropdown_arrow.click()
+            time.sleep(5)
+            group_list_container = driver.find_element_by_xpath("//*[@id='ul_1']")
+            group_list_element = group_list_container.find_elements_by_tag_name("li")
+            randomList = random.choices(group_list_element, k=1)
+
+        driver.refresh()
+        time.sleep(3)
+
+    except Exception as e:
+        print("Group1 is not available or having some issue while navigating.")
+        logger.info("** Group1 is not available or having some issue while navigating.")
+
+    driver.get(main_registry_url)
+    sf.ajax_preloader_wait(driver)
+
+
+def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
+    workbook.create_sheet('Support Level Tabs')
+    ws = workbook['Support Level Tabs']
+    
+    ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws['A1'].font = header_font
+    ws['A1'].fill = header_cell_color
+    ws['B1'].font = header_font
+    ws['B1'].fill = header_cell_color
+    ws['C1'].font = header_font
+    ws['C1'].fill = header_cell_color
+    ws['D1'].font = header_font
+    ws['D1'].fill = header_cell_color
+    ws['E1'].font = header_font
+    ws['E1'].fill = header_cell_color
+    ws['F1'].font = header_font
+    ws['F1'].fill = header_cell_color
+    ws.name = "Arial"
+    test_case_id = 1
+
+    registry_url = driver.current_url
+    # Selecting tabs from Support MSPL
+    context_name = "Couldn't Fetch"
+    try:
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "registry_body")))
+        selected_metric_name = 'Couldnt fetch Metric Name'
+        context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
+
+        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        percent = '0.00'
+        while percent == '0.00' or percent == '0.00%':
+            selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
+            percent = selectedMetric.find_element_by_class_name('percent').text
+        selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
+        selectedMetric.click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+        metric_url = driver.current_url
+        # nav 1 : Practice Tab
+        try:
+            selectedPracticeName = 'Couldn\'t Fetch'
+            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[0].click()
+            start_time = time.perf_counter()
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
+            time_taken = time.perf_counter() - start_time
+            print("Page Loaded")
+            if len(driver.find_elements_by_id("metric-support-prac-ls")) != 0:
+                sf.captureScreenshot(driver, selected_metric_name+'Practice_tab', screenshot_path)
+                ws.append((test_case_id, selected_metric_name, "Navigation to practice tab", 'Passed', time_taken))
+                print("Screenshot taken")
+
+            practices = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name(
+                'tbody').find_elements_by_tag_name('tr')
+            global global_search_prac
+            if len(practices) > 1:
+                selectedPractice = \
+                    practices[sf.RandomNumberGenerator(len(practices), 1)[0]].find_elements_by_tag_name('a')[1]
+                selectedPracticeName = selectedPractice.text
+                #global global_search_prac
+                global_search_prac = selectedPracticeName
+            else:
+                selectedPractice = practices[0].find_elements_by_tag_name('a')[1]
+                selectedPracticeName = selectedPractice.text
+                #global global_search_prac
+                global_search_prac = selectedPracticeName
+
+
+        except Exception as e:
+            ws.append([test_case_id, context_name,
+                       'Navigation to a practice registry from the pratice tab of support MSPL :' + selected_metric_name,
+                       'Failed', '',
+                       'Couldnt click on practice tab or a random practice name: ' + selectedPracticeName])
+            test_case_id += 1
+            print(e)
+            traceback.print_exc()
+        driver.get(metric_url)
+
+        # Nav to provider registry
+        try:
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+            selectedProviderName = 'Couldn\'t Fetch'
+            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[1].click()
+            start_time = time.perf_counter()
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
+            time_taken = time.perf_counter() - start_time
+            if len(driver.find_elements_by_id("metric-support-prov-ls")) != 0:
+                sf.captureScreenshot(driver, selected_metric_name+'Provider_tab', screenshot_path)
+                ws.append((test_case_id, selected_metric_name, "Navigation to provider tab", 'Passed', time_taken))
+                print("Screenshot taken")
+            providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
+                'tbody').find_elements_by_tag_name('tr')
+            if len(providers) > 1:
+                selectedProvider = \
+                    providers[sf.RandomNumberGenerator(len(providers), 1)[0]].find_elements_by_tag_name('a')[2]
+                selectedProviderName = selectedProvider.text
+                global global_search_prov
+                global_search_prov = selectedProviderName
+            else:
+                selectedProvider = providers[0].find_elements_by_tag_name('a')[2]
+                selectedProviderNameName = selectedProvider.text
+                # global global_search_prov
+                global_search_prov = selectedProviderName
+
+
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            ws.append([test_case_id, context_name,
+                       'Navigation to a provider registry from the provider tab of support MSPL :' + selected_metric_name,
+                       'Failed', '',
+                       'Couldnt click on provider tab or a random provider name: ' + selectedProviderName])
+            test_case_id += 1
+        driver.get(metric_url)
+
+        # nav 3 : Patient context
+        try:
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+            patient_id = 'Couldn\'t Fetch'
+            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
+            start_time = time.perf_counter()
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+            time_taken = time.perf_counter() - start_time
+            if len(driver.find_elements_by_id("metric-support-pat-ls")) != 0:
+                sf.captureScreenshot(driver, selected_metric_name+'Patient_tab', screenshot_path)
+                ws.append((test_case_id, selected_metric_name, "Navigation to patient tab", 'Passed', time_taken))
+                print("Screenshot taken")
+            patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
+                'tbody').find_elements_by_tag_name('tr')
+            global global_search_pat
+            if len(patients) > 1:
+                selectedPatient = \
+                    patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_elements_by_class_name('pat_name')[
+                        0].get_attribute("href")
+                czid = sf.get_patient_id(selectedPatient)
+                global_search_pat = czid
+            else:
+                selectedPatient = patients[0].find_elements_by_class_name('pat_name')[0].get_attribute("href")
+                czid = sf.get_patient_id(selectedPatient)
+                global_search_pat = czid
+
+
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            ws.append([test_case_id, context_name,
+                       'Navigation to patient context from the patients tab of support MSPL :' + selected_metric_name,
+                       'Failed', '', 'Couldnt click on patient tab or a random patient : ' + patient_id])
+            test_case_id += 1
+        driver.get(metric_url)
+
+        # nav 4 : Performance Statistics
+        try:
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[3].click()
+            start_time = time.perf_counter()
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
+            time_taken = time.perf_counter() - start_time
+            if driver.find_elements_by_id('performance_details') != 0:
+                ws.append([test_case_id, context_name,
+                           'Navigation to Performance Stats from Support Metric : ' + selected_metric_name,
+                           'Passed',
+                           time_taken])
+                test_case_id += 1
+                sf.captureScreenshot(driver, selected_metric_name + 'Performance_tab', screenshot_path)
+            else:
+                ws.append([test_case_id, context_name,
+                           'Navigation to Performance Stats from Support Metric : ' + selected_metric_name,
+                           'Failed'])
+                test_case_id += 1
+                sf.captureScreenshot(driver, selected_metric_name + 'Performance_tab', screenshot_path)
+
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            ws.append(
+                [test_case_id, context_name, 'Navigation to Performance Stats from Practice MSPL', 'Failed', '',
+                 'Couldnt click on the performance tab of metric :' + selected_metric_name])
+            test_case_id += 1
+            sf.captureScreenshot(driver, selected_metric_name + 'Performance_tab', screenshot_path)
+
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        ws.append([test_case_id, context_name, 'Navigation to Support MSPL', 'Failed', '',
+                   'Unable to click on a random metric: ' + selected_metric_name])
+        test_case_id += 1
+        sf.captureScreenshot(driver, 'Click on metric', screenshot_path)
+        driver.get(registry_url)
+
+    driver.get(registry_url)
+    sf.ajax_preloader_wait(driver)
+
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+
+def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
+    #pick a compliant patient from a PDC metric.
+    sf.ajax_preloader_wait(driver)
+    main_registry = driver.current_url
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    try:
+        driver.find_element_by_id("qt-filter-label").click()
+        time.sleep(1)
+        lobs = driver.find_element_by_id("filter-lob").find_elements_by_tag_name('li')
+        for lob in lobs:
+            if 'medicare' in lob.text or 'Medicare' in lob.text:
+                lob.click()
+                break
+        driver.find_element_by_id("reg-filter-apply").click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+        driver.find_element_by_xpath(locator.xpath_filter_measure_list).click()
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, "qt-search-met")))
+        driver.find_element_by_id("qt-search-met").clear()
+        driver.find_element_by_id("qt-search-met").send_keys('pdc')
+        time.sleep(2)
+        driver.find_element_by_id("qt-apply-search").click()
+        sf.ajax_preloader_wait(driver)
+        driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")[0].click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+        driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+        driver.find_element_by_class_name("datatable_filter_dropdown").click()
+        time.sleep(1)
+        driver.find_element_by_id("table_dropdown_metric-support-pat-ls").find_element_by_xpath('//*[@id="table_dropdown_metric-support-pat-ls"]/div[5]').find_element_by_class_name("dropdown-trigger").click()
+        time.sleep(1)
+        driver.find_element_by_id("table_dropdown_metric-support-pat-ls").find_element_by_xpath('//*[@id="table_dropdown_metric-support-pat-ls"]/div[5]').find_element_by_class_name("select-wrapper").find_elements_by_tag_name('li')[1].click()
+        time.sleep(1)
+        driver.find_element_by_id("table_dropdown_metric-support-pat-ls").find_element_by_xpath('//*[@id="table_dropdown_metric-support-pat-ls"]/div[6]').find_element_by_class_name("datatable_apply").click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+        driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
+            'tbody').find_elements_by_tag_name('tr')[0].find_elements_by_class_name('pat_name')[0].click()
+        driver.switch_to.window(driver.window_handles[1])
+        window_switched = 1
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
+        chart_icon = driver.find_element_by_class_name("medical_adherence_chart_icon")
+        driver.execute_script("arguments[0].scrollIntoView();", chart_icon)
+        chart_icon.click()
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, "medication_chart_div_id")))
+        sf.captureScreenshot(driver, "Medications_"+driver.find_element_by_xpath(locator.xpath_cozeva_Id).text, screenshot_path)
+        time.sleep(1)
+        driver.close()
+        driver.switch_to.window(driver.window_handles[0])
+
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
+        sf.captureScreenshot(driver, "Medication check failed", screenshot_path)
+        if window_switched == 1:
+            driver.switch_to.window(driver.window_handles[0])
+    driver.get(main_registry)
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
 
 def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
-    x=0
+    workbook.create_sheet('Apptray Access Check')
+    ws = workbook['Apptray Access Check']
+
+    ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws['A1'].font = header_font
+    ws['A1'].fill = header_cell_color
+    ws['B1'].font = header_font
+    ws['B1'].fill = header_cell_color
+    ws['C1'].font = header_font
+    ws['C1'].fill = header_cell_color
+    ws['D1'].font = header_font
+    ws['D1'].fill = header_cell_color
+    ws['E1'].font = header_font
+    ws['E1'].fill = header_cell_color
+    ws['F1'].font = header_font
+    ws['F1'].fill = header_cell_color
+    ws.name = "Arial"
+    test_case_id = 1
+
+    registry_url = driver.current_url
+    try:
+        last_url = driver.current_url
+        window_switched = 0
+        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
+        driver.switch_to.window(driver.window_handles[1])
+        window_switched = 1
+        sf.ajax_preloader_wait(driver)
+        try:
+            sf.ajax_preloader_wait(driver)
+            current_url = driver.current_url
+            access_message = sf.CheckAccessDenied(current_url)
+
+            if access_message == 1:
+                print("Access Denied found!")
+                # logger.critical("Access Denied found!")
+                test_case_id+= 1
+                ws.append(
+                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied'))
+                sf.captureScreenshot(driver, 'Time Capsule Access denied', screenshot_path)
+
+            else:
+                print("Access Check done!")
+                # logger.info("Access Check done!")
+                error_message = sf.CheckErrorMessage(driver)
+
+                if error_message == 1:
+                    print("Error toast message is displayed")
+                    # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Time Capsule', 'Navigation to Time Capsule without error message',
+                                'Failed', 'Error toast message is displayed'))
+                    sf.captureScreenshot(driver, 'Time Capsule error message', screenshot_path)
+
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Time Capsule page loading',
+                                    'Passed'))
+                    sf.captureScreenshot(driver, 'Time Capsule', screenshot_path)
+
+        except Exception as e:
+            print(e)
+            test_case_id += 1
+            ws.append(
+                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+            sf.captureScreenshot(driver, 'Time Capsule access', screenshot_path)
+        finally:
+            driver.close()
+            time.sleep(1)
+            if window_switched == 1:
+                driver.switch_to.window(driver.window_handles[0])
+
+    except Exception as e:
+        print(e)
+        test_case_id += 1
+        ws.append(
+            (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+        sf.captureScreenshot(driver, 'Time Capsule Access denied', screenshot_path)
+        driver.get(last_url)
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+
+    driver.get(registry_url)
+    #secure messaging
+    window_switched = 0
+    try:
+        last_url = driver.current_url
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Secure_Messaging)))
+        driver.find_element_by_xpath(locator.xpath_app_Secure_Messaging).click()
+        driver.switch_to.window(driver.window_handles[1])
+        window_switched = 1
+        try:
+            sf.ajax_preloader_wait(driver)
+            current_url = driver.current_url
+            access_message = sf.CheckAccessDenied(current_url)
+
+            if access_message == 1:
+                print("Access Denied found!")
+                # logger.critical("Access Denied found!")
+                test_case_id += 1
+                ws.append(
+                    (test_case_id, 'Secure Messaging', 'Access check for Secure Messaging', 'Failed',
+                     'Access Denied'))
+                sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
+
+            else:
+                print("Access Check done!")
+                # logger.info("Access Check done!")
+                error_message = sf.CheckErrorMessage(driver)
+
+                if error_message == 1:
+                    print("Error toast message is displayed")
+                    # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
+                    test_case_id += 1
+                    ws.append(
+                        (test_case_id, 'Secure Messaging',
+                         'Navigation to Secure Messaging without error message',
+                         'Failed', 'Error toast message is displayed'))
+                    sf.captureScreenshot(driver, 'Secure Messaging Error toast', screenshot_path)
+
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Secure Messaging', 'Navigation to Secure Messaging', 'Passed',))
+                    sf.captureScreenshot(driver, 'Secure Messaging', screenshot_path)
+        except Exception as e:
+            print(e)
+            test_case_id += 1
+            ws.append((test_case_id, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
+                       'Exception occurred!'))
+            sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
+        finally:
+            driver.close()
+            time.sleep(1)
+            driver.switch_to.window(driver.window_handles[0])
+
+    except Exception as e:
+        print(e)
+        test_case_id += 1
+        ws.append((test_case_id, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
+                   'Exception occurred!'))
+        sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
+        driver.get(last_url)
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+
+    driver.get(registry_url)
+    sf.ajax_preloader_wait(driver)
+    #analytics
+    try:
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Analytics)))
+        driver.find_element_by_xpath(locator.xpath_app_Analytics).click()
+        driver.switch_to.window(driver.window_handles[1])
+        window_switched = 1
+        try:
+            sf.ajax_preloader_wait(driver)
+            current_url = driver.current_url
+            access_message = sf.CheckAccessDenied(current_url)
+
+            if access_message == 1:
+                print("Access Denied found!")
+                # logger.critical("Access Denied found!")
+                test_case_id += 1
+                ws.append(
+                    (test_case_id, 'Analytics', 'Access check for Analytics', 'Failed', 'x', 'Access Denied'))
+                sf.captureScreenshot(driver, 'Analytics Access Denied', screenshot_path)
+
+            else:
+                print("Access Check done!")
+                # logger.info("Access Check done!")
+                error_message = sf.CheckErrorMessage(driver)
+
+                if error_message == 1:
+                    print("Error toast message is displayed")
+                    # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Analytics', 'Navigation to Analytics without error message',
+                               'Failed', 'x', 'Error toast message is displayed'))
+                    sf.captureScreenshot(driver, 'Analytics error toast', screenshot_path)
+
+                else:
+
+                    total_workbooks = len(driver.find_elements_by_xpath(locator.xpath_total_Workbooks))
+                    all_workbooks = driver.find_elements_by_xpath(locator.xpath_total_Workbooks)
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Passed', 'x',
+                               'Number of Workbook links: ' + str(total_workbooks)))
+
+                    sf.captureScreenshot(driver, 'Analytics', screenshot_path)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            test_case_id += 1
+            ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!'))
+        finally:
+            driver.close()
+            time.sleep(1)
+            if window_switched == 1:
+                driver.switch_to.window(driver.window_handles[0])
+                window_switched == 0
+
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        test_case_id += 1
+        ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!'))
+        sf.captureScreenshot(driver, 'Analytics Access Denied', screenshot_path)
+        if window_switched == 1:
+            driver.switch_to.window(driver.window_handles[0])
+            window_switched == 0
+        driver.get(last_url)
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+
+    driver.get(registry_url)
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
+
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 def training_resources(driver, workbook, logger, screenshot_path, run_from):
-    x=0
+    sf.ajax_preloader_wait(driver)
+    main_registry = driver.current_url
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    try:
+        driver.find_element_by_xpath(locator.xpath_resources_link).click()
+        time.sleep(1)
+        driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")[0].click()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_resources_page_prac_sup)))
+        sf.captureScreenshot(driver, 'Resources Page', screenshot_path)
 
-def new_launch_time_capsule(driver, workbook, logger, screenshot_path, run_from):
-    x=0
+
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
+
+    driver.get(main_registry)
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
 
 def patient_timeline(driver, workbook, logger, screenshot_path, run_from):
     x=0
@@ -3970,7 +4608,7 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
                                     "Manual intervention required for cozeva id given "))
 
                     apply_conditional_formatting(ws)
-                    workbook.save("Report_Sticket_Log.xlsx")
+                    #workbook.save("Report_Sticket_Log.xlsx")
 
                     # ws['D4'] = "Number of Pages " + str(page)
 
@@ -3985,7 +4623,7 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
                         all_columns_comment = "extra columns found"
         except Exception as e:
             ws['A1'] = "Sticket page empty or failed to load "
-            workbook.save("Report_Sticket_Log.xlsx")
+            #workbook.save("Report_Sticket_Log.xlsx")
             print("Failed to continue sticket " + str(e))
             traceback.print_exc()
 
@@ -4043,6 +4681,675 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
 
     # verify_sticket(driver, workbook, logger, run_from, customer_id)
     verify_sticket(driver, workbook, logger, run_from, customer_id)
+
+
+def map_codingtool(driver, workbook, logger, run_from):
+    def apply_conditional_formatting(ws):
+        red_text = Font(color="9C0006")
+        red_fill = PatternFill(bgColor="FFC7CE")
+        dxf = DifferentialStyle(font=red_text, fill=red_fill)
+        rule = Rule(type="containsText", operator="containsText", text="FAIL", dxf=dxf)
+        rule.formula = ['NOT(ISERROR(SEARCH("highlight",A1)))']
+
+        green_text = Font(color="00FF00FF")
+        green_fill = PatternFill(bgColor="0000FF00")
+        dxf = DifferentialStyle(font=green_text, fill=green_fill)
+        rule1 = Rule(type="containsText", operator="containsText", text="PASS", dxf=dxf)
+        rule1.formula = ['NOT(ISERROR(SEARCH("highlight",A1)))']
+
+        ws.conditional_formatting.add('B1:B10000', rule)
+        ws.conditional_formatting.add('B1:B10000', rule1)
+
+    def PatientDashboard(driver, sheet, quarter_name, lob_name, metric_name_4_patientdashboard,
+                         add_supdata_flag_MSPL,
+                         map_flag_MSPL, caregap_MSPL, mspl_url, provider_name):
+        # driver.get("https://stage.cozeva.com/patient_detail/1R0ADY3?tab_type=CareOps&cozeva_id=1R0ADY3&patient_id=9290597&cozeva_id=1R0ADY3&session"
+        #          "=YXBwX2lkPXJlZ2lzdHJpZXMmY3VzdElkPTE1MDAmZG9jdG9yc1BlcnNvbklkPTExODUxNTYzJmRvY3Rvcl91aWQ9MTE4MzE0ODkmcGF5ZXJJZD0xNTAwJnF1YXJ0ZXI9MjAyMC0xMi0zMSZob21lPVlYQndYMmxrUFhKbFoybHpkSEpwWlhNbVkzVnpkRWxrUFRFMU1EQW1jR0Y1WlhKSlpEMHhOVEF3Sm05eVowbGtQVEUxTURB&first_load=1")
+        global add_supdata_flag_pt, map_flag_pt, cozeva_id, pcp_name
+
+        try:
+            sf.ajax_preloader_wait(driver)
+            if len(driver.find_elements_by_xpath("(//div/span[@data-tooltip='Cozeva Id (Click to Copy)'])[1]")) != 0:
+                cozeva_id = driver.find_element_by_xpath(
+                    "(//div/span[@data-tooltip='Cozeva Id (Click to Copy)'])[1]").text
+            elif len(driver.find_elements_by_xpath("(//div/span[@data-tooltip='Cozeva Id (Click to Copy)'])[1]")) == 0:
+                cozeva_id = "Blank ; Please check "
+                return
+            sheet['B2'] = quarter_name + " | " + lob_name
+            sheet['B3'] = metric_name_4_patientdashboard
+            sheet['B4'] = cozeva_id
+            # find metric pencil icon
+
+            # Red dot count
+            caregap_pt = len(driver.find_elements_by_xpath("//div[@class='non_compliant red_dot']"))
+
+            metric_name = metric_name_4_patientdashboard
+            metrics_patientdashboard = driver.find_elements_by_xpath("//div[@class='text-bold sub-title']")
+            measure_display_flag = 0
+            hcc_collapse_xpath = '//i[@class="material-icons hcc_toggle tooltipped"]'
+            if sf.check_exists_by_xpath(driver, hcc_collapse_xpath):
+                sf.action_click(driver.find_element_by_xpath(hcc_collapse_xpath), driver)
+            for metric_counter in range(len(metrics_patientdashboard)):
+                print("Metric Counter" + str(metric_counter))
+                metric_counter1 = metric_counter + 1
+                xpath1 = "(" + "//div[@class='text-bold sub-title']" + ")" + "[" + str(metric_counter1) + "]"
+                xpath_metric_row = xpath1 + "/../../../../../.."
+                xpath_pencil_patientdashboard = xpath1 + "/../../../../../../td/div/div[@class='dropdown']//child::a[@class='addSuppData-trigger pts']//child::i"
+                metric_name_patientdashboard = metrics_patientdashboard[metric_counter].text
+                print("Metric name in patient dashboard" + str(metric_name_patientdashboard))
+                metric_row = driver.find_element_by_xpath(xpath_metric_row)
+                # print(metric_name_patientdashboard)#Print all measures in Patient dashboard
+
+                if metric_name_patientdashboard == metric_name:
+
+                    ActionChains(driver).move_to_element(metric_row).perform()
+
+                    if len(driver.find_elements_by_xpath(xpath_pencil_patientdashboard)) == 1:
+                        sheet.append(("Pencil icon Present ?", "PASS"))
+                        sf.action_click(driver.find_element_by_xpath(xpath_pencil_patientdashboard), driver)
+                        print("Clicked on Pencil icon")
+                        time.sleep(1)
+                        xpath_pencil_options = xpath_pencil_patientdashboard + "//..//..//child::ul/li"
+                        WebDriverWait(driver, 30).until(
+                            EC.visibility_of_element_located((By.XPATH, xpath_pencil_options)))
+                        pencil_options = driver.find_elements_by_xpath(xpath_pencil_options)
+                        add_supdata_flag_pt = 0
+                        map_flag_pt = 0
+
+                        for option_counter in range(len(pencil_options)):
+
+                            print((pencil_options[option_counter]).text)
+                            pencil_options_pt_text = (pencil_options[option_counter]).text
+                            if pencil_options_pt_text.strip() == "Add Supplemental Data":
+                                add_supdata_flag_pt = 1
+                                sheet.append(("Add Supplemental Data Present ?", "PASS"))
+                                sf.action_click(pencil_options[option_counter], driver)
+                                sf.ajax_preloader_wait(driver)
+                                # verify submit button
+                                submit_button_xpath = config.get("MAP", "submit_xpath")
+                                try:
+                                    driver.find_element_by_xpath(submit_button_xpath)
+                                    sheet.append(("Submit button appearing in Supp data", "PASS"))
+                                except NoSuchElementException:
+                                    sheet.append(("Submit button appearing in Supp data", "FAIL"))
+
+                                # verify delete button
+                                delete_button_xpath = config.get("MAP", "delete_xpath")
+                                try:
+                                    driver.find_element_by_xpath(delete_button_xpath)
+                                    sheet.append(("Delete button appearing in Supp data", "PASS"))
+                                except NoSuchElementException:
+                                    sheet.append(("Delete button appearing in Supp data", "FAIL"))
+
+                                # verify Task id
+                                task_text_xpath = config.get("MAP", "task_id_xpath")
+                                try:
+                                    task_text = driver.find_element_by_xpath(task_text_xpath).text
+                                    sheet.append(("Task id appearing in Supp data", "PASS", str(task_text)))
+                                except NoSuchElementException:
+                                    sheet.append(("Task id appearing in Supp data", "FAIL"))
+
+                                # verify attachment section
+                                attachment_xpath = config.get("MAP", "attachment_xpath")
+                                try:
+                                    driver.find_element_by_xpath(attachment_xpath)
+                                    sheet.append(("Attachment section appearing in Supp data", "PASS"))
+                                except NoSuchElementException:
+                                    sheet.append(("Attachment section appearing in Supp data", "FAIL"))
+
+                                # Delete the task
+                                delete_button_xpath = config.get("MAP", "delete_xpath")
+                                try:
+                                    sf.action_click(driver.find_element_by_xpath(delete_button_xpath), driver)
+
+                                    # give reason
+                                    reason_modal_xpath = config.get("MAP", "reason_input_modal")
+                                    reason_modal = driver.find_element_by_xpath(reason_modal_xpath)
+                                    reason_modal.send_keys("Cozeva QA")
+                                    sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
+                                    time.sleep(5)
+                                    sf.ajax_preloader_wait(driver)
+
+                                    sheet.append(("Task Deleted", "PASS"))
+                                except NoSuchElementException:
+                                    sheet.append(("Task Deleted", "FAIL", "Manual intervention required "))
+
+                                sf.action_click(driver.find_element_by_xpath(xpath_pencil_patientdashboard), driver)
+
+                            if pencil_options_pt_text.strip() == "Mark as Pending":
+                                sheet.append(("Mark As Pending Present ?", "PASS"))
+                                # click on MAP
+                                map_flag_pt = 1
+                                sf.action_click(pencil_options[option_counter], driver)
+
+                                # click on confirm
+                                sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
+
+                                # wait for page to load
+                                sf.ajax_preloader_wait(driver)
+
+                                # check for stale icon
+                                restored = 0
+                                stale_icon = 0
+                                x = 1
+                                start_time1 = time.time()
+                                while True:
+                                    driver.refresh()
+                                    sf.ajax_preloader_wait(driver)
+                                    if (sf.check_exists_by_xpath(driver, config.get("MAP", "stale_icon_xpath"))):
+                                        print("Stale icon found ")
+                                        stale_icon = 1
+                                        break
+                                    if (x == 10):
+                                        break
+                                    x = x + 1
+                                time_elapsed1_value = timeit.default_timer() - start_time1
+                                time_elapsed1 = '{0:.2f}'.format(time_elapsed1_value)
+                                if (stale_icon == 1):
+                                    timestring = "Time taken " + str(time_elapsed1)
+                                    sheet.append(("Mark As pending - Stale icon ", "PASS", str(timestring)))
+                                else:
+                                    timestring = "Time taken " + str(time_elapsed1)
+                                    sheet.append(("Mark As pending -Stale icon", "FAIL", str(timestring)))
+
+                                # Keep refreshing till you see the hollow dot
+                                # Refresh 10 times to verify appearing of hollow dot
+                                start_time = timeit.default_timer()
+                                hollow_dot_found = 0
+                                dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                    metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
+                                dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
+                                print("Dot status " + str(dot_status))
+                                y = 1
+                                while True:
+                                    driver.refresh()
+                                    sf.ajax_preloader_wait(driver)
+                                    dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                        metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
+                                    dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
+                                    if (dot_status == "non_compliant hollow_dot"):
+                                        print("Checking for hollow dot ")
+                                        hollow_dot_found = 1
+                                        break
+                                    if (y == 10):
+                                        break
+                                    print("Dot Status while checking for hollow dot " + str(dot_status))
+                                    y = y + 1
+
+                                elapsed_value = timeit.default_timer() - start_time
+                                elapsed = '{0:.2f}'.format(elapsed_value)
+                                if (hollow_dot_found == 1):  # Click on pencil icon and unmark as Pending
+                                    sf.ajax_preloader_wait(driver)
+                                    timestring = "Time taken " + str(elapsed)
+                                    sheet.append(("Hollow dot ", "PASS ", str(timestring)))
+                                    WebDriverWait(driver, 30).until(
+                                        EC.element_to_be_clickable((By.XPATH, xpath_pencil_patientdashboard)))
+                                    sf.action_click(driver.find_element_by_xpath(xpath_pencil_patientdashboard), driver)
+                                    print("Clicked on Pencil icon")
+                                    unmark_as_pending_xpath = '(//*[text()="Unmark as Pending"])[' + str(
+                                        metric_counter1) + ']'
+                                    unmark_as_pending = driver.find_element_by_xpath(unmark_as_pending_xpath)
+                                    sf.action_click(unmark_as_pending, driver)
+                                    print("Clicked on unmark as pending icon")
+                                    sf.ajax_preloader_wait(driver)
+                                    dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                        metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
+                                    dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute("class")
+                                    z = 0
+                                    while True:
+                                        driver.refresh()
+                                        sf.ajax_preloader_wait(driver)
+                                        dot_status_xpath = "(//div[@class='text-bold sub-title'])" + "[" + str(
+                                            metric_counter1) + "]" + "//ancestor::tr//child::td[1]//child::div[contains(@style,'margin: 8px 0px 0px 4px;')]"
+                                        dot_status = driver.find_element_by_xpath(dot_status_xpath).get_attribute(
+                                            "class")
+                                        if (dot_status == "non_compliant red_dot"):
+                                            restored = 1
+                                            break
+                                        if (z == 10):
+                                            break
+                                        z = z + 1
+                                    if (restored == 1):
+                                        timestring = "Time waited for hollow dot " + str(elapsed)
+                                        sheet.append(
+                                            ("Unmark as Pending", "PASS", str(timestring)))
+                                    else:
+                                        timestring = "Manual intervention required , Time waited for hollow dot " + str(
+                                            elapsed)
+                                        sheet.append(
+                                            ("Unmark as pending hasn't occurred as red dot has not re-appear", "FAIL",
+                                             str(timestring)))
+                                else:
+                                    timestring = "Manual intervention required , Time waited for hollow dot " + str(
+                                        elapsed)
+                                    sheet.append(
+                                        ("Unmark as pending hasn't occurred as hollow dot has not appear", "FAIL",
+                                         str(timestring)))
+
+                            pencil_options = driver.find_elements_by_xpath(xpath_pencil_options)
+                        if (add_supdata_flag_pt != 1):
+                            sheet.append(("Add Supplemental Data Present ?", "FAIL"))
+                        if (map_flag_pt != 1):
+                            sheet.append(("Mark As Pending Present ?", "FAIL"))
+
+
+
+                    elif len(driver.find_elements_by_xpath(xpath_pencil_patientdashboard)) == 0:
+                        print("NO PENCIL")
+                        sheet.append(("Pencil icon Present ?", "FAIL"))
+                        add_supdata_flag_pt = 0
+                        map_flag_pt = 0
+                        return False
+
+                    print("Supdata flag(Pt): " + str(add_supdata_flag_pt))
+                    print("Map flag(Pt): " + str(map_flag_pt))
+                    measure_display_flag = 1
+                    break
+                else:
+                    print("Metric name is not equal")
+                    return False
+            if (add_supdata_flag_pt == map_flag_pt == 1):
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            print(e)
+            return False
+
+            # Click on MAP
+            # confirm yes on the modal
+            # check stale icon
+            # 4 th test case pass
+            # click on Add Supp data option
+            # verify submit and delete button
+            # 5th Test Case pass
+            # navigate to pending list
+            # check for patient cozeva id
+            # refresh 5-6 times
+            # 6h test case pass
+            # return to Patient dashboard
+            # check for hollow dot
+            # unmark as pending
+            # 7th test case pass
+            # check for no hollow dot
+
+    def verify_mark_as_pending(driver, workbook, logger, run_from):
+        workbook.create_sheet("MAPCodingTool")
+        ws = workbook["MAPCodingTool"]
+        ws['A1'].value = "Test Data"
+        ws['A1'].font = Font(bold=True, size=13)
+        ws['A2'].value = "LOB"
+        ws['A2'].font = Font(bold=True, size=13)
+        ws['A3'].value = "Metric"
+        ws['A3'].font = Font(bold=True, size=13)
+        ws['A4'].value = "Cozeva ID"
+        ws['A4'].font = Font(bold=True, size=13)
+        ws['A5'].value = "Test Case"
+        ws['A5'].font = Font(bold=True, size=13)
+        ws['B5'].value = "Status"
+        ws['B5'].font = Font(bold=True, size=13)
+        ws['C5'].value = "Comments"
+        ws['C5'].font = Font(bold=True, size=13)
+        patient_verified = ""
+        # navigate to registry
+        sf.ajax_preloader_wait(driver)
+        # customer_name = driver.find_element_by_xpath(config['LOCATOR']['xpath_contextName']).text
+        driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
+        time.sleep(1)
+        quarters = driver.find_elements_by_xpath("//ul[@id='filter-quarter']/li")
+        lobs = driver.find_elements_by_xpath("//ul[@id='filter-lob']/li[@class!='hide']")
+        driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
+        patient_found = ""
+        for quarter in range(2):
+            # quarter = quarter + 1
+            if (patient_found == "Found"):
+                break
+            for lob in range(len(lobs)):
+                if (patient_found == "Found"):
+                    break
+                # for lob in range(1):
+                # lob = lob + 3
+                time.sleep(0.5)
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, "//a[@id='qt-filter-label']")))
+                driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
+                time.sleep(0.25)
+                quarter_name = quarters[quarter].text
+                print(colored(quarter_name, 'blue'))
+                quarters[quarter].click()
+                time.sleep(0.25)
+                lobs[lob].click()
+                lob_name = lobs[lob].text
+                print(colored(lob_name, 'magenta'))
+                driver.find_element_by_xpath("//a[@id='reg-filter-apply']").click()
+                WebDriverWait(driver, 90).until(
+                    EC.invisibility_of_element((By.XPATH, "//div[@class='ajax_preloader']")))
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, "//a[@data-target='qt-reg-nav-filters']")))
+                driver.find_element_by_xpath("//a[@data-target='qt-reg-nav-filters']").click()
+                time.sleep(0.25)
+                WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//label[@class='col s12']")))
+                driver.find_element_by_xpath("//label[@class='col s12']").click()
+                time.sleep(0.25)
+                driver.find_element_by_xpath("//button[@id='qt-apply-search']").click()
+                WebDriverWait(driver, 90).until(
+                    EC.invisibility_of_element((By.XPATH, "//div[@class='ajax_preloader']")))
+
+                """
+                **** SUPPORT MEASURE REGISTRY NAVIGATION ****
+                """
+                measures_all = driver.find_elements_by_xpath("//div/span[@class='met-name']")
+                scores = driver.find_elements_by_xpath("//span[@class='num-den']")
+                measure_counter = 0
+                score = 0
+
+                while measure_counter < len(measures_all) and score < len(scores):
+                    if (patient_found == "Found" or patient_verified == True):
+                        break
+                    WebDriverWait(driver, 60).until(
+                        EC.presence_of_element_located((By.XPATH, "//a[@id='reg-faq-trigger']")))
+                    time.sleep(0.5)
+                    driver.execute_script("arguments[0].scrollIntoView();", measures_all[measure_counter])
+                    measure_name = (measures_all[measure_counter]).text
+                    print("Measure name: ", measure_name)
+                    numdeno = scores[score].text
+                    numdeno = numdeno.lstrip("(")
+                    numdeno = numdeno.rstrip(")")
+                    numdeno = numdeno.split("/")
+                    Numerator = numdeno[0].replace(',', '')
+                    Denominator = numdeno[1].replace(',', '')
+                    print("Numerator=", Numerator)
+                    print("Denominator=", Denominator)
+                    last_url = driver.current_url
+                    measures_all[measure_counter].click()
+                    try:
+                        sf.ajax_preloader_wait(driver)
+                        if len(driver.find_elements_by_xpath("//td/a[contains(@href,'/registries/')]")) == 0 and float(
+                                Denominator) != 0 and float(Numerator) != 0:
+                            met_name = driver.find_element_by_xpath(
+                                "//div[@class='ch metric_specific_patient_list_title']").text
+                            logger.info("Metric name: %s", measure_name)
+                            logger.warning("Providers list is blank. Please check manually.")
+                            ws.append((quarter_name + " | " + lob_name, measure_name, 'Blank Providers List'))
+
+                        elif len(
+                                driver.find_elements_by_xpath("//td/a[contains(@href,'/registries/')]")) == 0 and float(
+                                Denominator) == 0:
+                            met_name = driver.find_element_by_xpath(
+                                "//div[@class='ch metric_specific_patient_list_title']").text
+                            logger.info("Metric name: %s", measure_name)
+                            logger.info("Providers list is blank since measure score is zero.")
+
+                        elif len(driver.find_elements_by_xpath("//td/a[contains(@href,'/registries/')]")) == 0:
+                            met_name = driver.find_element_by_xpath(
+                                "//div[@class='ch metric_specific_patient_list_title']").text
+                            logger.info("Metric name: %s", measure_name)
+                            logger.info("Providers list is blank. Please check manually.")
+
+                        else:
+                            if len(driver.find_elements_by_xpath("(//td/a[contains(@href,'/registries/')])[2]")) != 0:
+                                patientlist_link = driver.find_element_by_xpath(
+                                    "(//td/a[contains(@href,'/registries/')])[2]")
+
+                            else:
+                                patientlist_link = driver.find_element_by_xpath(
+                                    "(//td/a[contains(@href,'/registries/')])[1]")
+
+                            ActionChains(driver).move_to_element(patientlist_link).perform()
+                            ActionChains(driver).key_down(Keys.CONTROL).click(patientlist_link).key_up(
+                                Keys.CONTROL).perform()
+
+                            # """ *********** Termed column check **************** """
+                            # ajax_preloader_wait()
+                            # if len(driver.find_elements_by_xpath("//th[@aria-label='Termed: activate to sort column ascending']"))!=0:
+                            #     print("Termed column exists!")
+                            # else:
+                            #     print("Please check")
+                            # driver.find_element_by_xpath("//a[@class='datatable_filter_dropdown sidenav-trigger']").click()
+                            # time.sleep(1)
+                            #
+                            # if len(driver.find_elements_by_xpath("//div[text()='Termed:']"))!=0:
+                            #     print("Filter is present")
+                            # else:
+                            #     print("Check Filter")
+
+                            # **** CALCULATE CARE GAP LIST ****
+                            try:
+                                driver.switch_to.window(driver.window_handles[1])
+                                sf.ajax_preloader_wait(driver)
+
+                                provider_name = driver.find_element_by_xpath("//a[@id='context_trigger']/div/span").text
+                                logger.info("Provider Name: %s", provider_name)
+                                metric_name = driver.find_element_by_xpath(
+                                    "//div[@class='ch metric_specific_patient_list_title']").text
+                                logger.info("Metric name: %s", metric_name)
+                                my_lob_ce = driver.find_element_by_xpath(
+                                    "//div[@class='metric_patient_list_filter left']").text
+                                print(my_lob_ce)
+                                x = my_lob_ce.split("\u2002·\u2002")
+                                my_lob_ce_final = x[0] + " " + "|" + " " + x[1] + " " + "|" + " " + x[3]
+                                logger.info("%s", my_lob_ce_final)
+
+                                # Data for patient dashboard:
+                                y = metric_name.split("|")
+
+                                metric_name_4_patientdashboard1 = y[1].strip()
+                                metric_name_4_patientdashboard = metric_name_4_patientdashboard1.replace('*', '')
+                                print(metric_name_4_patientdashboard)
+
+                                if len(driver.find_elements_by_xpath(
+                                        "//td/div/a[contains(@href,'/patient_detail/')]")) == 0:
+                                    print("Patient list is blank!")
+                                    ws.append((quarter_name + " | " + lob_name, metric_name_4_patientdashboard,
+                                                provider_name, 'No Non-compliant patient found'))
+                                    measure_name4screenshot = ''.join(
+                                        e for e in str(measure_name) if (e.isalnum() or e.isspace()))
+
+
+                                # Pencil icon presence:
+                                elif len(driver.find_elements_by_xpath(
+                                        "//td/div/a[contains(@href,'/patient_detail/')]")) != 0:
+                                    time.sleep(1)
+                                    if len(driver.find_elements_by_xpath("//td[contains(@class,' pencil_icon')]")) != 0:
+                                        driver.find_element_by_xpath("//td[contains(@class,' pencil_icon')]").click()
+                                        time.sleep(0.5)
+                                        pencil_options = driver.find_elements_by_xpath(
+                                            "(//td[contains(@class,' pencil_icon')])[1]/div/ul[contains(@class,'dropdown-content patient-menu-list')]/li")
+                                        # Available options in Pencil icon:
+                                        add_supdata_flag_MSPL = 0
+                                        map_flag_MSPL = 0
+                                        option_counter = 0
+
+                                        for option_counter in range(len(pencil_options)):
+                                            print((pencil_options[option_counter]).text)
+                                            pencil_options_text = (pencil_options[option_counter]).text
+                                            if pencil_options_text.strip() == "Add Supplemental Data":
+                                                add_supdata_flag_MSPL = 1
+                                            elif pencil_options_text.strip() == "Mark as Pending":
+                                                map_flag_MSPL = 1
+                                            elif pencil_options_text.strip() == "Confirm/Disconfirm":
+                                                add_supdata_flag_MSPL = "Confirm/Disconfirm"
+                                            pencil_options = driver.find_elements_by_xpath(
+                                                "(//td[contains(@class,' pencil_icon')])[1]/div/ul[contains(@class,'dropdown-content patient-menu-list')]/li")
+                                            if (map_flag_MSPL == add_supdata_flag_MSPL == 1):
+                                                patient_found = "Found"
+
+                                    # Pencil icon is not present:
+                                    elif len(driver.find_elements_by_xpath(
+                                            "//td[contains(@class,' pencil_icon')]")) == 0:
+                                        print("No Pencil in MSPL")
+                                        add_supdata_flag_MSPL = 0
+                                        map_flag_MSPL = 0
+                                    print("Supdata flag(MSPL): " + str(add_supdata_flag_MSPL))
+                                    print("Map flag(MSPL): " + str(map_flag_MSPL))
+
+                                    # CareGap in MSPL:
+                                    if len(driver.find_elements_by_xpath("//td[contains(@class,'care_ops')]")) != 0:
+                                        caregap_MSPL = driver.find_element_by_xpath(
+                                            "(//td[contains(@class,'care_ops')])[1]").text
+                                        print("CareGap in MSPL:" + caregap_MSPL)
+                                    elif len(driver.find_elements_by_xpath("//td[contains(@class,' care_ops')]")) == 0:
+                                        caregap_MSPL = "Not present"
+                                        print("MSPL: CareGap is Not present")
+
+                                    # call PATIENT DASHBOARD:
+                                    mspl_url = driver.current_url
+                                    driver.find_element_by_xpath(
+                                        "//td/div/a[contains(@href,'/patient_detail/')]").click()
+                                    try:
+                                        driver.switch_to.window(driver.window_handles[2])
+
+                                        if (map_flag_MSPL == 1 and add_supdata_flag_MSPL == 1):
+                                            patient_verified = PatientDashboard(driver, ws, quarter_name, lob_name,
+                                                                                metric_name_4_patientdashboard,
+                                                                                add_supdata_flag_MSPL,
+                                                                                map_flag_MSPL, caregap_MSPL, mspl_url,
+                                                                                provider_name)
+
+
+
+                                    except Exception as e:
+                                        print(e)
+                                    finally:
+
+                                        driver.close()
+                                        driver.switch_to.window(driver.window_handles[1])
+
+
+
+
+
+                            # Exception in MSPL block
+                            except Exception as e:
+                                print(e)
+                                logger.critical(
+                                    measure_name + '\n' + provider_name + '\n' + "Metric specific patients list is not opening!Exception occurred!!")
+                                ws.append((quarter_name + " | " + lob_name, measure_name, provider_name, 'Error'))
+
+                            finally:
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                                apply_conditional_formatting(ws)
+
+
+                        WebDriverWait(driver, 30).until(
+                            EC.presence_of_element_located((By.XPATH, "//a[@class='breadcrumb']")))
+                        driver.find_element_by_xpath("//a[@class='breadcrumb']").click()
+
+                    # Providers list open exception block
+                    except Exception as e:
+
+                        print(e)
+                        driver.get(last_url)
+                    finally:
+                        # MEASURE COUNTER
+
+                        measures_all = driver.find_elements_by_xpath("//div/span[@class='met-name']")
+                        scores = driver.find_elements_by_xpath("//span[@class='num-den']")
+                        measure_counter += 1
+                        score += 1
+
+                lobs = driver.find_elements_by_xpath("//ul[@id='filter-lob']/li[@class!='hide']")
+                quarters = driver.find_elements_by_xpath("//ul[@id='filter-quarter']/li")
+
+    # store Cozeva ID
+    # search the metric
+    # Check options in Pencil icon
+    # Click on Mark As Pending
+    # Page will refresh ;Check for stale icon
+    # Click on Add Supplemental Data
+    # Check Task Id
+    # Check reflection on Pending List  compare patient and metric name
+    # Refresh twice or thrice
+    # Come to patient dashboard
+    # Unmark As pending
+
+    # initialize Workbook
+
+    verify_mark_as_pending(driver, workbook, logger, "Cozeva Support")
+
+
+def market_sheet(driver, workbook, logger, run_from):
+    workbook.create_sheet('Market Sheet')
+    ws = workbook['Market Sheet']
+
+    ws.append(['ID', 'Context', 'Scenario', 'Status', 'Comments'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws['A1'].font = header_font
+    ws['A1'].fill = header_cell_color
+    ws['B1'].font = header_font
+    ws['B1'].fill = header_cell_color
+    ws['C1'].font = header_font
+    ws['C1'].fill = header_cell_color
+    ws['D1'].font = header_font
+    ws['D1'].fill = header_cell_color
+    ws['E1'].font = header_font
+    ws['E1'].fill = header_cell_color
+    ws.name = "Arial"
+    test_case_id = 1
+
+    registry_url = driver.current_url
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@id='conti_enroll']")))
+    CE_checkbox = driver.find_element_by_xpath("//*[@id='conti_enroll']")
+    # print(CE_checkbox)
+
+    if (CE_checkbox.is_selected()):
+        CEstatus = 'ON'
+
+    else:
+        CEstatus = 'OFF'
+
+    if CEstatus == config.get("market-sheet", "ce_status"):
+        ws.append((test_case_id, 'Market Sheet Sync', 'CE Status', 'Passed', 'CE status in market sheet is '+config.get("market-sheet", "ce_status")+' and default CE for client is '+CEstatus))
+    else:
+        ws.append((test_case_id, 'Market Sheet Sync', 'CE Status', 'Failed',
+                   'CE status in market sheet is ' + config.get("market-sheet",
+                                                                "ce_status") + ' and default CE for client is ' + CEstatus))
+    test_case_id += 1
+    displayname = driver.find_element_by_xpath(locator.xpath_context_Name).text
+    if displayname == config.get("market-sheet", "display_name"):
+        ws.append((test_case_id, 'Market Sheet Sync', 'Display Name', 'Passed',
+                   'Display Name in market sheet is ' + config.get("market-sheet",
+                                                                "display_name") + ' and display name on PROD is ' + displayname))
+    else:
+        ws.append((test_case_id, 'Market Sheet Sync', 'Display Name', 'Failed',
+                   'Display name in market sheet is ' + config.get("market-sheet",
+                                                                "display_name") + ' and display name on PROD is ' + displayname))
+    test_case_id += 1
+    try:
+        driver.find_element_by_id("qt-filter-label").click()
+        time.sleep(1)
+        def_lob = driver.find_element_by_id("filter-lob").find_element_by_class_name('highlight').text
+    except:
+        ws.append((test_case_id, 'Market Sheet Sync', 'Default Lob', 'Failed', 'Unable to click on LoB dropdown'))
+
+    if def_lob == config.get("market-sheet", "def_lob"):
+        ws.append((test_case_id, 'Market Sheet Sync', 'Default Lob', 'Passed',
+                   'Default LoB in market sheet is ' + config.get("market-sheet",
+                                                                   "def_lob") + ' and default Lob on PROD is ' + def_lob))
+    else:
+        ws.append((test_case_id, 'Market Sheet Sync', 'Display Name', 'Failed',
+                   'Default Lob in market sheet is ' + config.get("market-sheet",
+                                                                   "def_lob") + ' and default Lob on PROD is' + def_lob))
+
+    time.sleep(1)
+    driver.get(registry_url)
+    sf.ajax_preloader_wait(driver)
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+
 
 
 

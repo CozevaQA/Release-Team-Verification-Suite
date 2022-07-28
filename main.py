@@ -10,7 +10,7 @@ import setups
 import logging
 if __name__ == '__main__':
     print("Hello World")
-    guiwindow.launchgui()
+    #guiwindow.launchgui()
     print(guiwindow.verification_specs)
     launchstyle= "Def"
     if 'NC' in guiwindow.verification_specs[0]:
@@ -55,7 +55,8 @@ if __name__ == '__main__':
                 setups.prov(roleset[roles])
 
 if driver_created == 1:
-    setups.driver.quit()
+    #setups.driver.quit()
+    x=0
 
 
 
