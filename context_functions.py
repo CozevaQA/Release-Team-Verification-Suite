@@ -4844,6 +4844,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                                     reason_modal_xpath = config.get("MAP", "reason_input_modal")
                                     reason_modal = driver.find_element_by_xpath(reason_modal_xpath)
                                     reason_modal.send_keys("Cozeva QA")
+                                    time.sleep(1)
                                     sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
                                     time.sleep(5)
                                     sf.ajax_preloader_wait(driver)
@@ -5055,6 +5056,9 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
         patient_verified = ""
         # navigate to registry
         sf.ajax_preloader_wait(driver)
+        driver.refresh()
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
         # customer_name = driver.find_element_by_xpath(config['LOCATOR']['xpath_contextName']).text
         driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
         time.sleep(1)
@@ -5422,7 +5426,7 @@ def market_sheet(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def cetoggle(driver, workbook, logger, run_from):
+def cetoggle(driver, workbook, logger, screenshot_path, run_from):
     registry_url = driver.current_url
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@id='conti_enroll']")))
@@ -5434,6 +5438,28 @@ def cetoggle(driver, workbook, logger, run_from):
 
     else:
         CEstatus = 'OFF'
+
+    sf.captureScreenshot(driver, "CE "+CEstatus, screenshot_path)
+    time.sleep(1)
+    driver.find_element_by_xpath("//*[@id='metric_scorecard']/div/div[1]/div/div/div/div[2]/label").click()
+    time.sleep(4)
+
+    CE_checkbox = driver.find_element_by_xpath("//*[@id='conti_enroll']")
+    # print(CE_checkbox)
+
+    if CE_checkbox.is_selected():
+        CEstatus = 'ON'
+
+    else:
+        CEstatus = 'OFF'
+
+    sf.captureScreenshot(driver, "CE " + CEstatus, screenshot_path)
+    time.sleep(1)
+
+
+
+
+
 
 
 

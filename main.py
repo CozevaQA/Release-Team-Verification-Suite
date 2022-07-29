@@ -10,7 +10,7 @@ import setups
 import logging
 if __name__ == '__main__':
     print("Hello World")
-    #guiwindow.launchgui()
+    guiwindow.launchgui()
     print(guiwindow.verification_specs)
     launchstyle= "Def"
     if 'NC' in guiwindow.verification_specs[0]:
