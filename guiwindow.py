@@ -8,10 +8,10 @@ from selenium import webdriver
 import ExcelProcessor as db
 import Schema_processor as sp
 
-checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
-verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
+#verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 
@@ -236,11 +236,11 @@ def launchgui():
 
     def create_NL_checklist():
         if all_navigation_var.get() == 1:
-            checklist[0] = 1
-            checklist[1] = 1
-            checklist[2] = 1
-            checklist[4] = 1
-            checklist[5] = 1
+            #checklist[0] = 1
+            #checklist[1] = 1
+            #checklist[2] = 1
+            #checklist[4] = 1
+            #checklist[5] = 1
             checklist[28] = 1
         checklist[14] = LoB_Measure_var.get()
         checklist[15] = provider_tab_var.get()
@@ -650,11 +650,11 @@ def launchgui():
     NL_global_search_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
     sticket_checkbox.grid(row=15, column=0, columnspan=5, sticky="w")
     NL_patient_dashboard_checkbox.grid(row=16, column=0, columnspan=5, sticky="w")
-    coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
-    denom_eligibility_checkbox.grid(row=18, column=0, columnspan=5, sticky="w")
+    #coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
+    denom_eligibility_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
     denom_eligibility_checkbox.config(state='disabled')
-    NL_custID.grid(row=19, column=0, columnspan=5)
-    NL_next_button.grid(row=20, column=0, columnspan=5)
+    NL_custID.grid(row=18, column=0, columnspan=5)
+    NL_next_button.grid(row=19, column=0, columnspan=5)
 
 
     #packing frame 1 into root

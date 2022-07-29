@@ -304,7 +304,7 @@ def new_launch():
         context_functions.market_sheet(driver, workbook,logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[23] == 1:
-        context_functions.cetoggle(driver, workbook, logger, run_from)
+        context_functions.cetoggle(driver, workbook, logger, report_folder, run_from)
 
 
     workbook.save(report_folder + "\\Report.xlsx")
