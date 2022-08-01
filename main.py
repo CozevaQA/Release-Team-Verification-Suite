@@ -24,7 +24,7 @@ if __name__ == '__main__':
     driver_created = 0
     setups.driver_setup()
     driver_created = 1
-    setups.login_to_cozeva_cert()
+    setups.login_to_cozeva()
     if guiwindow.verification_specs[2] == "Onshore":
         if launchstyle == "Def":
             setups.cozeva_support()

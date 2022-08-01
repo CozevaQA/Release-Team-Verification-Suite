@@ -3123,6 +3123,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
+
 def group_menubar(driver, workbook, logger, screenshot_path, run_from):
     workbook.create_sheet('Group Menubar')
     ws = workbook['Group Menubar']
@@ -3744,6 +3745,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
 
 def training_resources(driver, workbook, logger, screenshot_path, run_from):
     sf.ajax_preloader_wait(driver)
