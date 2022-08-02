@@ -5,7 +5,7 @@ try:
 except IndexError as e:
     import FirstTimeSetup
 
-# Testing Aroy PC
+# Testing main git
 
 
 import guiwindow
