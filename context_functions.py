@@ -1723,6 +1723,7 @@ def provider_mspl(driver, workbook, logger, run_from):
     ws.name = "Arial"
     test_case_id = 1
     main_registry_url = driver.current_url
+    selected_provider = "Couldn\'t Fetch"
     # check for default page and navigate to a Provider's Registry
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
         # Switching to random Practice name from default set context, main page
