@@ -3773,6 +3773,7 @@ def training_resources(driver, workbook, logger, screenshot_path, run_from):
 def patient_timeline(driver, workbook, logger, screenshot_path, run_from):
     x=0
 
+
 def sticket_validation(driver, workbook, logger, screenshot_path, run_from, customer_id):
     def validate_all_columns(list1):
         result = all(element == list1[0] for element in list1)
