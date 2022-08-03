@@ -19,6 +19,8 @@ if __name__ == '__main__':
 
 
     def performGlobalSearch(username, keywords):
+        for keyword in keywords:
+
 
 
 
