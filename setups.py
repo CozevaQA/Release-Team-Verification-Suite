@@ -186,6 +186,9 @@ def login_to_user(Username):
         driver.find_element_by_xpath("//button[@id='edit-submit']").click()
         time.sleep(1)
         sf.ajax_preloader_wait(driver)
+        if len(driver.find_elements_by_xpath(locator.xpath_skip_button)) != 0:
+            driver.find_element_by_xpath(locator.xpath_skip_button).click()
+            sf.ajax_preloader_wait(driver)
         print("Masqueraded to user's context")
         #logger.info("Masqueraded to user's context")
 

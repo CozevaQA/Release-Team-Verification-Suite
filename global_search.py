@@ -1,3 +1,10 @@
+import time
+import traceback
+
+from openpyxl.styles import Font, PatternFill
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+
 import setups
 import logging
 import ExcelProcessor as db
@@ -7,19 +14,108 @@ import setups as st
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import variablestorage as locator
-import openpyxl
+from openpyxl import Workbook, load_workbook
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
+    ElementClickInterceptedException, TimeoutException
+
+ENV = 'CERT'
+
+
+def performGlobalSearch(role, username, keywords, driver, testID):
+    print(username)
+
+    for keyword in keywords:
+        try:
+            registry_url=driver.current_url
+            window_switched = 0
+            driver.find_element_by_id('globalsearch_input').send_keys(keyword)
+            start_time = time.perf_counter()
+            WebDriverWait(driver, 45).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
+            driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+            # time.sleep(0.25)
+            # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 45).until(EC.presence_of_element_located((By.ID, 'search_all')))
+            time_taken = round(time.perf_counter() - start_time - 2, 2)
+            search_text = driver.find_element_by_id("search_all").text
+            if 'No results' in search_text:
+                ws1.append((testID, role, username, keyword, time_taken, "No results"))
+            else:
+                ws1.append((testID, role, username, keyword, time_taken))
+
+        except (NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, TimeoutException) as e:
+            traceback.print_exc()
+            ws1.append((testID, role, username, keyword, 'x', "Exception occured: "+str(e)))
+
+        testID += 1
+        driver.get(registry_url)
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 45).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
+
+
 if __name__ == '__main__':
     print("Hello World")
     driver = setups.driver_setup()
-    setups.login_to_cozeva()
+    setups.login_to_cozeva_cert()
     sf.ajax_preloader_wait(driver)
 
-    excel_path = ""
+    #excel_path = ""
+
+    wb = load_workbook("assets\\GlobalSearch.xlsx")
+    ws = wb[ENV]
+    sheet_rows = ws.rows
+    users = []
+    keywords_list = []
+    roles = []
+    for cellval in sheet_rows:
+        users.append(cellval[0].value.strip())
+        keywords_list.append(cellval[1].value.strip().split(';'))
+        roles.append(cellval[2].value.strip())
+
+    # for user in users:
+    #     print(user)
+    #
+    # for keyword in keywords_list:
+    #     print(keyword)
+
+    wb1 = Workbook()
+    ws1 = wb1.active
+    ws1.title = 'Global Search ' + ENV
+
+    ws1.append(['ID', 'ROLE', 'USERNAME', 'KEYWORD', 'TIME TAKEN', 'COMMENTS'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws1['A1'].font = header_font
+    ws1['A1'].fill = header_cell_color
+    ws1['B1'].font = header_font
+    ws1['B1'].fill = header_cell_color
+    ws1['C1'].font = header_font
+    ws1['C1'].fill = header_cell_color
+    ws1['D1'].font = header_font
+    ws1['D1'].fill = header_cell_color
+    ws1['E1'].font = header_font
+    ws1['E1'].fill = header_cell_color
+    ws1['F1'].font = header_font
+    ws1['F1'].fill = header_cell_color
+    ws1.name = "Arial"
+    test_case_id = 1
+
+    for user, keywords, role in zip(users, keywords_list, roles):
+        setups.login_to_user(user)
+        performGlobalSearch(role, user, keywords, driver, test_case_id)
+        wb1.save(locator.parent_dir+'GlobalSearch.xlsx')
+        setups.switch_back()
 
 
 
-    def performGlobalSearch(username, keywords):
-        for keyword in keywords:
+
+
+
+
+
 
 
 
