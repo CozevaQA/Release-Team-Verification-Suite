@@ -5,7 +5,7 @@ try:
 except IndexError as e:
     import FirstTimeSetup
 
-# Aritra Da Push test
+# Kaushik da test
 
 
 import guiwindow
