@@ -43,6 +43,7 @@ xpath_registry_Measures="//div[@class='qt-metric']/a"
 xpath_patient_Toggle="(//ul[@id='qt-mt-support-ls']/li[@class='tab']/a)[contains(text(),'Patients')]"
 xpath_patients_Toggle_Patient_Links="//td[@class=' msg_pat_name']/div/a[contains(@href,'/patient_detail/')]"
 xpath_provider_Toggle_Provider_Links="//table[@id='metric-support-prov-ls']/tbody/tr/td/a[contains(@href,'/registries?')]"
+xpath_skip_button="//button[@value='Skip']"
 
 #css_selectors
 
