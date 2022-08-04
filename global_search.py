@@ -58,9 +58,20 @@ def performGlobalSearch(role, username, keywords, driver, testID):
 
 if __name__ == '__main__':
     print("Hello World")
+    file = str(sf.date_time())+"_GlobalSearch.xlsx"
     driver = setups.driver_setup()
-    setups.login_to_cozeva_cert()
+    if ENV == 'CERT':
+        setups.login_to_cozeva_cert()
+    elif ENV == 'STAGE':
+        setups.login_to_cozeva_stage()
+    elif ENV == "PROD":
+        setups.login_to_cozeva()
+    else:
+        print("ENV INVALID")
+        exit(3)
+
     sf.ajax_preloader_wait(driver)
+
 
     #excel_path = ""
 
@@ -105,10 +116,26 @@ if __name__ == '__main__':
 
     for user, keywords, role in zip(users, keywords_list, roles):
         setups.login_to_user(user)
+        setups.switch_to_registries()
         performGlobalSearch(role, user, keywords, driver, test_case_id)
-        wb1.save(locator.parent_dir+'GlobalSearch.xlsx')
+        wb1.save(locator.parent_dir+file)
         setups.switch_back()
 
+    rows = ws1.max_row
+    cols = ws1.max_column
+    for i in range(2, rows + 1):
+        for j in range(5, cols + 1):
+            try:
+                dum = int(ws1.cell(i, j).value)
+            except Exception as e:
+                continue
+            if int(ws1.cell(i, j).value) < 8:
+                ws1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif int(ws1.cell(i, j).value) > 20:
+                ws1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif int(ws1.cell(i, j).value) >= 8:
+                ws1.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+    wb1.save(locator.parent_dir + file)
 
 
 
