@@ -19,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'PROD'
+ENV = 'STAGE'
 
 
 def performGlobalSearch(role, username, keywords, driver, testID):
@@ -31,7 +31,7 @@ def performGlobalSearch(role, username, keywords, driver, testID):
             window_switched = 0
             driver.find_element_by_id('globalsearch_input').send_keys(keyword)
             start_time = time.perf_counter()
-            WebDriverWait(driver, 45).until(
+            WebDriverWait(driver, 90).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
             driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
             # time.sleep(0.25)
