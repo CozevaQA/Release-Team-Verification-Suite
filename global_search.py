@@ -27,22 +27,31 @@ def performGlobalSearch(role, username, keywords, driver, testID):
 
     for keyword in keywords:
         try:
+            print(keyword)
             registry_url=driver.current_url
             window_switched = 0
             driver.find_element_by_id('globalsearch_input').send_keys(keyword)
             start_time = time.perf_counter()
             #WebDriverWait(driver, 90).until(
             #   EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
+            # WebDriverWait(driver, 90).until(
+            #     EC.presence_of_element_located((By.ID, "search_results")))
             WebDriverWait(driver, 90).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "collection-header, search_results")))
+                EC.presence_of_element_located((By.XPATH, '//*[@id="search_results"]/li')))
             search_text = ""
-            search_text = driver.find_elements_by_id("search_results")[0].text
-            if "No Results" in search_text:
-                time_taken = round(time.perf_counter() - start_time - 2, 2)
-                ws.append((testID, role, username, keyword, time_taken, "No results"))
+            search_text = driver.find_element_by_id("search_results").text
+            print(search_text)
+            if "No results" in search_text:
+                time_taken = round(time.perf_counter() - start_time, 2)
+                ws1.append((testID, role, username, keyword, time_taken, "No results"))
                 testID+=1
+                driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
+                WebDriverWait(driver, 45).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
                 continue
             else:
+                print("enter press")
                 driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
                 # time.sleep(0.25)
                 # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
