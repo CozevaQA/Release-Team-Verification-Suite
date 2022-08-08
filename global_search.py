@@ -31,9 +31,12 @@ def performGlobalSearch(role, username, keywords, driver, testID):
             window_switched = 0
             driver.find_element_by_id('globalsearch_input').send_keys(keyword)
             start_time = time.perf_counter()
+            #WebDriverWait(driver, 90).until(
+            #   EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
             WebDriverWait(driver, 90).until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
-            search_text = driver.find_element_by_id("search_results").text
+                EC.presence_of_element_located((By.CLASS_NAME, "collection-header, search_results")))
+            search_text = ""
+            search_text = driver.find_elements_by_id("search_results")[0].text
             if "No Results" in search_text:
                 time_taken = round(time.perf_counter() - start_time - 2, 2)
                 ws.append((testID, role, username, keyword, time_taken, "No results"))
