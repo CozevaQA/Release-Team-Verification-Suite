@@ -33,17 +33,24 @@ def performGlobalSearch(role, username, keywords, driver, testID):
             start_time = time.perf_counter()
             WebDriverWait(driver, 90).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
-            driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
-            # time.sleep(0.25)
-            # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
-            sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 45).until(EC.presence_of_element_located((By.ID, 'search_all')))
-            time_taken = round(time.perf_counter() - start_time - 2, 2)
-            search_text = driver.find_element_by_id("search_all").text
-            if 'No results' in search_text:
-                ws1.append((testID, role, username, keyword, time_taken, "No results"))
+            search_text = driver.find_element_by_id("search_results").text
+            if "No Results" in search_text:
+                time_taken = round(time.perf_counter() - start_time - 2, 2)
+                ws.append((testID, role, username, keyword, time_taken, "No results"))
+                testID+=1
+                continue
             else:
-                ws1.append((testID, role, username, keyword, time_taken))
+                driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+                # time.sleep(0.25)
+                # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+                sf.ajax_preloader_wait(driver)
+                WebDriverWait(driver, 45).until(EC.presence_of_element_located((By.ID, 'search_all')))
+                time_taken = round(time.perf_counter() - start_time - 2, 2)
+                search_text = driver.find_element_by_id("search_all").text
+                if 'No results' in search_text:
+                    ws1.append((testID, role, username, keyword, time_taken, "No results"))
+                else:
+                    ws1.append((testID, role, username, keyword, time_taken))
 
         except (NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, TimeoutException) as e:
             traceback.print_exc()
