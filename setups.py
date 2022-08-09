@@ -258,6 +258,8 @@ def switch_to_registries():
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
             sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 45).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
         except Exception as e:
             traceback.print_exc()
