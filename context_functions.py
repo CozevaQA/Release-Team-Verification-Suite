@@ -2165,7 +2165,7 @@ def provider_mspl(driver, workbook, logger, run_from):
             traceback.print_exc()
             logger.critical("Unable to click on a metric from the provider dashboard")
             ws.append(
-                [test_case_id, selected_provider.text, "Attempting to click on metric in dashboard: " + selected_metric_name,
+                [test_case_id, selected_provider, "Attempting to click on metric in dashboard: " + selected_metric_name,
                  'Failed', '', 'Unable to click on metric'])
             test_case_id += 1
             if window_switched == 1:
