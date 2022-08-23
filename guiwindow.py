@@ -236,11 +236,11 @@ def launchgui():
 
     def create_NL_checklist():
         if all_navigation_var.get() == 1:
-            #checklist[0] = 1
-            #checklist[1] = 1
-            #checklist[2] = 1
-            #checklist[4] = 1
-            #checklist[5] = 1
+            checklist[0] = 1
+            checklist[1] = 1
+            checklist[2] = 1
+            checklist[4] = 1
+            checklist[5] = 1
             checklist[28] = 1
         checklist[14] = LoB_Measure_var.get()
         checklist[15] = provider_tab_var.get()
