@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime, time
 import random
 
@@ -5,9 +6,11 @@ import pytz
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
+    ElementClickInterceptedException
 import time
 import py_compile
+
 
 
 def date_time():
@@ -98,3 +101,45 @@ def check_exists_by_id(driver, id):
     except NoSuchElementException:
         return False
     return True
+
+def action_click(element, driver):
+    try:
+        element.click()
+    except (ElementNotInteractableException, ElementClickInterceptedException):
+        driver.execute_script("arguments[0].click();", element)
+
+
+def captureScreenshot(driver, page_title, screenshot_path):
+
+    try:
+        date = datetime.now().strftime('%H_%M_%S_%p')
+
+        bad_chars = [';', ':', '|', ' ']
+        for i in bad_chars:
+            final_title_text = page_title.replace(i, '_')
+
+        driver.save_screenshot(screenshot_path + "/" + final_title_text + "_" + str(date) + ".png")
+        #driver.save_screenshot(screenshot_path + "/" + page_title + "_" + str(date) + ".png")
+
+    except Exception as e:
+        print(e)
+
+def URLAccessCheck(targetpath,driver):
+    current_url = targetpath
+    access_message = CheckAccessDenied(current_url)
+    if access_message == 1:
+        print("Access Denied found!")
+        return True
+    else:
+        print("Access Check done!")
+        error_message = CheckErrorMessage(driver)
+        if error_message == 1:
+            print("Error toast message is displayed")
+            return True
+            # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
+        else:
+            return False
+
+def get_patient_id(href):
+    cozeva_id = re.search('/patient_detail/(.*)?session', href)
+    return (cozeva_id.group(1).replace("?", ""))

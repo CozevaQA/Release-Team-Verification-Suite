@@ -5,7 +5,10 @@ try:
 except IndexError as e:
     import FirstTimeSetup
 
+
+# Pull
 # Kaushik da test
+
 
 
 import guiwindow
@@ -15,21 +18,24 @@ if __name__ == '__main__':
     print("Hello World")
     guiwindow.launchgui()
     print(guiwindow.verification_specs)
+    launchstyle= "Def"
+    if 'NC' in guiwindow.verification_specs[0]:
+        launchstyle = "NC"
+    print(launchstyle)
     if guiwindow.verification_specs[0] == 'Name' or guiwindow.verification_specs[0] == 'Customer' and guiwindow.verification_specs[4][13] == 0:
         exit(9)
     if guiwindow.verification_specs[4][13] == 1:
         import runner
-        #ugh how this work
-        #testing testing
-
-
         exit(45)
     driver_created = 0
     setups.driver_setup()
     driver_created = 1
     setups.login_to_cozeva()
     if guiwindow.verification_specs[2] == "Onshore":
-        setups.cozeva_support()
+        if launchstyle == "Def":
+            setups.cozeva_support()
+        elif launchstyle == "NC":
+            setups.new_launch()
     elif guiwindow.verification_specs[2] == "Offshore":
         roleset = guiwindow.verification_specs[3]
         for roles in roleset:
@@ -56,6 +62,10 @@ if __name__ == '__main__':
 
 if driver_created == 1:
     setups.driver.quit()
+    #x=0
+
+
+
 
 
 
