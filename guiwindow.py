@@ -8,9 +8,10 @@ from selenium import webdriver
 import ExcelProcessor as db
 import Schema_processor as sp
 
-checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
+#verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 
@@ -52,6 +53,21 @@ def launchgui():
     11 = Analytics
     12 = Accordion Verification
     13 = Analytics Full
+    14 = Measure Validation LOBwise
+    15 = Metric Specific Provider List
+    16 = Cozeva Market sheet( Check default LoB and default CE from mastersheet, Customer name too and CE on/off score change)
+    17 = Check patient Medications
+    18 = Mark as pending
+    19 = Apptray access check
+    20 = Training/Resources tab
+    21 = Userlist and User creation dropdown
+    22 = Banner/announcement
+    23 = CE Toggle States
+    24 = Sticket and contact Log
+    25 = Patient Dashboard and Timeline Redirection
+    26 = Coding tool
+    27 = Denominator Eligblity for CBP/HbA1c
+    28 = Group1/2 sidemenus
 
 
     """
@@ -65,7 +81,7 @@ def launchgui():
     input_frame_2 = Frame(root)
     input_frame_3 = Frame(root)
     Analytics_frame = Frame(root)
-    Analytics_options_frame = Frame(root)
+    new_launch_frame = Frame(root)
 
 
     #local function to delete frame content
@@ -74,6 +90,7 @@ def launchgui():
         input_frame_2.pack_forget()
         input_frame_3.pack_forget()
         Analytics_frame.pack_forget()
+        new_launch_frame.pack_forget()
 
 
     def frame1next():
@@ -106,6 +123,9 @@ def launchgui():
             default_usernames = db.getDefaultUserNames(selected_cust.get())
             input_frame_2.pack()
             insert_into_entrybox(default_usernames)
+        if config_var.get() == 2 and app_config_var.get() != 1:
+            remove_frames()
+            new_launch_frame.pack()
         if app_config_var.get() == 1 and config_var.get() == 1:
             remove_frames()
             checklist[13] = 1
@@ -145,6 +165,13 @@ def launchgui():
     def frame3prev():
         remove_frames()
         input_frame_2.pack()
+
+    def nlnext():
+        create_NL_checklist()
+        verification_specs[4] = checklist
+        verification_specs[1] = str(NL_custID.get())
+        verification_specs[0] = "NC_"+verification_specs[1]
+        root.destroy()
 
     def delete_from_entrybox():
         limited_cozeva_support_textbox.delete(0, 'end')
@@ -207,6 +234,31 @@ def launchgui():
         checklist[10] = secure_messaging_var.get()
         checklist[12] = accordion_verification_var.get()
 
+    def create_NL_checklist():
+        if all_navigation_var.get() == 1:
+            checklist[0] = 1
+            checklist[1] = 1
+            checklist[2] = 1
+            checklist[4] = 1
+            checklist[5] = 1
+            checklist[28] = 1
+        checklist[14] = LoB_Measure_var.get()
+        checklist[15] = provider_tab_var.get()
+        checklist[16] = market_sheet_var.get()
+        checklist[17] = patient_medication_var.get()
+        checklist[18] = MaP_var.get()
+        checklist[19] = apptray_var.get()
+        checklist[20] = train_resource_var.get()
+        checklist[21] = userlist_var.get()
+        checklist[22] = banner_announce_var.get()
+        checklist[23] = ce_toggle_var.get()
+        checklist[12] = NL_accordion_verification_var.get()
+        checklist[7] = NL_global_search_var.get()
+        checklist[24] = sticket_var.get()
+        checklist[25] = NL_patient_dashboard_var.get()
+        checklist[26] = coding_tool_var.get()
+        checklist[27] = denom_eligibility_var.get()
+
     def select_all():
         if select_var.get() == 1:
             support_sidemenu_checkbox.select()
@@ -234,6 +286,44 @@ def launchgui():
             time_capsule.deselect()
             secure_messaging_checkbox.deselect()
             accordion_verification_checkbox.deselect()
+
+    def NL_select_all():
+        if NL_select_var.get() == 1:
+            all_navigation_checkbox.select()
+            #LoB_Measure_checkbox.select()
+            provider_tab_checkbox.select()
+            market_sheet_checkbox.select()
+            patient_medication_checkbox.select()
+            MaP_checkbox.select()
+            apptray_checkbox.select()
+            train_resource_checkbox.select()
+            #userlist_checkbox.select()
+            #banner_announce_checkbox.select()
+            ce_toggle_checkbox.select()
+            NL_accordion_verification_checkbox.select()
+            NL_global_search_checkbox.select()
+            sticket_checkbox.select()
+            NL_patient_dashboard_checkbox.select()
+            coding_tool_checkbox.select()
+            #denom_eligibility_checkbox.select()
+        elif NL_select_var.get() == 0:
+            all_navigation_checkbox.deselect()
+            #LoB_Measure_checkbox.deselect()
+            provider_tab_checkbox.deselect()
+            market_sheet_checkbox.deselect()
+            patient_medication_checkbox.deselect()
+            MaP_checkbox.deselect()
+            apptray_checkbox.deselect()
+            train_resource_checkbox.deselect()
+            #userlist_checkbox.deselect()
+            #banner_announce_checkbox.deselect()
+            ce_toggle_checkbox.deselect()
+            NL_accordion_verification_checkbox.deselect()
+            NL_global_search_checkbox.deselect()
+            sticket_checkbox.deselect()
+            NL_patient_dashboard_checkbox.deselect()
+            coding_tool_checkbox.deselect()
+            #denom_eligibility_checkbox.deselect()
 
     def cozeva_radio():
         Checkbox_cozeva.config(state="active")
@@ -270,6 +360,7 @@ def launchgui():
     config_var = IntVar()
     radiobutton_default = Radiobutton(input_frame_1, text="Default Configuration", variable=config_var, value=0, font=("Nunito Sans", 10))
     radiobutton_illchoose = Radiobutton(input_frame_1, text="I'll choose", variable=config_var, value=1, font=("Nunito Sans", 10))
+    radiobutton_newcustomer = Radiobutton(input_frame_1, text="Customer Launch config", variable=config_var, value=2, font=("Nunito Sans", 10))
     window_location_label = Label(input_frame_1, text="Select the screen for the testing window", font=("Nunito Sans", 10))
     window_location_var = IntVar()
     radiobutton_window_left = Radiobutton(input_frame_1, text="Left", variable=window_location_var, value=1, font=("Nunito Sans", 10))
@@ -343,6 +434,47 @@ def launchgui():
                                             font=("Nunito Sans", 10))
     nextbutton3 = Button(input_frame_3, text="Start Automated Test", command=frame3next, font=("Nunito Sans", 10))
     prevbutton3 = Button(input_frame_3, text="Go Back", command=frame3prev, font=("Nunito Sans", 10))
+
+    #widgets for new_launch_frame
+    new_launch_frame_label = Label(new_launch_frame, text="Select Scope of Test", font=("Nunito Sans", 10))
+    all_navigation_var = IntVar()
+    all_navigation_checkbox = Checkbutton(new_launch_frame, text="Validate Multi-Context Navigation", variable=all_navigation_var, font=("Nunito Sans", 10))
+    LoB_Measure_var = IntVar()
+    LoB_Measure_checkbox =  Checkbutton(new_launch_frame, text="Validate Measures LoB-wise", variable=LoB_Measure_var, font=("Nunito Sans", 10))
+    provider_tab_var = IntVar()
+    provider_tab_checkbox = Checkbutton(new_launch_frame, text="Validate Metric Specific Provider List", variable=provider_tab_var, font=("Nunito Sans", 10))
+    market_sheet_var = IntVar()
+    market_sheet_checkbox = Checkbutton(new_launch_frame, text="Validate Market Sheet Contents", variable=market_sheet_var, font=("Nunito Sans", 10))
+    patient_medication_var = IntVar()
+    patient_medication_checkbox = Checkbutton(new_launch_frame, text="Validate Patient Medication", variable=patient_medication_var, font=("Nunito Sans", 10))
+    MaP_var = IntVar()
+    MaP_checkbox = Checkbutton(new_launch_frame, text="Validate Mark as Pending", variable=MaP_var, font=("Nunito Sans", 10))
+    apptray_var = IntVar()
+    apptray_checkbox = Checkbutton(new_launch_frame, text="Validate Apptray Access", variable=apptray_var, font=("Nunito Sans", 10))
+    train_resource_var = IntVar()
+    train_resource_checkbox = Checkbutton(new_launch_frame, text="Validate Training/Resources Page", variable=train_resource_var, font=("Nunito Sans", 10))
+    userlist_var = IntVar()
+    userlist_checkbox = Checkbutton(new_launch_frame, text="Validate Userlist and User Creation", variable=userlist_var, font=("Nunito Sans", 10))
+    banner_announce_var = IntVar()
+    banner_announce_checkbox = Checkbutton(new_launch_frame, text="Validate Banners/Announcements", variable=banner_announce_var, font=("Nunito Sans", 10))
+    ce_toggle_var = IntVar()
+    ce_toggle_checkbox = Checkbutton(new_launch_frame, text="Validate CE Toggle States", variable=ce_toggle_var, font=("Nunito Sans", 10))
+    NL_accordion_verification_var = IntVar()
+    NL_accordion_verification_checkbox = Checkbutton(new_launch_frame, text="Validate Support Level Accordion Measures", variable=NL_accordion_verification_var, font=("Nunito Sans", 10))
+    NL_global_search_var = IntVar()
+    NL_global_search_checkbox = Checkbutton(new_launch_frame, text="Validate Global Search", variable=NL_global_search_var, font=("Nunito Sans", 10))
+    sticket_var = IntVar()
+    sticket_checkbox = Checkbutton(new_launch_frame, text="Validate Sticket Logs", variable=sticket_var, font=("Nunito Sans", 10))
+    NL_patient_dashboard_var = IntVar()
+    NL_patient_dashboard_checkbox = Checkbutton(new_launch_frame, text="Validate Patient Dashboard and Timeline", variable=NL_patient_dashboard_var, font=("Nunito Sans", 10))
+    coding_tool_var = IntVar()
+    coding_tool_checkbox = Checkbutton(new_launch_frame, text="Validate Coding tool", variable=coding_tool_var, font=("Nunito Sans", 10))
+    denom_eligibility_var = IntVar()
+    denom_eligibility_checkbox = Checkbutton(new_launch_frame, text="Validate Denominator Eligibility for CBP/HbA1c Measures", variable=denom_eligibility_var, font=("Nunito Sans", 10))
+    NL_select_var = IntVar()
+    NL_select_checkbox = Checkbutton(new_launch_frame, text="Select All", variable=NL_select_var, command=NL_select_all, font=("Nunito Sans", 10))
+    NL_next_button = Button(new_launch_frame, text="Begin Test", command=nlnext, font=("Nunito Sans", 10))
+    NL_custID = Entry(new_launch_frame, text="Customer ID")
 
     def buildExistingSchema():
         global grid_row
@@ -453,6 +585,7 @@ def launchgui():
     Checkbox_analytics.grid(row=5, column=2, sticky="e")
     config_analytics.grid(row=6, column=2, sticky='w')
     radiobutton_illchoose.grid(row=4, column=4, sticky="w")
+    radiobutton_newcustomer.grid(row=5, column=4, sticky="w")
     window_location_label.grid(row=7, column=0, columnspan=5)
     radiobutton_window_left.grid(row=8, column=2, sticky="e")
     radiobutton_window_right.grid(row=8, column=3, sticky="w")
@@ -496,6 +629,33 @@ def launchgui():
     nextbutton3.grid(row=14, column=3)
     prevbutton3.grid(row=14, column=0)
 
+    # pack elements into new_launch_frame
+    new_launch_frame_label.grid(row=0, column=0, columnspan=5)
+    NL_select_checkbox.grid(row=1, column=0, columnspan=5, sticky="w")
+    all_navigation_checkbox.grid(row=2, column=0, columnspan=5, sticky="w")
+    LoB_Measure_checkbox.grid(row=3, column=0, columnspan=5, sticky="w")
+    LoB_Measure_checkbox.config(state='disabled')
+    provider_tab_checkbox.grid(row=4, column=0, columnspan=5, sticky="w")
+    market_sheet_checkbox.grid(row=5, column=0, columnspan=5, sticky="w")
+    patient_medication_checkbox.grid(row=6, column=0, columnspan=5, sticky="w")
+    MaP_checkbox.grid(row=7, column=0, columnspan=5, sticky="w")
+    apptray_checkbox.grid(row=8, column=0, columnspan=5, sticky="w")
+    train_resource_checkbox.grid(row=9, column=0, columnspan=5, sticky="w")
+    userlist_checkbox.grid(row=10, column=0, columnspan=5, sticky="w")
+    userlist_checkbox.config(state='disabled')
+    banner_announce_checkbox.grid(row=11, column=0, columnspan=5, sticky="w")
+    banner_announce_checkbox.config(state='disabled')
+    ce_toggle_checkbox.grid(row=12, column=0, columnspan=5, sticky="w")
+    NL_accordion_verification_checkbox.grid(row=13, column=0, columnspan=5, sticky="w")
+    NL_global_search_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
+    sticket_checkbox.grid(row=15, column=0, columnspan=5, sticky="w")
+    NL_patient_dashboard_checkbox.grid(row=16, column=0, columnspan=5, sticky="w")
+    #coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
+    denom_eligibility_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
+    denom_eligibility_checkbox.config(state='disabled')
+    NL_custID.grid(row=18, column=0, columnspan=5)
+    NL_next_button.grid(row=19, column=0, columnspan=5)
+
 
     #packing frame 1 into root
     input_frame_1.pack()
@@ -531,6 +691,6 @@ def launchgui():
 
 
 
-
+#launchgui()
 
 
