@@ -108,6 +108,28 @@ def login_to_cozeva_cert():
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     print("Logged in to Cozeva!")
 
+def login_to_cozeva_stage():
+    driver.get(locator.logout_link_stage)
+    driver.get(locator.login_link_stage)
+    driver.maximize_window()
+    file = open(r"assets\loginInfo.txt", "r+")
+    global details
+    details = file.readlines()
+    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
+    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    file.seek(0)
+    file.close()
+    driver.find_element_by_id("edit-submit").click()
+    time.sleep(2)
+    WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
+    time.sleep(0.5)
+    driver.find_element_by_id("edit-submit").click()
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    print("Logged in to Cozeva!")
+
 
 def switch_customer_context(cusID):
     try:
@@ -236,6 +258,8 @@ def switch_to_registries():
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
             sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 45).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
         except Exception as e:
             traceback.print_exc()
@@ -243,6 +267,7 @@ def switch_to_registries():
             return
 
     else:
+        print("in registries")
         return
 
 def generate_summary(wb):
