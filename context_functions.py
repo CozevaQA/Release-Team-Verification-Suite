@@ -3444,6 +3444,7 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
     main_registry = driver.current_url
     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     try:
+        window_switched = 0
         driver.find_element_by_id("qt-filter-label").click()
         time.sleep(1)
         lobs = driver.find_element_by_id("filter-lob").find_elements_by_tag_name('li')
@@ -3756,7 +3757,7 @@ def training_resources(driver, workbook, logger, screenshot_path, run_from):
     try:
         driver.find_element_by_xpath(locator.xpath_resources_link).click()
         time.sleep(1)
-        driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")[0].click()
+        driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")[1].click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_resources_page_prac_sup)))
         sf.captureScreenshot(driver, 'Resources Page', screenshot_path)
