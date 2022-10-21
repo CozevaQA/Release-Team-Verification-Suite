@@ -326,8 +326,9 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 percent = selectedMetric.find_element_by_class_name('percent').text
         print("Found a Suitable Metric to click on")
         print("Attempting to click on " + selectedMetric.text)
-        driver.execute_script("arguments[0].scrollIntoView();", selectedMetric)
-        selectedMetric.click()
+        #driver.execute_script("arguments[0].scrollIntoView();", selectedMetric)
+        #selectedMetric.click()
+        sf.action_click(selectedMetric, driver)
         print("Click Performed")
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -2602,7 +2603,7 @@ def click_on_each_metric(customer, driver, workbook, path):
     while i < len(metrics):
         print(metrics[i].text)
         try:
-            driver.execute_script("arguments[0].scrollIntoView();", metrics[i])
+            #driver.execute_script("arguments[0].scrollIntoView();", metrics[i])
             metrics[i].click()
             start = time.perf_counter()
             sf.ajax_preloader_wait(driver)
@@ -5121,7 +5122,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                     WebDriverWait(driver, 60).until(
                         EC.presence_of_element_located((By.XPATH, "//a[@id='reg-faq-trigger']")))
                     time.sleep(0.5)
-                    driver.execute_script("arguments[0].scrollIntoView();", measures_all[measure_counter])
+                    #driver.execute_script("arguments[0].scrollIntoView();", measures_all[measure_counter])
                     measure_name = (measures_all[measure_counter]).text
                     print("Measure name: ", measure_name)
                     numdeno = scores[score].text
