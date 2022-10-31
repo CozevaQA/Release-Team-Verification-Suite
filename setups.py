@@ -222,6 +222,8 @@ def login_to_user(Username):
 
 def switch_back():
     try:
+        WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_switch_back)))
         driver.find_element_by_xpath(locator.xpath_switch_back).click()
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_switch_back2)))
