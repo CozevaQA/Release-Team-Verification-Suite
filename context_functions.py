@@ -317,7 +317,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         print("Provider Registry metrics loaded into a variable")
         percent = '0.00'
-        while percent == '0.00' or percent == '0.00%':
+        while percent == '0.00' or percent == '0.00 %':
             if len(metrics) > 1:
                 selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
                 percent = selectedMetric.find_element_by_class_name('percent').text
@@ -724,8 +724,11 @@ def provider_registry(driver, workbook, logger, run_from):
                     EC.presence_of_element_located((By.ID, "all_patients")))
                 patient_elements = driver.find_element_by_id("all_patients").find_element_by_tag_name(
                     'tbody').find_elements_by_tag_name('tr')
-                patient_elements[sf.RandomNumberGenerator(len(patient_elements), 1)[0]].find_element_by_class_name(
-                    'pat_name').click()
+                if len(patient_elements) > 1:
+                    patient_elements[sf.RandomNumberGenerator(len(patient_elements), 1)[0]].find_element_by_class_name(
+                        'pat_name').click()
+                else:
+                    patient_elements[0].find_element_by_class_name('pat_name').click()
                 driver.switch_to.window(driver.window_handles[1])
                 start_time = time.perf_counter()
                 sf.ajax_preloader_wait(driver)
