@@ -3103,12 +3103,12 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 except Exception as e:
                     print(e)
 
-                time.sleep(1)
-                LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
-                LOBdropdownelement.click()
-                time.sleep(1)
-                LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
-                LOBnamelist = LOBname.find_elements_by_tag_name("li")
+            time.sleep(1)
+            LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
+            LOBdropdownelement.click()
+            time.sleep(1)
+            LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
+            LOBnamelist = LOBname.find_elements_by_tag_name("li")
 
     except Exception as e:
         traceback.print_exc()
