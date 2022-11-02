@@ -144,7 +144,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                         print("Error toast message is displayed")
                         # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                         test_case_id += 1
-                        ws.append((test_case_id, context_name, link_name + ' without error message', 'Failed'))
+                        ws.append((test_case_id, context_name, link_name + ' without error message', 'Failed', driver.current_url))
                         logger.error(context_name + "-->" + link_name + ": " + "Error message found!")
                     else:
                         if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
@@ -173,7 +173,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 print(e)
                 traceback.print_exc()
                 test_case_id += 1
-                ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Failed'))
+                ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Failed', driver.current_url))
 
             finally:
                 links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
@@ -190,7 +190,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         print(e)
         traceback.print_exc()
         test_case_id += 1
-        ws.append((test_case_id, "", 'Menubar Navigation', 'Failed'))
+        ws.append((test_case_id, "", 'Menubar Navigation', 'Failed', driver.current_url))
 
     rows = ws.max_row
     cols = ws.max_column
@@ -231,7 +231,7 @@ def practice_menubar(driver, workbook, logger, run_from):
             selected_practice.click()
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
-                       "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied"])
+                       "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied", driver.current_url])
             print(e)
             traceback.print_exc()
             return
@@ -267,7 +267,7 @@ def provider_menubar(driver, workbook, logger, run_from):
             selected_provider.click()
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed',
-                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied"])
+                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied", driver.current_url])
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -385,7 +385,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
             # logger.critical("Access Denied found!")
             test_case_id += 1
             ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
-                       'Failed', 'x', 'Access Denied'))
+                       'Failed', 'x', 'Access Denied', driver.current_url))
 
         else:
             print("Access Check done!")
@@ -398,7 +398,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append \
                     ((test_case_id, patient_id, 'Navigation to dashboard page ',
-                      'Failed', 'x', 'Error toast message is displayed'))
+                      'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
             else:
                 measure_count_dashboard = len \
@@ -418,11 +418,11 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     if Pcp_Name == '-':
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
-                                   'Failed', 'x', "PCP Name is Blank"))
+                                   'Failed', 'x', "PCP Name is Blank", driver.current_url))
                     elif Pcp_Name == "N/A":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
-                                   'Failed', 'x', "PCP Name is NA"))
+                                   'Failed', 'x', "PCP Name is NA", driver.current_url))
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
@@ -431,11 +431,11 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     if Pcp_hover == "N/A, N/A, No Practice":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
-                                   'Failed', 'x', "PCP does not have Region/Panel Attribution"))
+                                   'Failed', 'x', "PCP does not have Region/Panel Attribution", driver.current_url))
                     elif Pcp_hover == "N/A, N/A, N/A":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
-                                   'Failed', 'x', "PCP does not have any attribution"))
+                                   'Failed', 'x', "PCP does not have any attribution", driver.current_url))
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
@@ -447,7 +447,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     traceback.print_exc()
                     test_case_id += 1
                     ws.append((test_case_id, patient_id, 'PCP hover',
-                               'Failed', 'x', "PCP Name is not present/Not interactable"))
+                               'Failed', 'x', "PCP Name is not present/Not interactable", driver.current_url))
 
                 # Aspy Edit ------------------------------------------------------------------------------------
                 # '''
@@ -488,7 +488,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         test_case_id += 1
                         ws.append((test_case_id,
                                    patient_id, 'Navigation to  ' + item_name,
-                                   'Failed', 'x', 'Access Denied'))
+                                   'Failed', 'x', 'Access Denied', driver.current_url))
 
                     else:
                         print("Access Check done!")
@@ -501,7 +501,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                             test_case_id += 1
                             ws.append((test_case_id,
                                        patient_id, 'Navigation to  ' + item_name,
-                                       'Failed', 'x', 'Error toast message is displayed'))
+                                       'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
                         else:
 
@@ -545,7 +545,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     test_case_id += 1
                     ws.append(
                         (test_case_id, patient_id, 'Navigation to Patient Info page',
-                         'Failed', total_time, 'Access Denied'))
+                         'Failed', total_time, 'Access Denied', driver.current_url))
 
                 else:
                     print("Access Check done!")
@@ -558,7 +558,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         test_case_id += 1
                         ws.append((test_case_id,
                                    patient_id, 'Navigation to Patient Info page',
-                                   'Failed', total_time, 'Error toast message is displayed'))
+                                   'Failed', total_time, 'Error toast message is displayed', driver.current_url))
 
                     else:
                         """ **** COVERAGE **** """
@@ -579,7 +579,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         elif coverage_number == 0:
                             test_case_id += 1
                             ws.append((test_case_id, patient_id + ": Patient Info-->Coverage", 'Failed', total_time,
-                                       'Number of Coverage card(s): ' + str(coverage_number)))
+                                       'Number of Coverage card(s): ' + str(coverage_number), driver.current_url))
 
                         """ **** PATIENT INFO **** """
                         WebDriverWait(driver, 30).until(
@@ -597,7 +597,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                             test_case_id += 1
                             ws.append((test_case_id, patient_id + ": Patient Info-->Care Team", 'Failed',
                                        'Number of Providers present in Care Team: ' + str
-                                       (careteam_provider_number)))
+                                       (careteam_provider_number), driver.current_url))
                         logger.info("Navigated to Patient Info.")
 
     except Exception as e:
@@ -668,7 +668,7 @@ def provider_registry(driver, workbook, logger, run_from):
         except Exception as e:
             ws.append([test_case_id, "Attempting to navigate to a random provider", 'Navigation to provider context',
                        'Failed', 'x',
-                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied"])
+                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied", driver.current_url])
             test_case_id += 1
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
@@ -699,7 +699,7 @@ def provider_registry(driver, workbook, logger, run_from):
             # logger.critical("Access Denied found!")
             test_case_id += 1
             ws.append((test_case_id, current_context, 'Navigation to all patients tab',
-                       'Failed', 'x', 'Access Denied'))
+                       'Failed', 'x', 'Access Denied', driver.current_url))
 
         else:
             print("Access Check done!")
@@ -712,7 +712,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append \
                     ((test_case_id, current_context, 'Navigation to all patients tab ',
-                      'Failed', 'x', 'Error toast message is displayed'))
+                      'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
             else:
                 test_case_id += 1
@@ -744,7 +744,7 @@ def provider_registry(driver, workbook, logger, run_from):
                     # logger.critical("Access Denied found!")
                     test_case_id += 1
                     ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
-                               'Failed', 'x', 'Access Denied'))
+                               'Failed', 'x', 'Access Denied', driver.current_url))
 
 
                 else:
@@ -758,7 +758,7 @@ def provider_registry(driver, workbook, logger, run_from):
                         test_case_id += 1
                         ws.append \
                             ((test_case_id, patient_id, 'Navigation to dashboard page ',
-                              'Failed', 'x', 'Error toast message is displayed'))
+                              'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
                     else:
                         measure_count_dashboard = len \
@@ -775,7 +775,7 @@ def provider_registry(driver, workbook, logger, run_from):
                         else:
                             test_case_id += 1
                             ws.append([test_case_id, patient_id, 'CareOps count present', 'Failed', 'x',
-                                       'Careops count not present'])
+                                       'Careops count not present', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
         driver.get(registry_url)
@@ -786,7 +786,7 @@ def provider_registry(driver, workbook, logger, run_from):
     except Exception as e:
         ws.append([test_case_id, "Provider registry navigation",
                    "Navigation to patient context through providers patients tab", 'Failed', 'x',
-                   'Unable to navigate to patients list/Patient dashboard'])
+                   'Unable to navigate to patients list/Patient dashboard', driver.current_url])
         test_case_id += 1
         print(e)
         traceback.print_exc()
@@ -861,7 +861,7 @@ def provider_registry(driver, workbook, logger, run_from):
             else:
                 test_case_id += 1
                 ws.append(
-                    [test_case_id, patient_id, 'CareOps count present', 'Failed', 'x', 'Careops count not present'])
+                    [test_case_id, patient_id, 'CareOps count present', 'Failed', 'x', 'Careops count not present', driver.current_url])
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
             driver.get(registry_url)
@@ -875,7 +875,7 @@ def provider_registry(driver, workbook, logger, run_from):
             traceback.print_exc()
             ws.append(
                 [test_case_id, patient_id, 'clicking on random patient from patient list of Provider\'s MSPL', 'Failed',
-                 '', 'Unable to click on a random patient from the MSPL'])
+                 '', 'Unable to click on a random patient from the MSPL', driver.current_url])
             if window_switched == 1:
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -887,7 +887,7 @@ def provider_registry(driver, workbook, logger, run_from):
 
     except Exception as e:
         ws.append([test_case_id, "Provider registry navigation", "Navigation to patient context through providers MSPL",
-                   'Failed', 'x', 'Unable to navigate to patients list'])
+                   'Failed', 'x', 'Unable to navigate to patients list', driver.current_url])
         test_case_id += 1
         print(e)
         traceback.print_exc()
@@ -960,7 +960,7 @@ def practice_registry(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
-                       "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied"])
+                       "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied", driver.current_url])
             driver.get(main_registry_url)
             print(e)
             traceback.print_exc()
@@ -1027,7 +1027,7 @@ def practice_registry(driver, workbook, logger, run_from):
                 ws.append(
                     [test_case_id, selected_provider_name,
                      "Navigation to provider registry through MSPL of a practice: " + selected_metric_name,
-                     'Failed', time_taken])
+                     'Failed', time_taken, driver.current_url])
                 test_case_id += 1
                 driver.get(registry_url)
 
@@ -1038,7 +1038,7 @@ def practice_registry(driver, workbook, logger, run_from):
             traceback.print_exc()
             ws.append(
                 [test_case_id, context_name, "Navigation to provider registry through MSPL of a practice", 'Failed', '',
-                 'Couldn\'t navigate into a random provider from the MSPL: ' + selected_metric_name])
+                 'Couldn\'t navigate into a random provider from the MSPL: ' + selected_metric_name, driver.current_url])
             test_case_id += 1
             driver.get(registry_url)
 
@@ -1047,7 +1047,7 @@ def practice_registry(driver, workbook, logger, run_from):
         traceback.print_exc()
         ws.append(
             [test_case_id, context_name, "Navigation to provider registry through MSPL of a practice", 'Failed', '',
-             'Couldn\'t navigate into a random metric from the provivdr registry'])
+             'Couldn\'t navigate into a random metric from the provivdr registry', driver.current_url])
         test_case_id += 1
         print(driver.current_url)
         driver.get(registry_url)
@@ -1096,14 +1096,14 @@ def practice_registry(driver, workbook, logger, run_from):
                 test_case_id += 1
             else:
                 ws.append([test_case_id, context_name,
-                           'Navigation to Performance Stats from Practice Metric : ' + selected_metric_name, 'Failed'])
+                           'Navigation to Performance Stats from Practice Metric : ' + selected_metric_name, 'Failed', driver.current_url])
                 test_case_id += 1
 
         except Exception as e:
             print(e)
             traceback.print_exc()
             ws.append([test_case_id, context_name, 'Navigation to Performance Stats from Practice MSPL', 'Failed', '',
-                       'Couldnt click on the performance tab of metric :' + selected_metric_name])
+                       'Couldnt click on the performance tab of metric :' + selected_metric_name, driver.current_url])
             test_case_id += 1
 
         try:
@@ -1145,7 +1145,7 @@ def practice_registry(driver, workbook, logger, run_from):
             else:
                 ws.append([test_case_id, selected_patient_name,
                            "Navigation to patient context through patient toggle of practice Metric Specific List",
-                           'Failed', time_taken])
+                           'Failed', time_taken, driver.current_url])
                 test_case_id += 1
                 if window_switched == 1:
                     driver.close()
@@ -1158,7 +1158,7 @@ def practice_registry(driver, workbook, logger, run_from):
             ws.append(
                 [test_case_id, context_name,
                  "Navigation to patient context through patient toggle of practice Metric Specific List", 'Failed', '',
-                 'Couldn\'t navigate into a random provider from the MSPL'])
+                 'Couldn\'t navigate into a random provider from the MSPL', driver.current_url])
             test_case_id += 1
             if window_switched == 1:
                 driver.close()
@@ -1173,7 +1173,7 @@ def practice_registry(driver, workbook, logger, run_from):
         ws.append(
             [test_case_id, context_name,
              "Navigation to patient context through patient toggle of practice Metric Specific List", 'Failed', '',
-             'Couldn\'t navigate into a random metric from the provivdr registry'])
+             'Couldn\'t navigate into a random metric from the provivdr registry', driver.current_url])
         test_case_id += 1
 
         driver.get(registry_url)
@@ -1210,7 +1210,7 @@ def practice_registry(driver, workbook, logger, run_from):
         else:
             ws.append([test_case_id, selected_provider_name,
                        'Navigation to provider registry through providers tab in of a practice', 'Failed',
-                       round(time_taken, 3)], 'Unable to locate filter element on provider\'s registry')
+                       round(time_taken, 3), 'Unable to locate filter element on provider\'s registry', driver.current_url])
             test_case_id += 1
             driver.get(registry_url)
 
@@ -1218,7 +1218,7 @@ def practice_registry(driver, workbook, logger, run_from):
         print(e)
         traceback.print_exc()
         ws.append([test_case_id, context_name, "Navigation to provider registry through providers tab in of a practice",
-                   'Failed', "", 'Unable to click on providers\' tab and navigate to their registry'])
+                   'Failed', "", 'Unable to click on providers\' tab and navigate to their registry', driver.current_url])
         test_case_id += 1
         driver.get(registry_url)
 
@@ -1321,7 +1321,7 @@ def support_level(driver, workbook, logger, run_from):
             else:
                 ws.append([test_case_id, selectedPracticeName,
                            'Nagivation to practice Registry from the practice tab of support MSPL: ' + selected_metric_name,
-                           'Failed', time_taken, 'Couldnt load into registry of a practice'])
+                           'Failed', time_taken, 'Couldnt load into registry of a practice', driver.current_url])
                 test_case_id += 1
                 driver.get(metric_url)
 
@@ -1329,7 +1329,7 @@ def support_level(driver, workbook, logger, run_from):
             ws.append([test_case_id, context_name,
                        'Navigation to a practice registry from the pratice tab of support MSPL :' + selected_metric_name,
                        'Failed', '',
-                       'Couldnt click on practice tab or a random practice name: ' + selectedPracticeName])
+                       'Couldnt click on practice tab or a random practice name: ' + selectedPracticeName, driver.current_url])
             test_case_id += 1
             print(e)
             traceback.print_exc()
@@ -1374,7 +1374,7 @@ def support_level(driver, workbook, logger, run_from):
             else:
                 ws.append([test_case_id, selectedProviderName,
                            'Nagivation to provider Registry from the provider tab of support MSPL: ' + selected_metric_name,
-                           'Failed', time_taken, 'Couldnt load into registry of a provider'])
+                           'Failed', time_taken, 'Couldnt load into registry of a provider', driver.current_url])
                 test_case_id += 1
                 driver.get(metric_url)
 
@@ -1384,7 +1384,7 @@ def support_level(driver, workbook, logger, run_from):
             ws.append([test_case_id, context_name,
                        'Navigation to a provider registry from the provider tab of support MSPL :' + selected_metric_name,
                        'Failed', '',
-                       'Couldnt click on provider tab or a random provider name: ' + selectedProviderName])
+                       'Couldnt click on provider tab or a random provider name: ' + selectedProviderName, driver.current_url])
             test_case_id += 1
             driver.get(metric_url)
 
@@ -1435,7 +1435,7 @@ def support_level(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append(
                     [test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
-                     'Failed', 'x', 'Careops count not present'])
+                     'Failed', 'x', 'Careops count not present', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(metric_url)
@@ -1446,7 +1446,7 @@ def support_level(driver, workbook, logger, run_from):
             traceback.print_exc()
             ws.append([test_case_id, context_name,
                        'Navigation to patient context from the patients tab of support MSPL :' + selected_metric_name,
-                       'Failed', '', 'Couldnt click on patient tab or a random patient : ' + patient_id])
+                       'Failed', '', 'Couldnt click on patient tab or a random patient : ' + patient_id, driver.current_url])
             test_case_id += 1
             driver.get(metric_url)
 
@@ -1468,21 +1468,21 @@ def support_level(driver, workbook, logger, run_from):
                 test_case_id += 1
             else:
                 ws.append([test_case_id, context_name,
-                           'Navigation to Performance Stats from Support Metric : ' + selected_metric_name, 'Failed'])
+                           'Navigation to Performance Stats from Support Metric : ' + selected_metric_name, 'Failed', driver.current_url])
                 test_case_id += 1
 
         except Exception as e:
             print(e)
             traceback.print_exc()
             ws.append([test_case_id, context_name, 'Navigation to Performance Stats from Practice MSPL', 'Failed', '',
-                       'Couldnt click on the performance tab of metric :' + selected_metric_name])
+                       'Couldnt click on the performance tab of metric :' + selected_metric_name, driver.current_url])
             test_case_id += 1
 
     except Exception as e:
         print(e)
         traceback.print_exc()
         ws.append([test_case_id, context_name, 'Navigation to Support MSPL', 'Failed', '',
-                   'Unable to click on a random metric: ' + selected_metric_name])
+                   'Unable to click on a random metric: ' + selected_metric_name, driver.current_url])
         test_case_id += 1
         driver.get(registry_url)
 
@@ -1558,7 +1558,7 @@ def global_search(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
-                ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', time_taken])
+                ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
@@ -1568,13 +1568,13 @@ def global_search(driver, workbook, logger, run_from):
             traceback.print_exc()
             if window_switched == 1:
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', '',
-                           'Unable to click on practice name from global search'])
+                           'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', '',
-                           'Unable to global search'])
+                           'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
 
     def performProvSearch():
@@ -1601,7 +1601,7 @@ def global_search(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
-                ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prov, 'Failed', time_taken])
+                ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prov, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
@@ -1611,13 +1611,13 @@ def global_search(driver, workbook, logger, run_from):
             traceback.print_exc()
             if window_switched == 1:
                 ws.append([test_case_id, 'Provider', 'Context set to: ' + global_search_prov, 'Failed', '',
-                           'Unable to click on practice name from global search'])
+                           'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
                 ws.append([test_case_id, 'Provider', 'Context set to: ' + global_search_prov, 'Failed', '',
-                           'Unable to global search'])
+                           'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
 
     def performPatSearch():
@@ -1645,7 +1645,7 @@ def global_search(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
-                ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', time_taken])
+                ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
@@ -1655,13 +1655,13 @@ def global_search(driver, workbook, logger, run_from):
             traceback.print_exc()
             if window_switched == 1:
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', '',
-                           'Unable to click on practice name from global search'])
+                           'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', '',
-                           'Unable to global search'])
+                           'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
@@ -1750,7 +1750,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed',
-                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied"])
+                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied", driver.current_url])
             print(e)
             traceback.print_exc()
             return
@@ -1805,14 +1805,14 @@ def provider_mspl(driver, workbook, logger, run_from):
                 else:
                     ws.append([test_case_id, global_search_prov,
                                'Navigation to Performance Stats from MSPL : ' + selected_metric_name,
-                               'Failed', '', 'Performance Ribbon Missing'])
+                               'Failed', '', 'Performance Ribbon Missing', driver.current_url])
                     test_case_id += 1
             except Exception as e:
                 print(e)
                 traceback.print_exc()
                 ws.append([test_case_id, global_search_prov,
                            'Navigation to Performance Stats from MSPL : ' + selected_metric_name,
-                           'Failed', '', 'Unable to click on performance Statistics tab'])
+                           'Failed', '', 'Unable to click on performance Statistics tab', driver.current_url])
                 test_case_id += 1
 
             # nav 2: Navigation to Network Comparision
@@ -1832,14 +1832,14 @@ def provider_mspl(driver, workbook, logger, run_from):
                 else:
                     ws.append([test_case_id, global_search_prov,
                                'Navigation to Network Comparision from MSPL : ' + selected_metric_name,
-                               'Failed', '', ''])
+                               'Failed', '', '', driver.current_url])
                     test_case_id += 1
             except Exception as e:
                 print(e)
                 traceback.print_exc()
                 ws.append([test_case_id, global_search_prov,
                            'Navigation to Network comparision from MSPL : ' + selected_metric_name,
-                           'Failed', '', 'Unable to click on Network Comparision tab'])
+                           'Failed', '', 'Unable to click on Network Comparision tab', driver.current_url])
                 test_case_id += 1
 
             # Mspl to basic careops count checking
@@ -1861,7 +1861,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                 if len(table) == 0:
                     ws.append(
                         [test_case_id, global_search_prov, 'Careops comparision between MSPL and Dashbaord', 'Failed',
-                         '', 'MSPL is Empty for: ' + selected_metric_name])
+                         '', 'MSPL is Empty for: ' + selected_metric_name, driver.current_url])
                     return
 
                 chosen_patient = randint(0, len(table) - 1)
@@ -1914,7 +1914,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                     ws.append((test_case_id,
                                str(MSPLname), "MSPL CARE GAP VS # OF GAPS ON HOVER",
                                'Failed', '',
-                               "Count mismatch between hover and caregaps, Caregap count on MSPL: " + MSPL_Caregap_count + " and, Number of caregaps present on hover: " + MSPL_caregap_hover_count + " . The Caregaps are: " + MSPL_caregap_hover))
+                               "Count mismatch between hover and caregaps, Caregap count on MSPL: " + MSPL_Caregap_count + " and, Number of caregaps present on hover: " + MSPL_caregap_hover_count + " . The Caregaps are: " + MSPL_caregap_hover, driver.current_url))
                     # print("FAILED")
                     # print("TEST CASE 1 COMMENTS -", end=" ")
                     # print("Count mismatch between hover and caregaps")
@@ -1979,7 +1979,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                     test_case_id += 1
                     ws.append((test_case_id,
                                str(MSPLname), "MSPL CAREGAP COUNT VS PATIENT DASHBOARD HEADER CAREOPS COUNT",
-                               'Failed', '', "Careop Count : " + Dashboard_caregap))
+                               'Failed', '', "Careop Count : " + Dashboard_caregap, driver.current_url))
                     # print("FAILED")
                 # print("TEST CASE 2 COMMENTS -", end=" ")
                 # print("Careop Count : " + Dashboard_caregap)
@@ -2041,7 +2041,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                                    len(Dashboard_quality_List) + len(Dashboard_HCC_List)) +
                                ". MSPL caregap count :" + MSPL_Caregap_count + ". For a difference of " +
                                str(abs(int(MSPL_Caregap_count) - (
-                                       len(Dashboard_quality_List) + len(Dashboard_HCC_List))))))
+                                       len(Dashboard_quality_List) + len(Dashboard_HCC_List)))), driver.current_url))
                     # print("FAILED")
                     # print("TEST CASE 3 COMMENTS -", end=" ")
                     # print("Measures on dashboard : " + str(
@@ -2066,7 +2066,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                                    'Failed', '',
                                    str(len(MSPL_Quality_Gaps)) + " of " + str(len(Dashboard_quality_List)) +
                                    " Measures. Different Measures are " + ', '.join(
-                                       map(str, Different_Measure))))
+                                       map(str, Different_Measure)), driver.current_url))
                         # print("FAILED")
                         # print("TEST CASE 4 COMMENTS -", end=" ")
                         # print(str(len(MSPL_Quality_Gaps)) + " of " + str(
@@ -2093,7 +2093,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                                str(MSPLname), "COMPARISION BETWEEN QUALITY GAPS ON MSPL HOVER AND PATIENT DASHBOARD",
                                'Failed', '',
                                str(len(MSPL_Quality_Gaps)) + " of " + str(len(Dashboard_quality_List)) +
-                               " Measures. Different Measures are " + ', '.join(map(str, Different_Measure))))
+                               " Measures. Different Measures are " + ', '.join(map(str, Different_Measure)), driver.current_url))
                     # print("FAILED")
                     # print("TEST CASE 4 COMMENTS -", end=" ")
                     # print(str(len(MSPL_Quality_Gaps)) + " of " + str(len(Dashboard_quality_List))
@@ -2115,7 +2115,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                                    str(MSPLname), "COMPARISION BETWEEN HCC GAPS ON MSPL HOVER AND PATIENT DASHBOARD",
                                    'Failed', '', str(len(MSPL_HCC_Gaps)) + " of " + str(len(Dashboard_HCC_List)) +
                                    " Measures. Different Measures are " + ', '.join(
-                            map(str, Different_Measure))))
+                            map(str, Different_Measure)), driver.current_url))
                         # print("FAILED")
                         # print("TEST CASE 5 COMMENTS -", end=" ")
                         # print(str(len(MSPL_HCC_Gaps)) + " of " + str(
@@ -2148,7 +2148,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                     ws.append((test_case_id,
                                str(MSPLname), "COMPARISION BETWEEN HCC GAPS ON MSPL HOVER AND PATIENT DASHBOARD",
                                'Failed', '', str(len(MSPL_HCC_Gaps)) + " of " + str(len(Dashboard_HCC_List)) +
-                               " Measures. Different Measures are " + ', '.join(map(str, Different_Measure))))
+                               " Measures. Different Measures are " + ', '.join(map(str, Different_Measure)), driver.current_url))
                     # print("FAILED")
                     Different_Measure = list(set(MSPL_HCC_Gaps) ^ set(Dashboard_HCC_List))
                     # print("TEST CASE 5 COMMENTS -", end=" ")
@@ -2173,7 +2173,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                 print(e)
                 traceback.print_exc()
                 ws.append([test_case_id, global_search_prov, 'Careops comparision from mspl: ' + selected_metric_name,
-                           'Failed', '', ])
+                           'Failed', '', driver.current_url])
                 if window_switched == 1:
                     driver.switch_to.window(driver.window_handles[0])
                     sf.ajax_preloader_wait(driver)
@@ -2185,7 +2185,7 @@ def provider_mspl(driver, workbook, logger, run_from):
             logger.critical("Unable to click on a metric from the provider dashboard")
             ws.append(
                 [test_case_id, selected_provider, "Attempting to click on metric in dashboard: " + selected_metric_name,
-                 'Failed', '', 'Unable to click on metric'])
+                 'Failed', '', 'Unable to click on metric', driver.current_url])
             test_case_id += 1
             if window_switched == 1:
                 driver.switch_to.window(driver.window_handles[0])
@@ -2251,7 +2251,7 @@ def time_capsule(driver, workbook, logger, run_from):
                 # logger.critical("Access Denied found!")
                 test_case_id+= 1
                 ws.append(
-                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied'))
+                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied', driver.current_url))
 
             else:
                 print("Access Check done!")
@@ -2263,7 +2263,7 @@ def time_capsule(driver, workbook, logger, run_from):
                     # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                     test_case_id += 1
                     ws.append((test_case_id, 'Time Capsule', 'Navigation to Time Capsule without error message',
-                                'Failed', 'Error toast message is displayed'))
+                                'Failed', 'Error toast message is displayed', driver.current_url))
 
                 else:
                     ws.append((test_case_id, 'Time Capsule', 'Time Capsule page loading',
@@ -2277,13 +2277,13 @@ def time_capsule(driver, workbook, logger, run_from):
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, 'Time Capsule', 'Computation Card', 'Failed',
-                                    'Computation card details is not found!'))
+                                    'Computation card details is not found!', driver.current_url))
 
         except Exception as e:
             print(e)
             test_case_id += 1
             ws.append(
-                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
         finally:
             driver.close()
             time.sleep(1)
@@ -2294,7 +2294,7 @@ def time_capsule(driver, workbook, logger, run_from):
         print(e)
         test_case_id += 1
         ws.append(
-            (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+            (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -2355,7 +2355,7 @@ def secure_messaging(driver, workbook, logger, run_from):
                 test_case_ID += 1
                 ws.append(
                     (test_case_ID, 'Secure Messaging', 'Access check for Secure Messaging', 'Failed',
-                     'Access Denied'))
+                     'Access Denied', driver.current_url))
 
             else:
                 print("Access Check done!")
@@ -2369,7 +2369,7 @@ def secure_messaging(driver, workbook, logger, run_from):
                     ws.append(
                         (test_case_ID, 'Secure Messaging',
                          'Navigation to Secure Messaging without error message',
-                         'Failed', 'Error toast message is displayed'))
+                         'Failed', 'Error toast message is displayed', driver.current_url))
 
                 else:
                     total_inbox_messages = len(driver.find_elements_by_xpath(locator.xpath_inbox_Message))
@@ -2380,7 +2380,7 @@ def secure_messaging(driver, workbook, logger, run_from):
             print(e)
             test_case_ID += 1
             ws.append((test_case_ID, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
-                        'Exception occurred!'))
+                        'Exception occurred!', driver.current_url))
         finally:
             driver.close()
             time.sleep(1)
@@ -2390,7 +2390,7 @@ def secure_messaging(driver, workbook, logger, run_from):
         print(e)
         test_case_ID += 1
         ws.append((test_case_ID, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
-                    'Exception occurred!'))
+                    'Exception occurred!', driver.current_url))
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -2449,7 +2449,7 @@ def analytics(driver, workbook, logger, run_from):
                 # logger.critical("Access Denied found!")
                 test_case_id += 1
                 ws.append(
-                    (test_case_id, 'Analytics', 'Access check for Analytics', 'Failed', 'x', 'Access Denied'))
+                    (test_case_id, 'Analytics', 'Access check for Analytics', 'Failed', 'x', 'Access Denied', driver.current_url))
 
             else:
                 print("Access Check done!")
@@ -2461,7 +2461,7 @@ def analytics(driver, workbook, logger, run_from):
                     # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                     test_case_id += 1
                     ws.append((test_case_id, 'Analytics', 'Navigation to Analytics without error message',
-                               'Failed', 'x', 'Error toast message is displayed'))
+                               'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
                 else:
 
@@ -2491,7 +2491,7 @@ def analytics(driver, workbook, logger, run_from):
                             elif len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
                                 test_case_id += 1
                                 ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', time_taken,
-                                           'No data for the selected filters'))
+                                           'No data for the selected filters', driver.current_url))
                             # ASPY EDIT -------------------------------------------------------------------------------------------------------------------------
                             # '''
                             loader_element = 'sm_download_cssload_loader_wrap'
@@ -2536,7 +2536,7 @@ def analytics(driver, workbook, logger, run_from):
                                         ws.append((test_case_id, 'Analytics Worksheet',
                                                    workbook_name + "-" + Worksheet_name, 'Failed',
                                                    (str)(round(time_taken, 3)),
-                                                   'No data for the selected filters'))
+                                                   'No data for the selected filters', driver.current_url))
                                     try:
                                         driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
                                         print("Found Select all")
@@ -2554,7 +2554,7 @@ def analytics(driver, workbook, logger, run_from):
                             traceback.print_exc()
                             print(workbook_name + "Failed!Exception occurred!")
                             test_case_id += 1
-                            ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', ''))
+                            ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', '', driver.current_url))
                             driver.get(current_url)
 
                         finally:
@@ -2565,7 +2565,7 @@ def analytics(driver, workbook, logger, run_from):
             print(e)
             traceback.print_exc()
             test_case_id += 1
-            ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!'))
+            ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!', driver.current_url))
         finally:
             driver.close()
             time.sleep(1)
@@ -2576,7 +2576,7 @@ def analytics(driver, workbook, logger, run_from):
         print(e)
         traceback.print_exc()
         test_case_id += 1
-        ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!'))
+        ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!', driver.current_url))
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -2650,7 +2650,7 @@ def click_on_each_metric(customer, driver, workbook, path):
 
 
         except Exception as e:
-            ws.append([tracker, 'Failed', 'Failed'])
+            ws.append([tracker, 'Failed', 'Failed', driver.current_url])
             print(e)
             traceback.print_exc()
         finally:
@@ -3094,7 +3094,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                                             )
                             ws.append([test_case_id, currentLOBName, accordion_metric_list[i], "Failed",
                                        "Sum of child score is not matching with parent score. Parent Score: " + parent_num_den.text + " ,Child score sum: (" + str(
-                                           child_sum_num) + "/" + str(child_sum_den) + ")"])
+                                           child_sum_num) + "/" + str(child_sum_den) + ")", driver.current_url])
                             test_case_id += 1
 
                         print("----------------------------------------------------------------------------")
@@ -3296,7 +3296,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
             ws.append([test_case_id, context_name,
                        'Navigation to a practice registry from the pratice tab of support MSPL :' + selected_metric_name,
                        'Failed', '',
-                       'Couldnt click on practice tab or a random practice name: ' + selectedPracticeName])
+                       'Couldnt click on practice tab or a random practice name: ' + selectedPracticeName, driver.current_url])
             test_case_id += 1
             print(e)
             traceback.print_exc()
@@ -3339,7 +3339,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
             ws.append([test_case_id, context_name,
                        'Navigation to a provider registry from the provider tab of support MSPL :' + selected_metric_name,
                        'Failed', '',
-                       'Couldnt click on provider tab or a random provider name: ' + selectedProviderName])
+                       'Couldnt click on provider tab or a random provider name: ' + selectedProviderName, driver.current_url])
             test_case_id += 1
         driver.get(metric_url)
 
@@ -3379,7 +3379,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
             traceback.print_exc()
             ws.append([test_case_id, context_name,
                        'Navigation to patient context from the patients tab of support MSPL :' + selected_metric_name,
-                       'Failed', '', 'Couldnt click on patient tab or a random patient : ' + patient_id])
+                       'Failed', '', 'Couldnt click on patient tab or a random patient : ' + patient_id, driver.current_url])
             test_case_id += 1
         driver.get(metric_url)
 
@@ -3404,7 +3404,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
             else:
                 ws.append([test_case_id, context_name,
                            'Navigation to Performance Stats from Support Metric : ' + selected_metric_name,
-                           'Failed'])
+                           'Failed', driver.current_url])
                 test_case_id += 1
                 sf.captureScreenshot(driver, selected_metric_name + 'Performance_tab', screenshot_path)
 
@@ -3413,7 +3413,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
             traceback.print_exc()
             ws.append(
                 [test_case_id, context_name, 'Navigation to Performance Stats from Practice MSPL', 'Failed', '',
-                 'Couldnt click on the performance tab of metric :' + selected_metric_name])
+                 'Couldnt click on the performance tab of metric :' + selected_metric_name, driver.current_url])
             test_case_id += 1
             sf.captureScreenshot(driver, selected_metric_name + 'Performance_tab', screenshot_path)
 
@@ -3422,7 +3422,7 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
         print(e)
         traceback.print_exc()
         ws.append([test_case_id, context_name, 'Navigation to Support MSPL', 'Failed', '',
-                   'Unable to click on a random metric: ' + selected_metric_name])
+                   'Unable to click on a random metric: ' + selected_metric_name, driver.current_url])
         test_case_id += 1
         sf.captureScreenshot(driver, 'Click on metric', screenshot_path)
         driver.get(registry_url)
@@ -3552,7 +3552,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                 # logger.critical("Access Denied found!")
                 test_case_id+= 1
                 ws.append(
-                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied'))
+                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied', driver.current_url))
                 sf.captureScreenshot(driver, 'Time Capsule Access denied', screenshot_path)
 
             else:
@@ -3565,7 +3565,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                     # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                     test_case_id += 1
                     ws.append((test_case_id, 'Time Capsule', 'Navigation to Time Capsule without error message',
-                                'Failed', 'Error toast message is displayed'))
+                                'Failed', 'Error toast message is displayed', driver.current_url))
                     sf.captureScreenshot(driver, 'Time Capsule error message', screenshot_path)
 
                 else:
@@ -3577,7 +3577,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             print(e)
             test_case_id += 1
             ws.append(
-                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
             sf.captureScreenshot(driver, 'Time Capsule access', screenshot_path)
         finally:
             driver.close()
@@ -3589,7 +3589,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
         print(e)
         test_case_id += 1
         ws.append(
-            (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!'))
+            (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
         sf.captureScreenshot(driver, 'Time Capsule Access denied', screenshot_path)
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
@@ -3620,7 +3620,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                 test_case_id += 1
                 ws.append(
                     (test_case_id, 'Secure Messaging', 'Access check for Secure Messaging', 'Failed',
-                     'Access Denied'))
+                     'Access Denied', driver.current_url))
                 sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
 
             else:
@@ -3635,7 +3635,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                     ws.append(
                         (test_case_id, 'Secure Messaging',
                          'Navigation to Secure Messaging without error message',
-                         'Failed', 'Error toast message is displayed'))
+                         'Failed', 'Error toast message is displayed', driver.current_url))
                     sf.captureScreenshot(driver, 'Secure Messaging Error toast', screenshot_path)
 
                 else:
@@ -3646,7 +3646,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             print(e)
             test_case_id += 1
             ws.append((test_case_id, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
-                       'Exception occurred!'))
+                       'Exception occurred!', driver.current_url))
             sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
         finally:
             driver.close()
@@ -3657,7 +3657,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
         print(e)
         test_case_id += 1
         ws.append((test_case_id, 'Secure Messaging', 'Navigation to Secure Messaging', 'Failed',
-                   'Exception occurred!'))
+                   'Exception occurred!', driver.current_url))
         sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
@@ -3685,7 +3685,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                 # logger.critical("Access Denied found!")
                 test_case_id += 1
                 ws.append(
-                    (test_case_id, 'Analytics', 'Access check for Analytics', 'Failed', 'x', 'Access Denied'))
+                    (test_case_id, 'Analytics', 'Access check for Analytics', 'Failed', 'x', 'Access Denied', driver.current_url))
                 sf.captureScreenshot(driver, 'Analytics Access Denied', screenshot_path)
 
             else:
@@ -3698,7 +3698,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                     # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                     test_case_id += 1
                     ws.append((test_case_id, 'Analytics', 'Navigation to Analytics without error message',
-                               'Failed', 'x', 'Error toast message is displayed'))
+                               'Failed', 'x', 'Error toast message is displayed', driver.current_url))
                     sf.captureScreenshot(driver, 'Analytics error toast', screenshot_path)
 
                 else:
@@ -3714,7 +3714,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             print(e)
             traceback.print_exc()
             test_case_id += 1
-            ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!'))
+            ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!', driver.current_url))
         finally:
             driver.close()
             time.sleep(1)
@@ -3727,7 +3727,7 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
         print(e)
         traceback.print_exc()
         test_case_id += 1
-        ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!'))
+        ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!', driver.current_url))
         sf.captureScreenshot(driver, 'Analytics Access Denied', screenshot_path)
         if window_switched == 1:
             driver.switch_to.window(driver.window_handles[0])
@@ -5393,7 +5393,7 @@ def market_sheet(driver, workbook, logger, run_from):
     else:
         ws.append((test_case_id, 'Market Sheet Sync', 'CE Status', 'Failed',
                    'CE status in market sheet is ' + config.get("market-sheet",
-                                                                "ce_status") + ' and default CE for client is ' + CEstatus))
+                                                                "ce_status") + ' and default CE for client is ' + CEstatus, driver.current_url))
     test_case_id += 1
     displayname = driver.find_element_by_xpath(locator.xpath_context_Name).text
     if displayname == config.get("market-sheet", "display_name"):
@@ -5403,14 +5403,14 @@ def market_sheet(driver, workbook, logger, run_from):
     else:
         ws.append((test_case_id, 'Market Sheet Sync', 'Display Name', 'Failed',
                    'Display name in market sheet is ' + config.get("market-sheet",
-                                                                "display_name") + ' and display name on PROD is ' + displayname))
+                                                                "display_name") + ' and display name on PROD is ' + displayname, driver.current_url))
     test_case_id += 1
     try:
         driver.find_element_by_id("qt-filter-label").click()
         time.sleep(1)
         def_lob = driver.find_element_by_id("filter-lob").find_element_by_class_name('highlight').text
     except:
-        ws.append((test_case_id, 'Market Sheet Sync', 'Default Lob', 'Failed', 'Unable to click on LoB dropdown'))
+        ws.append((test_case_id, 'Market Sheet Sync', 'Default Lob', 'Failed', 'Unable to click on LoB dropdown', driver.current_url))
 
     if def_lob == config.get("market-sheet", "def_lob"):
         ws.append((test_case_id, 'Market Sheet Sync', 'Default Lob', 'Passed',
@@ -5419,7 +5419,7 @@ def market_sheet(driver, workbook, logger, run_from):
     else:
         ws.append((test_case_id, 'Market Sheet Sync', 'Display Name', 'Failed',
                    'Default Lob in market sheet is ' + config.get("market-sheet",
-                                                                   "def_lob") + ' and default Lob on PROD is' + def_lob))
+                                                                   "def_lob") + ' and default Lob on PROD is' + def_lob, driver.current_url))
 
     time.sleep(1)
     driver.get(registry_url)

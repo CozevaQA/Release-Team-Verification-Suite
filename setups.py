@@ -16,6 +16,8 @@ import support_functions as sf
 import time
 import logging
 
+import summary_sheet as ss
+
 
 driver = ""
 details = ""
@@ -272,10 +274,6 @@ def switch_to_registries():
         print("in registries")
         return
 
-def generate_summary(wb):
-    ws = wb['Sheet1']
-    
-
 def new_launch():
     print("Entered New Launch")
     report_folder = create_folders("Cozeva Support")
@@ -389,7 +387,7 @@ def cozeva_support():
         workbook.save(report_folder + "\\Report.xlsx")
 
     workbook.save(report_folder+"\\Report.xlsx")
-    #generate_summary(workbook)
+    ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
 
 
@@ -441,7 +439,10 @@ def limited_cozeva_support(username):
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
+
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def customer_support(username):
     report_folder = create_folders("Customer Support")
@@ -492,6 +493,8 @@ def customer_support(username):
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def regional_suport(username):
     report_folder = create_folders("Regional Support")
@@ -542,6 +545,8 @@ def regional_suport(username):
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def office_admin_Prac(username):
     report_folder = create_folders("Office Admin Practice Delegate")
@@ -583,6 +588,8 @@ def office_admin_Prac(username):
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def office_admin_prov(username):
     report_folder = create_folders("Office Admin Provider Delegate")
@@ -615,6 +622,8 @@ def office_admin_prov(username):
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
 def prov(username):
     report_folder = create_folders("Provider")
@@ -647,4 +656,6 @@ def prov(username):
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
     switch_back()
+    ss.summarize_report(workbook, report_folder)
+    workbook.save(report_folder + "\\Report.xlsx")
 
