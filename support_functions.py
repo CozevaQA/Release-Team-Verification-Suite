@@ -22,6 +22,18 @@ def date_time():
     return now
 
 
+
+def ajax_preloader_wait1(driver):
+    time.sleep(1)
+    #WebDriverWait(driver, 300).until(
+    #    EC.invisibility_of_element((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
+    WebDriverWait(driver, 300).until(
+        EC.invisibility_of_element((By.CLASS_NAME, "ajax_preloader")))
+    WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.CLASS_NAME, "ajax_preloader hide")))
+
+    time.sleep(1)
+
+
 def ajax_preloader_wait(driver):
     time.sleep(1)
     #WebDriverWait(driver, 300).until(
