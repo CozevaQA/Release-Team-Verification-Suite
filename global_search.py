@@ -19,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'PROD'
+ENV = 'CERT'
 
 
 def performGlobalSearch(role, username, keywords, driver, testID):
