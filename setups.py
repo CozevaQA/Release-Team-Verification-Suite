@@ -533,9 +533,6 @@ def regional_suport(username):
     if checklist[8] == 1:
         context_functions.provider_mspl(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
-    if checklist[9] == 1:
-        context_functions.time_capsule(driver, workbook, logger, run_from)
-        workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
         context_functions.secure_messaging(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
@@ -578,9 +575,6 @@ def office_admin_Prac(username):
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
         context_functions.provider_mspl(driver, workbook, logger, run_from)
-        workbook.save(report_folder + "\\Report.xlsx")
-    if checklist[9] == 1:
-        context_functions.time_capsule(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
         context_functions.secure_messaging(driver, workbook, logger, run_from)
