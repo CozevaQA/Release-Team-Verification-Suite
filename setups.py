@@ -60,7 +60,6 @@ def create_folders(role):
     if not isdir:
         os.mkdir(path1)
 
-
     path = os.path.join(path1, str(role)+"_"+str(guiwindow.verification_specs[3][role])+"_"+dateandtime)
     os.mkdir(path)
     return str(path)
@@ -88,6 +87,7 @@ def login_to_cozeva():
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     print("Logged in to Cozeva!")
 
+
 def login_to_cozeva_cert():
     driver.get(locator.logout_link_cert)
     driver.get(locator.login_link_cert)
@@ -109,6 +109,7 @@ def login_to_cozeva_cert():
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     print("Logged in to Cozeva!")
+
 
 def login_to_cozeva_stage():
     driver.get(locator.logout_link_stage)
@@ -149,6 +150,7 @@ def switch_customer_context(cusID):
         #logger.exception("Exception occurred in OpenRegistryPageforCS2 block!")
         raise
 
+
 def switch_customer_context_cert(cusID):
     try:
         sm_customer_id = (str(cusID)).strip()
@@ -172,6 +174,8 @@ def login_to_user(Username):
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, "//a[@class='not_for_mobile'][contains(@href,'/users_list')]")))
         time.sleep(0.5)
+        WebDriverWait(driver, 120).until(
+            EC.element_to_be_clickable((By.XPATH, "//a[@class='not_for_mobile'][contains(@href,'/users_list')]")))
 
         driver.find_element_by_xpath("//a[@class='not_for_mobile'][contains(@href,'/users_list')]").click()
         sf.ajax_preloader_wait(driver)
