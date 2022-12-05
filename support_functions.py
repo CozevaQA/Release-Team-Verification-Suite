@@ -44,7 +44,18 @@ def ajax_preloader_wait(driver):
     if len(driver.find_elements_by_class_name("ajax_preloader")) != 0:
         WebDriverWait(driver, 300).until(
             EC.invisibility_of_element((By.CLASS_NAME, "ajax_preloader")))
+
+    WebDriverWait(driver, 300).until(
+        EC.invisibility_of_element((By.CLASS_NAME, "drupal_message_text")))
+
     time.sleep(1)
+
+def ajax_preloader_wait2(driver):
+    wait_time = 300
+
+
+def saml_toast_wait(driver):
+    x=0
 
 
 
