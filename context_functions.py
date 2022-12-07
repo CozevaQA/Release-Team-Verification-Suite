@@ -151,6 +151,8 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                         ws.append((test_case_id, context_name, link_name + ' without error message', 'Failed', driver.current_url))
                         logger.error(context_name + "-->" + link_name + ": " + "Error message found!")
                     else:
+                        WebDriverWait(driver, 120).until(
+                            EC.presence_of_element_located((By.XPATH, locator.xpath_data_Table_Info)))
                         if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
                             time.sleep(0.5)
                             datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
