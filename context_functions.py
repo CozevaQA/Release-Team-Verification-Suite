@@ -41,8 +41,6 @@ def init_global_search():
     global_search_prac = None
 
 
-def checkCountPracProv():
-    return True
 
 
 def support_menubar(driver, workbook, ws, logger, run_from):
@@ -108,6 +106,10 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
         print(context_name)
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+
+
+
+
 
         try:
             time.sleep(1.5)
@@ -227,8 +229,47 @@ def practice_menubar(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
-            list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_elements_by_tag_name(
-                'tr')
+            list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name("tbody").find_elements_by_tag_name('tr')
+            #Practice patient counts
+            try:
+                list_index = len(list_of_practice_elements)
+                zero_prac = [0, 0, 0]
+                zero_prac_flag = [0, 0, 0]
+                for prac_entry in range(0, list_index):
+                    patient_count = list_of_practice_elements[prac_entry].find_elements_by_tag_name("td")[5].text
+                    performance = list_of_practice_elements[prac_entry].find_elements_by_tag_name("td")[1].text
+                    gap = list_of_practice_elements[prac_entry].find_elements_by_tag_name("td")[2].text
+                    if int(patient_count.replace(",", "")) == 0:
+                        zero_prac[2] += 1
+                    if float(performance.replace("%", "")) == 0:
+                        zero_prac[0] += 1
+                    if int(gap.replace(",", "")) == 0:
+                        zero_prac[1] += 1
+
+                if zero_prac[2] > list_index / 2:
+                    print("More than half the praciders have 0 patient counts")
+                    prac_url = driver.current_url
+                    zero_prac_flag[2] = 1
+                if zero_prac[0] > list_index / 2:
+                    print("More than half the praciders have 0 patient counts")
+                    prac_url = driver.current_url
+                    zero_prac_flag[0] = 1
+                if zero_prac[1] > list_index / 2:
+                    print("More than half the praciders have 0 patient counts")
+                    prac_url = driver.current_url
+                    zero_prac_flag[1] = 1
+
+
+
+
+
+
+
+            except:
+                traceback.print_exc()
+                zero_prac_flag[2], zero_prac_flag[1], zero_prac_flag[0] = 2, 2, 2
+
+
             selected_practice = list_of_practice_elements[
                 sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a')
             global global_search_prac
@@ -245,8 +286,38 @@ def practice_menubar(driver, workbook, logger, run_from):
         return
     support_menubar(driver, workbook, ws, logger, run_from)
 
+    if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
+        if zero_prac_flag[2] == 1:
+            ws.append(["1", "Practice List", "Checking for 0 patient counts", "Failed", "x","More than half the practices on the front page have 0 patients", prac_url])
+        elif zero_prac_flag[2] == 0:
+            ws.append(["1", "Practice List", "Checking for 0 patient counts", "Passed", "x"])
+        elif zero_prac_flag[2] == 2:
+            ws.append(["1", "Practice List", "Checking for 0 patient counts", "Failed", "x", "Unable to find practice list"])
+        if zero_prac_flag[0] == 1:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Failed", "x","More than half the practices on the front page have 0% performance", prac_url])
+        elif zero_prac_flag[0] == 0:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Passed", "x"])
+        elif zero_prac_flag[0] == 2:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Failed", "x", "Unable to find practices list"])
+        if zero_prac_flag[1] == 1:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Failed", "x","More than half the practices on the front page have 0 gap", prac_url])
+        elif zero_prac_flag[1] == 0:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Passed", "x"])
+        elif zero_prac_flag[1] == 2:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Failed", "x", "Unable to find practices list"])
+
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
 def provider_menubar(driver, workbook, logger, run_from):
@@ -263,8 +334,48 @@ def provider_menubar(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((By.ID, 'metric-support-prov-ls')))
-            list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
-                'tr')
+            list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name("tbody").\
+                find_elements_by_tag_name('tr')
+
+            try:
+                list_index = len(list_of_provider_elements)
+                zero_prov = [0, 0, 0]
+                zero_prov_flag = [0, 0, 0]
+                zero_prov_flag[0],zero_prov_flag[1],zero_prov_flag[2] = 0, 0, 0
+                for prov_entry in range(0, list_index):
+                    patient_count = list_of_provider_elements[prov_entry].find_elements_by_tag_name("td")[9].text
+                    performance = list_of_provider_elements[prov_entry].find_elements_by_tag_name("td")[1].text
+                    gap = list_of_provider_elements[prov_entry].find_elements_by_tag_name("td")[2].text
+                    if int(patient_count.replace(",","")) == 0:
+                        zero_prov[2] += 1
+                    if float(performance.replace("%","")) == 0:
+                        zero_prov[0] += 1
+                    if int(gap.replace(",","")) == 0:
+                        zero_prov[1] += 1
+
+                if zero_prov[2] > list_index/2:
+                    print("More than half the providers have 0 patient counts")
+                    prov_url = driver.current_url
+                    zero_prov_flag[2] = 1
+                if zero_prov[0] > list_index/2:
+                    print("More than half the providers have 0 patient counts")
+                    prov_url = driver.current_url
+                    zero_prov_flag[0] = 1
+                if zero_prov[1] > list_index/2:
+                    print("More than half the providers have 0 patient counts")
+                    prov_url = driver.current_url
+                    zero_prov_flag[1] = 1
+
+
+
+
+
+
+
+            except:
+                traceback.print_exc()
+                zero_prov_flag[2],zero_prov_flag[1],zero_prov_flag[0] = 2,2,2
+
             selected_provider = list_of_provider_elements[
                 sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[1]
             global global_search_prov
@@ -287,10 +398,43 @@ def provider_menubar(driver, workbook, logger, run_from):
     #     driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
     #     driver.find_element_by_id("home").click()
     #     sf.ajax_preloader_wait(driver)
+
+    if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
+        if zero_prov_flag[2] == 1:
+            ws.append(["1", "Provider List", "Checking for 0 patient counts", "Failed", "x","More than half the provider on the front page have 0 patients", prov_url])
+        elif zero_prov_flag[2] == 0:
+            ws.append(["1", "Provider List", "Checking for 0 patient counts", "Passed", "x"])
+        elif zero_prov_flag[2] == 2:
+            ws.append(["1", "Provider List", "Checking for 0 patient counts", "Failed", "x", "Unable to find provider list"])
+        if zero_prov_flag[0] == 1:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Failed", "x","More than half the provider on the front page have 0% performance", prov_url])
+        elif zero_prov_flag[0] == 0:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Passed", "x"])
+        elif zero_prov_flag[0] == 2:
+            ws.append(["1", "Provider List", "Checking for 0 performance counts", "Failed", "x", "Unable to find provider list"])
+        if zero_prov_flag[1] == 1:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Failed", "x","More than half the provider on the front page have 0 gap", prov_url])
+        elif zero_prov_flag[1] == 0:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Passed", "x"])
+        elif zero_prov_flag[1] == 2:
+            ws.append(["1", "Provider List", "Checking for 0 gap counts", "Failed", "x", "Unable to find provider list"])
+
+
+
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
 def patient_dashboard(driver, workbook, logger, run_from):
@@ -1281,9 +1425,15 @@ def support_level(driver, workbook, logger, run_from):
 
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
-        while percent == '0.00' or percent == '0.00%':
+        num_den = "(0/0)"
+        iter_count = 0
+        while percent == '0.00' or percent == '0.00%' or num_den == "(0/0)":
             selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
             percent = selectedMetric.find_element_by_class_name('percent').text
+            num_den = selectedMetric.find_element_by_class_name('num-den').text
+            iter_count+=1
+            if iter_count > 10:
+                raise Exception("All/most metrics are 0/0")
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
         selectedMetric.click()
         sf.ajax_preloader_wait(driver)
@@ -1299,6 +1449,25 @@ def support_level(driver, workbook, logger, run_from):
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
             practices = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
+
+            try:
+                list_index = len(practices)
+                zero_prac = 0
+                for prac_entry in range(0, list_index):
+                    patient_count = practices[prac_entry].find_elements_by_tag_name("td")[5].text
+                    if int(patient_count.replace(",","")) == 0:
+                        zero_prac += 1
+
+                if zero_prac > list_index/2:
+                    print("More than half the practices have 0 patient counts")
+                    ws.append([test_case_id,context_name, "Checking for 0 patient counts in practice tab", "Failed", 'x', "Practices with 0 patients: "+str(zero_prac), driver.current_url])
+                else:
+                    ws.append([test_case_id,context_name, "Checking for 0 patient counts in practice tab", "Passed", 'x', "Practices with 0 patients: "+str(zero_prac)])
+
+            except:
+                traceback.print_exc()
+                ws.append([test_case_id, context_name, "Checking for 0 patient counts in practice tab", "Failed", 'x', "Couldn't fetch patient counts", driver.current_url])
+                test_case_id+=1
             if len(practices) > 1:
                 selectedPractice = \
                     practices[sf.RandomNumberGenerator(len(practices), 1)[0]].find_elements_by_tag_name('a')[1]
@@ -1352,6 +1521,24 @@ def support_level(driver, workbook, logger, run_from):
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
             providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
+            try:
+                list_index = len(providers)
+                zero_prov = 0
+                for prov_entry in range(0, list_index):
+                    patient_count = providers[prov_entry].find_elements_by_tag_name("td")[9].text
+                    if int(patient_count.replace(",","")) == 0:
+                        zero_prac += 1
+
+                if zero_prac > list_index/2:
+                    print("More than half the practices have 0 patient counts")
+                    ws.append([test_case_id,context_name, "Checking for 0 patient counts in provider tab", "Failed", 'x', "Providers with 0 patients: "+str(zero_prov), driver.current_url])
+                else:
+                    ws.append([test_case_id,context_name, "Checking for 0 patient counts in provider tab", "Passed", 'x', "Providers with 0 patients: "+str(zero_prov)])
+
+            except:
+                traceback.print_exc()
+                ws.append([test_case_id, context_name, "Checking for 0 patient counts in provider tab", "Failed", 'x', "Couldn't fetch patient counts", driver.current_url])
+                test_case_id+=1
             if len(providers) > 1:
                 selectedProvider = \
                     providers[sf.RandomNumberGenerator(len(providers), 1)[0]].find_elements_by_tag_name('a')[2]
@@ -2908,6 +3095,24 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
         ws['E1'].fill = header_cell_color
         ws.name = "Arial"
         test_case_id = 1
+
+        workbook.create_sheet('Patients, Rating and Scores')
+        ws_counts = workbook['Patients, Rating and Scores']
+
+        ws_counts.append(['LoB Name', 'Context', 'Count/Rating', 'Status', 'Comments'])
+        header_font = Font(color='FFFFFF', bold=False, size=12)
+        header_cell_color = PatternFill('solid', fgColor='030303')
+        ws_counts['A1'].font = header_font
+        ws_counts['A1'].fill = header_cell_color
+        ws_counts['B1'].font = header_font
+        ws_counts['B1'].fill = header_cell_color
+        ws_counts['C1'].font = header_font
+        ws_counts['C1'].fill = header_cell_color
+        ws_counts['D1'].font = header_font
+        ws_counts['D1'].fill = header_cell_color
+        ws_counts['E1'].font = header_font
+        ws_counts['E1'].fill = header_cell_color
+        ws_counts.name = "Arial"
         loader = WebDriverWait(driver, 300)
         loader.until(EC.invisibility_of_element_located((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
         LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
@@ -2946,10 +3151,14 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
             time.sleep(1)
             print(LOBnamelist[j].text)
             print("--------------------------------")
-            LOBnamelist[j].click()
+            try:
+                LOBnamelist[j].click()
+            except ElementNotInteractableException as e:
+                continue
             currentLOBName = LOBnamelist[j].text
             logger.info("LOB Selected  :: " + currentLOBName)
             logger.info("---------------------------------------")
+            time.sleep(4)
             driver.find_element_by_xpath("//*[@id='reg-filter-apply']").click()
             time.sleep(2)
             loader = WebDriverWait(driver, 300)
@@ -2958,6 +3167,35 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
             # logger.captureScreenshot(driver, currentLOBName, screenshot_path)
             # Checking Patient count in Lob. Raise error if it is 0
             Lob_type = ["ALL", "Medicare", "Medicare ACO"]
+            #Patient count and performance count
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+            try:
+                summaryList = driver.find_element_by_class_name("registry_header_panel").find_elements_by_tag_name("div")
+                overall_rating = ""
+                patient_count = ""
+                for div, next_div in zip(summaryList, summaryList[1:] + [summaryList[0]]):
+                    if div.text == "Overall Rating":
+                        overall_rating = next_div.text.replace("%","").strip()
+                        if 'Stars' in overall_rating:
+                            overall_rating = overall_rating.replace("Stars","").strip()
+                    if div.text == "Patients":
+                        patient_count = next_div.text.replace(",","").strip()
+                if float(overall_rating)<1:
+                    ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Failed", "Rating is 0", driver.current_url])
+                else:
+                    ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Passed"])
+                if float(patient_count)<1:
+                    ws_counts.append([currentLOBName, "Patient Count", patient_count, "Failed", "Patient count is 0", driver.current_url])
+                else:
+                    ws_counts.append([currentLOBName, "Patient Count", patient_count, "Passed"])
+
+
+            except Exception as e:
+                traceback.print_exc()
+                ws_counts.append([currentLOBName, "x", "x", "Couldn't fetch patient counts/rating"])
+
             try:
                 if currentLOBName in Lob_type:
                     lobpatientcount = driver.find_element_by_xpath(
@@ -2993,6 +3231,29 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                     time.sleep(2)
                     driver.find_element_by_xpath("//*[@id='qt-apply-search']").click()
                     time.sleep(2)
+                    # counting 0/0 measures
+                    try:
+                        zero_measures = 0
+                        measure_scores_elements = driver.find_elements_by_class_name("num-den")
+                        measure_scores = []
+                        for score in measure_scores_elements:
+                            measure_scores.append(score.text.strip())
+
+                        for score in measure_scores:
+                            if score == "(0/0)":
+                                zero_measures += 1
+
+                        if zero_measures > 10:
+                            ws_counts.append([currentLOBName, "0/0 measures", zero_measures, "Failed",
+                                              "More than 10 measures are 0/0", driver.current_url])
+                        else:
+                            ws_counts.append([currentLOBName, "0/0 Measures", zero_measures, "Passed"])
+
+                    except Exception as e:
+                        traceback.print_exc()
+                        ws_counts.append([currentLOBName, "0/0 Measures", "Null", "Failed",
+                                          "Couldn't count 0/0 measures in this lob"])
+
                     total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
                     print("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
                     logger.info("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
@@ -3114,7 +3375,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
             time.sleep(1)
             LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
             LOBdropdownelement.click()
-            time.sleep(1)
+            time.sleep(3)
             LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
             LOBnamelist = LOBname.find_elements_by_tag_name("li")
 
@@ -3133,6 +3394,17 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+    rows = ws_counts.max_row
+    cols = ws_counts.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws_counts.cell(i, j).value == 'Passed':
+                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws_counts.cell(i, j).value == 'Failed':
+                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws_counts.cell(i, j).value == 'Data table is empty':
+                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
 def group_menubar(driver, workbook, logger, screenshot_path, run_from):

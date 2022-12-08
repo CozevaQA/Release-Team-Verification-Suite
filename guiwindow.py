@@ -12,6 +12,8 @@ checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
 #verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
+env = "PROD"
+headlessmode = 1
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 
@@ -94,10 +96,15 @@ def launchgui():
 
 
     def frame1next():
+        global env, headlessmode, Window_location
+        if env_selector_var.get() == 0:
+            env = "PROD"
+        elif env_selector_var.get() == 1:
+            env = "CERT"
+        headlessmode = headless_selector_var.get()
         verification_specs[0] = selected_cust.get()
         verification_specs[1] = db.fetchCustomerID(verification_specs[0])
         print(window_location_var.get())
-        global Window_location
         Window_location = window_location_var.get()
         print(Window_location)
         if Checkbox_analytics_var.get() == 1:
@@ -371,7 +378,15 @@ def launchgui():
     config_analytics = Radiobutton(input_frame_1, text="Analytics Verification(Full)", variable=app_config_var, value=1,
                                    command=analytics_radio)
     nextbutton1 = Button(input_frame_1, text="Lock choices and Proceed", command=frame1next, font=("Nunito Sans", 10))
+    env_selector_var = IntVar()
+    radiobutton_env_label = Label(input_frame_1, text="Select Environment", font=("Nunito Sans", 10))
+    radiobutton_env_prod = Radiobutton(input_frame_1, text="Production", variable=env_selector_var, value=0, font=("Nunito Sans", 10))
+    radiobutton_env_cert = Radiobutton(input_frame_1, text="CERT", variable=env_selector_var, value=1, font=("Nunito Sans", 10))
 
+    headless_selector_var = IntVar()
+    radiobutton_headless_label = Label(input_frame_1, text="Select Headless mode Yes/No", font=("Nunito Sans", 10))
+    radiobutton_headless_yes = Radiobutton(input_frame_1, text="Yes", variable=headless_selector_var, value=1, font=("Nunito Sans", 10))
+    radiobutton_headless_no = Radiobutton(input_frame_1, text="No", variable=headless_selector_var, value=0, font=("Nunito Sans", 10))
     #widgets for frame 2
     frame2_info_label = Label(input_frame_2, text="Select roles and enter username(Leave blank for default)", font=("Nunito Sans", 10))
     cozeva_support_var = IntVar()
@@ -430,7 +445,7 @@ def launchgui():
     provider_mspl_checkbox = Checkbutton(input_frame_3, text="Provider's MSPL", variable=provider_mspl_var, font=("Nunito Sans", 10))
     time_capsule = Checkbutton(input_frame_3, text="Time Capsule", variable=time_capsule_var, font=("Nunito Sans", 10))
     secure_messaging_checkbox = Checkbutton(input_frame_3, text="Secure Messaging", variable=secure_messaging_var, font=("Nunito Sans", 10))
-    accordion_verification_checkbox = Checkbutton(input_frame_3, text="Accordion Verification", variable=accordion_verification_var,
+    accordion_verification_checkbox = Checkbutton(input_frame_3, text="Accordion and counts Verification", variable=accordion_verification_var,
                                             font=("Nunito Sans", 10))
     nextbutton3 = Button(input_frame_3, text="Start Automated Test", command=frame3next, font=("Nunito Sans", 10))
     prevbutton3 = Button(input_frame_3, text="Go Back", command=frame3prev, font=("Nunito Sans", 10))
@@ -589,7 +604,13 @@ def launchgui():
     window_location_label.grid(row=7, column=0, columnspan=5)
     radiobutton_window_left.grid(row=8, column=2, sticky="e")
     radiobutton_window_right.grid(row=8, column=3, sticky="w")
-    nextbutton1.grid(row=9, column=0, columnspan=5, pady=45)
+    radiobutton_env_label.grid(row=9, column=2)
+    radiobutton_env_prod.grid(row=10, column=2, sticky="w")
+    radiobutton_env_cert.grid(row=11, column=2, sticky="w")
+    radiobutton_headless_label.grid(row=9, column=4)
+    radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
+    radiobutton_headless_no.grid(row=11, column=4, sticky="w")
+    nextbutton1.grid(row=12, column=0, columnspan=5, pady=45)
     Checkbox_cozeva.select()
 
     #packing elements into frame 2
@@ -676,7 +697,7 @@ def launchgui():
         driver.quit()
 
     except Exception as e:
-        warninglabel.grid(row=10, columnspan=5, sticky="w")
+        warninglabel.grid(row=13, columnspan=5, sticky="w")
         time.sleep(1)
 
 
