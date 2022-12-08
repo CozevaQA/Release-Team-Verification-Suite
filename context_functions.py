@@ -124,7 +124,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
             traceback.print_exc()
 
         for link in range(len(links)) and range(len(names)):
-            # time.sleep(1.5)
+            time.sleep(1.5)
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             time.sleep(0.5)
             driver.execute_script("arguments[0].scrollIntoView();", links[link])
@@ -1047,8 +1047,6 @@ def provider_registry(driver, workbook, logger, run_from):
 
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
-    WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     rows = ws.max_row
     cols = ws.max_column
     for i in range(2, rows + 1):
