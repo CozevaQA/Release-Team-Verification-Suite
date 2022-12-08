@@ -1527,9 +1527,9 @@ def support_level(driver, workbook, logger, run_from):
                 for prov_entry in range(0, list_index):
                     patient_count = providers[prov_entry].find_elements_by_tag_name("td")[9].text
                     if int(patient_count.replace(",","")) == 0:
-                        zero_prac += 1
+                        zero_prov += 1
 
-                if zero_prac > list_index/2:
+                if zero_prov > list_index/2:
                     print("More than half the practices have 0 patient counts")
                     ws.append([test_case_id,context_name, "Checking for 0 patient counts in provider tab", "Failed", 'x', "Providers with 0 patients: "+str(zero_prov), driver.current_url])
                 else:
@@ -3266,8 +3266,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         print(total_accordion_metric[i].get_attribute('id'))
 
                         # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
-                        if (total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497",
-                                                                              "85"]):
+                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508"]:
                             print("Accordion Metric id have been skipped")
 
                         else:
