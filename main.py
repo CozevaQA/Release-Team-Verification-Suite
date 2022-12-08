@@ -15,9 +15,14 @@ import guiwindow
 import setups
 import logging
 if __name__ == '__main__':
+
     print("Hello World")
     guiwindow.launchgui()
     print(guiwindow.verification_specs)
+    print("Enviromnent: "+guiwindow.env)
+    print("Headless Mode: "+str(guiwindow.headlessmode))
+    environment = guiwindow.env
+
     launchstyle= "Def"
     if 'NC' in guiwindow.verification_specs[0]:
         launchstyle = "NC"
@@ -30,10 +35,13 @@ if __name__ == '__main__':
     driver_created = 0
     setups.driver_setup()
     driver_created = 1
-    setups.login_to_cozeva()
+    if environment == "PROD":
+        setups.login_to_cozeva()
+    elif environment == "CERT":
+        setups.login_to_cozeva_cert()
     if guiwindow.verification_specs[2] == "Onshore":
         if launchstyle == "Def":
-            setups.cozeva_support()
+            setups.cozeva_support(environment)
         elif launchstyle == "NC":
             setups.new_launch()
     elif guiwindow.verification_specs[2] == "Offshore":

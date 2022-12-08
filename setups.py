@@ -15,6 +15,7 @@ import variablestorage as locator
 import support_functions as sf
 import time
 import logging
+from threading import Timer
 
 import summary_sheet as ss
 
@@ -28,7 +29,9 @@ def driver_setup():
     options.add_argument("--disable-notifications")
     options.add_argument("--start-maximized")
     options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
-    #options.add_argument("--headless")
+    if guiwindow.headlessmode == 1:
+        options.add_argument("--headless")
+
     options.add_argument('--disable-gpu')
     # options.add_argument("--window-size=1920,1080")
     # options.add_argument("--start-maximized")
@@ -77,7 +80,33 @@ def login_to_cozeva():
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
-    time.sleep(2)
+    time.sleep(4)
+    otpurl = driver.current_url
+    sub_str = "/twostepAuthSettings"
+    if otpurl.find(sub_str) != -1:
+        # print("Need to enter OTP for login. Please paste the OTP here")
+        # wait_time = 60
+        # start_time = time.perf_counter()
+        # otp = ""
+        # while (time.perf_counter() - start_time) < wait_time:
+        #     otp = input()
+        #     if len(otp) > 0:
+        #         print("OTP Recieved")
+        # if len(otp) == 0:
+        #     print("You did not enter an OTP!!")
+        #     exit(999)
+
+        timeout = 60
+        t = Timer(timeout, print, ['You did not enter the OTP'])
+        t.start()
+        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+        otp = input(prompt)
+        t.cancel()
+
+        driver.find_element_by_id("edit-twostep-code").send_keys(otp)
+        time.sleep(1)
+
+        driver.find_element_by_id("edit-twostep").click()
     WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
     time.sleep(0.5)
@@ -100,7 +129,33 @@ def login_to_cozeva_cert():
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
-    time.sleep(2)
+    time.sleep(4)
+    otpurl = driver.current_url
+    sub_str = "/twostepAuthSettings"
+    if otpurl.find(sub_str) != -1:
+        # print("Need to enter OTP for login. Please paste the OTP here")
+        # wait_time = 60
+        # start_time = time.perf_counter()
+        # otp = ""
+        # while (time.perf_counter() - start_time) < wait_time:
+        #     otp = input()
+        #     if len(otp) > 0:
+        #         print("OTP Recieved")
+        # if len(otp) == 0:
+        #     print("You did not enter an OTP!!")
+        #     exit(999)
+
+        timeout = 60
+        t = Timer(timeout, print, ['You did not enter the OTP'])
+        t.start()
+        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+        otp = input(prompt)
+        t.cancel()
+
+        driver.find_element_by_id("edit-twostep-code").send_keys(otp)
+        time.sleep(1)
+
+        driver.find_element_by_id("edit-twostep").click()
     WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
     time.sleep(0.5)
@@ -123,7 +178,35 @@ def login_to_cozeva_stage():
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
-    time.sleep(2)
+    time.sleep(4)
+    otpurl = driver.current_url
+    sub_str = "/twostepAuthSettings"
+    if otpurl.find(sub_str) != -1:
+        # print("Need to enter OTP for login. Please paste the OTP here")
+        # wait_time = 60
+        # start_time = time.perf_counter()
+        # otp = ""
+        # while (time.perf_counter() - start_time) < wait_time:
+        #     otp = input()
+        #     if len(otp) > 0:
+        #         print("OTP Recieved")
+        # if len(otp) == 0:
+        #     print("You did not enter an OTP!!")
+        #     exit(999)
+
+        timeout = 60
+        t = Timer(timeout, print, ['You did not enter the OTP'])
+        t.start()
+        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+        otp = input(prompt)
+        t.cancel()
+
+        driver.find_element_by_id("edit-twostep-code").send_keys(otp)
+        time.sleep(1)
+
+        driver.find_element_by_id("edit-twostep").click()
+
+
     WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
     time.sleep(0.5)
@@ -288,6 +371,9 @@ def new_launch():
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
     context_functions.init_global_search()
+    if checklist[16] == 1:
+        context_functions.market_sheet(driver, workbook,logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
     if checklist[0] == 1:
         context_functions.support_menubar(driver,workbook, ws, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
@@ -332,20 +418,22 @@ def new_launch():
     if checklist[18] == 1:
         context_functions.map_codingtool(driver, workbook, logger, run_from, guiwindow.verification_specs[1])
         workbook.save(report_folder + "\\Report.xlsx")
-    if checklist[16] == 1:
-        context_functions.market_sheet(driver, workbook,logger, run_from)
-        workbook.save(report_folder + "\\Report.xlsx")
+
     if checklist[23] == 1:
         context_functions.cetoggle(driver, workbook, logger, report_folder, run_from)
 
 
     workbook.save(report_folder + "\\Report.xlsx")
 
-def cozeva_support():
+def cozeva_support(environment):
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
-    switch_customer_context(guiwindow.verification_specs[1])
+    if environment == "PROD":
+        switch_customer_context(guiwindow.verification_specs[1])
+    elif environment == "CERT":
+        switch_customer_context_cert(guiwindow.verification_specs[1])
+
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
