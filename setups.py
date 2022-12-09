@@ -441,6 +441,7 @@ def cozeva_support(environment):
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
     context_functions.init_global_search()
+    time.sleep(3)
     if checklist[0] == 1:
         context_functions.support_menubar(driver, workbook, ws, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
