@@ -43,7 +43,7 @@ if __name__ == '__main__':
         if launchstyle == "Def":
             setups.cozeva_support(environment)
         elif launchstyle == "NC":
-            setups.new_launch()
+            setups.new_launch(environment)
     elif guiwindow.verification_specs[2] == "Offshore":
         roleset = guiwindow.verification_specs[3]
         for roles in roleset:
