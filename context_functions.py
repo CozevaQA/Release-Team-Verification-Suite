@@ -87,6 +87,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
             print(context_name)
             if context_name is None or context_name == "":
                 print("EXECUTION FAILED. PLEASE RERUN" )
+                driver.quit()
                 exit(99999)
             test_case_id += 1
             ws.append((test_case_id, '', 'Set context to: ' + context_name, 'Passed'))
