@@ -361,12 +361,15 @@ def switch_to_registries():
         print("in registries")
         return
 
-def new_launch():
+def new_launch(environment):
     print("Entered New Launch")
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
-    switch_customer_context(guiwindow.verification_specs[1])
+    if environment == "PROD":
+        switch_customer_context(guiwindow.verification_specs[1])
+    elif environment == "CERT":
+        switch_customer_context_cert(guiwindow.verification_specs[1])
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]

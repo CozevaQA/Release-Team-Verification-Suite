@@ -5146,9 +5146,9 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                                 sf.action_click(pencil_options[option_counter], driver)
 
                                 # click on confirm
-                                time.sleep(1)
-                                sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
-                                time.sleep(2)
+                                # time.sleep(1)
+                                # sf.action_click(driver.find_element_by_xpath(config.get("MAP", "confirm_modal_xpath")), driver)
+                                # time.sleep(2)
                                 # wait for page to load
                                 sf.ajax_preloader_wait(driver)
 
@@ -5164,7 +5164,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                                         print("Stale icon found ")
                                         stale_icon = 1
                                         break
-                                    if (x == 10):
+                                    if (x == 25):
                                         break
                                     x = x + 1
                                 time_elapsed1_value = timeit.default_timer() - start_time1
@@ -5195,7 +5195,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                                         print("Checking for hollow dot ")
                                         hollow_dot_found = 1
                                         break
-                                    if (y == 10):
+                                    if (y == 25):
                                         break
                                     print("Dot Status while checking for hollow dot " + str(dot_status))
                                     y = y + 1
@@ -5252,7 +5252,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                                         if (dot_status == "non_compliant red_dot"):
                                             restored = 1
                                             break
-                                        if (z == 10):
+                                        if (z == 25):
                                             break
                                         z = z + 1
                                     if (restored == 1):
