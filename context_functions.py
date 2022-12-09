@@ -79,9 +79,15 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
+            WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.ID, "context_dropdown_arrow")))
+
             time.sleep(0.5)
             context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
             print(context_name)
+            if context_name is None or context_name == "":
+                print("EXECUTION FAILED. PLEASE RERUN" )
+                exit(99999)
             test_case_id += 1
             ws.append((test_case_id, '', 'Set context to: ' + context_name, 'Passed'))
             logger.info("if#1 block ended.")
