@@ -7,6 +7,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import context_functions
@@ -19,7 +20,7 @@ from threading import Timer
 
 import summary_sheet as ss
 
-
+global cust_switched
 driver = ""
 details = ""
 
@@ -68,7 +69,7 @@ def create_folders(role):
     return str(path)
 
 
-def login_to_cozeva():
+def login_to_cozeva(CusID):
     driver.get(locator.logout_link)
     driver.get(locator.login_link)
     driver.maximize_window()
@@ -107,9 +108,25 @@ def login_to_cozeva():
         time.sleep(1)
 
         driver.find_element_by_id("edit-twostep").click()
+
     WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
     time.sleep(0.5)
+
+    global cust_switched
+    cust_switched = 0
+    try:
+        # trying to switch customercontext before registries load
+        dropdown_element = Select(driver.find_element(By.ID, "select-customer"))
+        time.sleep(1)
+        dropdown_element.select_by_value(CusID)
+        # dropdown_element.select_by_visible_text("OPTUM")
+        time.sleep(0.5)
+        cust_switched = 1
+    except Exception as e:
+        cust_switched = 0
+        traceback.print_exc()
+
     driver.find_element_by_id("edit-submit").click()
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 30).until(
@@ -117,7 +134,7 @@ def login_to_cozeva():
     print("Logged in to Cozeva!")
 
 
-def login_to_cozeva_cert():
+def login_to_cozeva_cert(CusID):
     driver.get(locator.logout_link_cert)
     driver.get(locator.login_link_cert)
     driver.maximize_window()
@@ -133,18 +150,6 @@ def login_to_cozeva_cert():
     otpurl = driver.current_url
     sub_str = "/twostepAuthSettings"
     if otpurl.find(sub_str) != -1:
-        # print("Need to enter OTP for login. Please paste the OTP here")
-        # wait_time = 60
-        # start_time = time.perf_counter()
-        # otp = ""
-        # while (time.perf_counter() - start_time) < wait_time:
-        #     otp = input()
-        #     if len(otp) > 0:
-        #         print("OTP Recieved")
-        # if len(otp) == 0:
-        #     print("You did not enter an OTP!!")
-        #     exit(999)
-
         timeout = 60
         t = Timer(timeout, print, ['You did not enter the OTP'])
         t.start()
@@ -156,9 +161,25 @@ def login_to_cozeva_cert():
         time.sleep(1)
 
         driver.find_element_by_id("edit-twostep").click()
+
     WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
     time.sleep(0.5)
+    global cust_switched
+    cust_switched = 0
+    try:
+        #trying to switch customercontext before registries load
+        dropdown_element = Select(driver.find_element(By.ID, "select-customer"))
+        time.sleep(1)
+        dropdown_element.select_by_value(CusID)
+        #dropdown_element.select_by_visible_text("OPTUM")
+        time.sleep(0.5)
+        cust_switched = 1
+    except Exception as e:
+        cust_switched = 0
+        traceback.print_exc()
+
+
     driver.find_element_by_id("edit-submit").click()
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 30).until(
@@ -224,6 +245,7 @@ def switch_customer_context(cusID):
         session_var = 'app_id=registries&custId=' + str(sm_customer_id) + '&payerId=' + str(
             sm_customer_id) + '&orgId=' + str(sm_customer_id)
         encoded_string = base64.b64encode(session_var.encode('utf-8'))
+        print("https://www.cozeva.com/registries?session=" + encoded_string.decode('utf-8'))
         driver.get("https://www.cozeva.com/registries?session=" + encoded_string.decode('utf-8'))
         sf.ajax_preloader_wait(driver)
         print("Navigated to customer's context")
@@ -366,10 +388,11 @@ def new_launch(environment):
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
-    if environment == "PROD":
-        switch_customer_context(guiwindow.verification_specs[1])
-    elif environment == "CERT":
-        switch_customer_context_cert(guiwindow.verification_specs[1])
+    if cust_switched == 0:
+        if environment == "PROD":
+            switch_customer_context(guiwindow.verification_specs[1])
+        elif environment == "CERT":
+            switch_customer_context_cert(guiwindow.verification_specs[1])
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
@@ -432,10 +455,11 @@ def cozeva_support(environment):
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
-    if environment == "PROD":
-        switch_customer_context(guiwindow.verification_specs[1])
-    elif environment == "CERT":
-        switch_customer_context_cert(guiwindow.verification_specs[1])
+    if cust_switched == 0:
+        if environment == "PROD":
+            switch_customer_context(guiwindow.verification_specs[1])
+        elif environment == "CERT":
+            switch_customer_context_cert(guiwindow.verification_specs[1])
 
     ws = None
     run_from = "Cozeva Support"
@@ -540,6 +564,7 @@ def limited_cozeva_support(username):
     ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
 
+
 def customer_support(username):
     report_folder = create_folders("Customer Support")
     workbook = create_reporting_workbook(report_folder)
@@ -592,6 +617,7 @@ def customer_support(username):
     ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
 
+
 def regional_suport(username):
     report_folder = create_folders("Regional Support")
     workbook = create_reporting_workbook(report_folder)
@@ -641,6 +667,7 @@ def regional_suport(username):
     ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
 
+
 def office_admin_Prac(username):
     report_folder = create_folders("Office Admin Practice Delegate")
     workbook = create_reporting_workbook(report_folder)
@@ -681,6 +708,7 @@ def office_admin_Prac(username):
     ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
 
+
 def office_admin_prov(username):
     report_folder = create_folders("Office Admin Provider Delegate")
     workbook = create_reporting_workbook(report_folder)
@@ -714,6 +742,7 @@ def office_admin_prov(username):
     switch_back()
     ss.summarize_report(workbook, report_folder)
     workbook.save(report_folder + "\\Report.xlsx")
+
 
 def prov(username):
     report_folder = create_folders("Provider")
