@@ -276,8 +276,12 @@ def practice_menubar(driver, workbook, logger, run_from):
                 zero_prac_flag[2], zero_prac_flag[1], zero_prac_flag[0] = 2, 2, 2
 
 
-            selected_practice = list_of_practice_elements[
-                sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a')
+            if len(list_of_practice_elements) > 1:
+                selected_practice = list_of_practice_elements[
+                    sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a')
+            elif len(list_of_practice_elements) == 1:
+                selected_practice = list_of_practice_elements[0].find_element_by_tag_name('a')
+
             global global_search_prac
             global_search_prac = selected_practice.text
             selected_practice.click()
@@ -382,8 +386,12 @@ def provider_menubar(driver, workbook, logger, run_from):
                 traceback.print_exc()
                 zero_prov_flag[2],zero_prov_flag[1],zero_prov_flag[0] = 2,2,2
 
-            selected_provider = list_of_provider_elements[
-                sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[1]
+            if len(list_of_provider_elements) > 1:
+                selected_provider = list_of_provider_elements[
+                    sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[1]
+            elif len(list_of_provider_elements) == 1:
+                selected_provider = list_of_provider_elements[0].find_elements_by_tag_name('a')[1]
+
             global global_search_prov
             global_search_prov = selected_provider.text
             selected_provider.click()
@@ -814,12 +822,19 @@ def provider_registry(driver, workbook, logger, run_from):
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
                 'tr')
             global global_search_prov
-            global_search_prov = list_of_provider_elements[
-                sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[
-                1].text
-            list_of_provider_elements[
-                sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[
-                1].click()
+            if len(list_of_provider_elements) > 1:
+                global_search_prov = list_of_provider_elements[
+                    sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[
+                    1].text
+            elif len(list_of_provider_elements) == 1:
+                global_search_prov = list_of_provider_elements[0].find_elements_by_tag_name('a')[1].text
+            if len(list_of_provider_elements) > 1:
+                list_of_provider_elements[
+                    sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[
+                    1].click()
+            elif len(list_of_provider_elements) == 1:
+                list_of_provider_elements[0].find_elements_by_tag_name('a')[1].click()
+
         except Exception as e:
             ws.append([test_case_id, "Attempting to navigate to a random provider", 'Navigation to provider context',
                        'Failed', 'x',
@@ -1103,14 +1118,21 @@ def practice_registry(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
-            list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_elements_by_tag_name(
-                'tr')
+            list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name('tbody').find_elements_by_tag_name('tr')
             global global_search_prac
-            global_search_prac = list_of_practice_elements[
-                sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a').text
+            if len(list_of_practice_elements) > 1:
+                global_search_prac = list_of_practice_elements[
+                    sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a').text
+            elif len(list_of_practice_elements) == 1:
+                global_search_prac = list_of_practice_elements[0].find_element_by_tag_name('a').text
 
-            list_of_practice_elements[
-                sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a').click()
+
+            if len(list_of_practice_elements) > 1:
+                list_of_practice_elements[
+                    sf.RandomNumberGenerator(len(list_of_practice_elements), 1)[0]].find_element_by_tag_name('a').click()
+            elif len(list_of_practice_elements) == 1:
+                list_of_practice_elements[0].find_element_by_tag_name('a').click()
+
             sf.ajax_preloader_wait(driver)
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
