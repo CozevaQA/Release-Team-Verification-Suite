@@ -984,7 +984,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 else:
                     ws.append(['No Metrics on this Provider Registry'])
                     raise Exception("No Metrics on this Provider Registry")
-                loop_counter+=1
+                loop_counter += 1
 
             else:
                 ws.append(['Quit this section because there are no metrics with patients'])
@@ -1000,11 +1000,20 @@ def provider_registry(driver, workbook, logger, run_from):
             patient_id = 'Couldn\'t Fetch'
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
+            if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
+                driver.find_element_by_class_name('dt_tag_close').click()
+                sf.ajax_preloader_wait(driver)
+            time.sleep(3)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.ID, "quality_registry_list")))
             patients = driver.find_element_by_id("quality_registry_list").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
             if len(patients) > 1:
                 patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
             elif len(patients) == 1:
+                if patients[0].text == "No data available":
+                    raise Exception("No patients available in this MSPL")
                 patients[0].find_element_by_class_name('pat_name').click()
             else:
                 ws.append(['Mspl has no patients: ' + global_search_prov])
@@ -1957,10 +1966,18 @@ def provider_mspl(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
-            list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
+            list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name('tbody').find_elements_by_tag_name(
                 'tr')
-            selected_provider = list_of_provider_elements[
-                sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[1]
+            if len(list_of_provider_elements) > 1:
+                selected_provider = list_of_provider_elements[
+                    sf.RandomNumberGenerator(len(list_of_provider_elements), 1)[0]].find_elements_by_tag_name('a')[1]
+            elif len(list_of_provider_elements) == 1:
+                if list_of_provider_elements.text == "No data available":
+                    raise Exception("No Providers!!")
+                selected_provider = list_of_provider_elements[0].find_elements_by_tag_name('a')[1]
+
+
+
             global global_search_prov
             global_search_prov = selected_provider.text
             selected_provider.click()
@@ -1968,8 +1985,7 @@ def provider_mspl(driver, workbook, logger, run_from):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
         except Exception as e:
-            ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed',
-                       "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied", driver.current_url])
+            ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed', "Either the Provider list is empty", driver.current_url])
             print(e)
             traceback.print_exc()
             return
@@ -1982,7 +1998,7 @@ def provider_mspl(driver, workbook, logger, run_from):
             metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
             percent = '0.00'
             loop_count = 0
-            while percent == '0.00' or percent == '0.00%':
+            while percent == '0.00' or percent == '0.00 %':
                 if loop_count < 10:
                     if len(metrics) > 1:
                         selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
