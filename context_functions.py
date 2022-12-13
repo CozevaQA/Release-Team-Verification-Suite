@@ -1955,6 +1955,7 @@ def provider_mspl(driver, workbook, logger, run_from):
         logger.info("Nagivated to Provider Registry")
         # Now, Select a random metric that is not 0/0
         try:
+            window_switched = 0
             metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
             percent = '0.00'
             loop_count = 0
