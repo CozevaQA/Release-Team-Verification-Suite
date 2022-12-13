@@ -1,15 +1,7 @@
-
-
 try:
     import variablestorage
 except IndexError as e:
     import FirstTimeSetup
-
-
-# Pull
-# Kaushik da test
-
-
 
 import guiwindow
 import setups
@@ -36,9 +28,9 @@ if __name__ == '__main__':
     setups.driver_setup()
     driver_created = 1
     if environment == "PROD":
-        setups.login_to_cozeva()
+        setups.login_to_cozeva(guiwindow.verification_specs[1])
     elif environment == "CERT":
-        setups.login_to_cozeva_cert()
+        setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
     if guiwindow.verification_specs[2] == "Onshore":
         if launchstyle == "Def":
             setups.cozeva_support(environment)
