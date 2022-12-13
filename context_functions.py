@@ -958,7 +958,7 @@ def provider_registry(driver, workbook, logger, run_from):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
         loop_counter = 0
-        while percent == '0.00' or percent == '0.00%':
+        while percent == '0.00' or percent == '0.00 %':
             if loop_counter < 10:
                 if len(metrics) > 1:
                     selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
@@ -969,6 +969,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 else:
                     ws.append(['No Metrics on this Provider Registry'])
                     raise Exception("No Metrics on this Provider Registry")
+                loop_counter+=1
 
             else:
                 ws.append(['Quit this section because there are no metrics with patients'])
@@ -5358,7 +5359,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
         driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
         patient_found = ""
         for quarter in range(2):
-            quarter = quarter + 1
+            #quarter = quarter + 1
             if (patient_found == "Found"):
                 break
             for lob in range(len(lobs)):
