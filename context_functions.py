@@ -3606,10 +3606,23 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
                 #global global_search_prac
                 global_search_prac = selectedPracticeName
             else:
-                selectedPractice = practices[0].find_elements_by_tag_name('a')[1]
-                selectedPracticeName = selectedPractice.text
-                #global global_search_prac
-                global_search_prac = selectedPracticeName
+                try:
+                    if practices[0].text == "No data available":
+                        global_search_prac = "Couldn't fetch a practice"
+                    else:
+                        selectedPractice = practices[0].find_elements_by_tag_name('a')[1]
+                        selectedPracticeName = selectedPractice.text
+                        global_search_prac = selectedPracticeName
+                except Exception as e:
+                    ws.append([test_case_id, context_name,
+                               'Navigation to a practice registry from the pratice tab of support MSPL :' + selected_metric_name,
+                               'Failed', '',
+                               'No Practices available',
+                               driver.current_url])
+                    test_case_id += 1
+                    print(e)
+                    traceback.print_exc()
+
 
 
         except Exception as e:
@@ -3647,10 +3660,24 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
                 global global_search_prov
                 global_search_prov = selectedProviderName
             else:
-                selectedProvider = providers[0].find_elements_by_tag_name('a')[2]
-                selectedProviderNameName = selectedProvider.text
-                # global global_search_prov
-                global_search_prov = selectedProviderName
+                try:
+                    if providers[0].text == "No Data Available":
+                        global_search_prov = "Couldn't fetch provider name"
+                    else:
+                        selectedProvider = providers[0].find_elements_by_tag_name('a')[2]
+                        selectedProviderNameName = selectedProvider.text
+                        # global global_search_prov
+                        global_search_prov = selectedProviderName
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+                    ws.append([test_case_id, context_name,
+                               'Navigation to a provider registry from the provider tab of support MSPL :' + selected_metric_name,
+                               'Failed', '',
+                               'No providers available',
+                               driver.current_url])
+                    test_case_id += 1
+
 
 
         except Exception as e:
@@ -3689,9 +3716,22 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
                 czid = sf.get_patient_id(selectedPatient)
                 global_search_pat = czid
             else:
-                selectedPatient = patients[0].find_elements_by_class_name('pat_name')[0].get_attribute("href")
-                czid = sf.get_patient_id(selectedPatient)
-                global_search_pat = czid
+                try:
+                    if patients[0].text == "No Data Available":
+                        global_search_pat = "Couldn't fetch a patient ID"
+                    else:
+                        selectedPatient = patients[0].find_elements_by_class_name('pat_name')[0].get_attribute("href")
+                        czid = sf.get_patient_id(selectedPatient)
+                        global_search_pat = czid
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+                    ws.append([test_case_id, context_name,
+                               'Navigation to patient context from the patients tab of support MSPL :' + selected_metric_name,
+                               'Failed', '', 'No available patients',
+                               driver.current_url])
+                    test_case_id += 1
+
 
 
         except Exception as e:
