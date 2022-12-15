@@ -1303,8 +1303,13 @@ def practice_registry(driver, workbook, logger, run_from):
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
-            selected_patient = patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name(
-                'pat_name')
+            if len(patients) > 1:
+                selected_patient = patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name(
+                    'pat_name')
+            elif len(patients) == 1:
+                if patients[0].text == "No Data Available":
+                    raise Exception("No patients in this MSPL")
+                selected_patient = patients[0].find_element_by_class_name('pat_name')
             selected_patient_name = selected_patient.text
             selected_patient.click()
             driver.switch_to.window(driver.window_handles[1])
@@ -1343,7 +1348,7 @@ def practice_registry(driver, workbook, logger, run_from):
             ws.append(
                 [test_case_id, context_name,
                  "Navigation to patient context through patient toggle of practice Metric Specific List", 'Failed', '',
-                 'Couldn\'t navigate into a random provider from the MSPL', driver.current_url])
+                 'No patients in patient tab', driver.current_url])
             test_case_id += 1
             if window_switched == 1:
                 driver.close()
