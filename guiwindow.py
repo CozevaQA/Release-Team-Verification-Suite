@@ -13,7 +13,7 @@ roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
 #verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
 env = "PROD"
-headlessmode = 1
+headlessmode = 0
 Window_location = 1 #1 = left, 0 = Right
 grid_row = 2
 
