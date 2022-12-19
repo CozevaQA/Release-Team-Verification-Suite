@@ -2018,14 +2018,14 @@ def provider_mspl(driver, workbook, logger, run_from):
                         ws.append([
                             'No measures in selected provider\'s List: ' + global_search_prov + ', Please run Provider MSPL again'])
                         driver.get(main_registry_url)
-                        sf.ajax_preloader_wait()
+                        sf.ajax_preloader_wait(driver)
                         return
 
                 else:
                     ws.append([
                         'Please Run provider MSPL again. Code was stuck in an infitite loop looking for a non 0/0 metric: ' + global_search_prov])
                     driver.get(main_registry_url)
-                    sf.ajax_preloader_wait()
+                    sf.ajax_preloader_wait(driver)
                     return
             selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
             selectedMetric.click()
