@@ -267,7 +267,7 @@ def action_click(element):
 
 def nav_back():
     loader_element = 'sm_download_cssload_loader_wrap'
-    WebDriverWait(driver, 10).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
+    WebDriverWait(driver, 90).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
     back_xpath = "//i[text()=\"arrow_back\"]"
     back = driver.find_element_by_xpath(back_xpath)
     back.click()
