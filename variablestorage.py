@@ -66,6 +66,7 @@ logout_link_cert = "https://cert.cozeva.com/user/logout"
 login_link_stage = "https://stage.cozeva.com/user/login"
 logout_link_stage = "https://stage.cozeva.com/user/logout"
 parent_dir = "C:\\VerificationReports\\"
+download_dir = "C:\\VerificationReports\\DownloadDirectory\\"
 
 #accordian validation stuff
 

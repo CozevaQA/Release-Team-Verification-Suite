@@ -5814,7 +5814,6 @@ def cetoggle(driver, workbook, logger, screenshot_path, run_from):
 
     if CE_checkbox.is_selected():
         CEstatus = 'ON'
-
     else:
         CEstatus = 'OFF'
 
@@ -5834,6 +5833,28 @@ def cetoggle(driver, workbook, logger, screenshot_path, run_from):
 
     sf.captureScreenshot(driver, "CE " + CEstatus, screenshot_path)
     time.sleep(1)
+
+def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
+    workbook.create_sheet('HCC Validation')
+    ws = workbook['HCC Validation']
+
+    ws.append(['ID', 'Context', 'Scenario', 'Status', 'Comments'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws['A1'].font = header_font
+    ws['A1'].fill = header_cell_color
+    ws['B1'].font = header_font
+    ws['B1'].fill = header_cell_color
+    ws['C1'].font = header_font
+    ws['C1'].fill = header_cell_color
+    ws['D1'].font = header_font
+    ws['D1'].fill = header_cell_color
+    ws['E1'].font = header_font
+    ws['E1'].fill = header_cell_color
+
+    ws.name = "Arial"
+    test_case_id = 1
+
 
 
 

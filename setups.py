@@ -36,8 +36,11 @@ def driver_setup():
     options.add_argument('--disable-gpu')
     # options.add_argument("--window-size=1920,1080")
     # options.add_argument("--start-maximized")
-    options.add_argument("--no-sandbox");
-    options.add_argument("--dns-prefetch-disable");
+    options.add_argument("--no-sandbox")
+    options.add_argument("--dns-prefetch-disable")
+    preferences = {
+        "download.default_directory": locator.download_dir}
+    options.add_experimental_option("prefs", preferences)
     global driver
     driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
     print(guiwindow.Window_location)
@@ -444,9 +447,11 @@ def new_launch(environment):
     if checklist[18] == 1:
         context_functions.map_codingtool(driver, workbook, logger, run_from, guiwindow.verification_specs[1])
         workbook.save(report_folder + "\\Report.xlsx")
-
     if checklist[23] == 1:
         context_functions.cetoggle(driver, workbook, logger, report_folder, run_from)
+    if checklist[29] == 1:
+        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
 
 
     workbook.save(report_folder + "\\Report.xlsx")
@@ -505,6 +510,9 @@ def cozeva_support(environment):
     if checklist[12] == 1:
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[29] == 1:
+        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
 
     workbook.save(report_folder+"\\Report.xlsx")
     ss.summarize_report(workbook, report_folder)
@@ -556,6 +564,9 @@ def limited_cozeva_support(username):
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[29] == 1:
+        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
@@ -610,6 +621,9 @@ def customer_support(username):
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[29] == 1:
+        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
