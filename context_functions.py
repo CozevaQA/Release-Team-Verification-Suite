@@ -5930,11 +5930,11 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
     sf.ajax_preloader_wait(driver)
     driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
     Quarter_list = driver.find_element(By.XPATH, "//*[@id='filter-quarter']").find_elements(By.TAG_NAME, "li")
-    # for quarter in Quarter_list:
-    #     if quarter.text == "The year from GUI/Console":
-    #         quarter.click()
-    #         break
-    Quarter_list[0].click()
+    for quarter in Quarter_list:
+        if quarter.text == "2022":
+            quarter.click()
+            break
+    #Quarter_list[0].click()
     LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, 'li')
     for i in range(0, len(LOB_list)):
         LOB_Name = LOB_list[i].text
@@ -6052,8 +6052,11 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                                      result[2], "NA", "NA", result[0], result[0] + result[1] + result[2], "NA", 'Failed',
                                      'The Compliant and total patient count of UI is not matching with export'])
                                 # ws.conditional_formatting.add("J1:O100", rule1)
-                    k -= 1
-                    driver.get(Provider_Specific_url)
+                        k -= 1
+                        driver.get(Provider_Specific_url)
+                        sf.ajax_preloader_wait(driver)
+                        ListRow = driver.find_element(By.XPATH, "//*[@id='metric-support-prov-ls']").find_element(
+                            By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, 'tr')
             except NoSuchElementException:
                 Comments = "HCC measure with id " + str(i) + " not found in LOB " + LOB_Name
                 # ws.append([LOB_Name, str(i), '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', 'Unexecuted', Comments])
