@@ -5976,7 +5976,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                 else:
                     #k = random.randint(2, len(ListRow)-1)
                     #k = int(input("Enter the number of providers you want to check for the Measure "+Measure+" among the number of providers "+str(len(ListRow))+":\n"))
-                    k = 1
+                    k = 2
                     while k != 0:
                         Row = ListRow[random.randint(0, len(ListRow)-1)]
                         #Row = ListRow[random.randint(0, len(ListRow)-k)]
@@ -6020,7 +6020,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                                 ws.append([LOB_Name, Measure, "NA", "NA",
                                            str(DataToBeValidated_num) + "/" + str(DataToBeValidated_denum), "NA", "NA",
                                            "NA", result[3], result[4], "NA", "NA", str(num) + "/" + str(denum), 'Failed',
-                                           "The HCC score for this measure is not matching with UI and Export"])
+                                           "The HCC score for this measure is not matching with UI and Export"+Provider_Specific_url] )
                         elif i == 554 or i == 555:
                             if int(DataToBeValidated_num) == int(DataToBeValidated_denum)-int(result[1])-int(result[2]):
                                 ws.append(
@@ -6034,7 +6034,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                                     [LOB_Name, Measure, DataToBeValidated_num, DataToBeValidated_denum, "NA",
                                      int(DataToBeValidated_denum)-int(result[1])-int(result[2]), result[1],
                                      result[2], "NA", "NA", result[0], result[0] + result[1] + result[2], "NA", 'Failed',
-                                     'The Compliant and total patient count of UI is not matching with export'])
+                                     'The Compliant and total patient count of UI is not matching with export'+Provider_Specific_url])
                         else:
                             if int(DataToBeValidated_num) == int(result[0]) and int(DataToBeValidated_denum) == int(
                                     result[0] + result[1] + result[2]):
@@ -6050,10 +6050,10 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                                     [LOB_Name, Measure, DataToBeValidated_num, DataToBeValidated_denum, "NA", result[0],
                                      result[1],
                                      result[2], "NA", "NA", result[0], result[0] + result[1] + result[2], "NA", 'Failed',
-                                     'The Compliant and total patient count of UI is not matching with export'])
+                                     'The Compliant and total patient count of UI is not matching with export'+Provider_Specific_url])
                                 # ws.conditional_formatting.add("J1:O100", rule1)
                         k -= 1
-                        driver.get(Provider_Specific_url)
+                        driver.get(Measure_Specific_url)
                         sf.ajax_preloader_wait(driver)
                         ListRow = driver.find_element(By.XPATH, "//*[@id='metric-support-prov-ls']").find_element(
                             By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, 'tr')
