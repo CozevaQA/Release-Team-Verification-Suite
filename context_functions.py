@@ -6074,6 +6074,8 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                 driver.get(LOB_Specific_URL)
                 sf.ajax_preloader_wait(driver)
                 #time.sleep(3)
+                if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                    driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
                 workbook.save(screenshot_path + "\\Report.xlsx")
         sf.ajax_preloader_wait(driver)
         driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
