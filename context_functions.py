@@ -5844,7 +5844,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
     #Push to HCc validation
 
     ws.append(
-        ['LOB', 'Domain Name Check', 'HCC Measure Name', 'Performance Statistics Check', 'Network Comparison Check',
+        ['LOB', 'HCC Measure Name', 'Domain Name Check', 'Performance Statistics Check', 'Network Comparison Check',
          'Risk Score Check', 'Comments','Provider Row URL'])
     header = NamedStyle(name="header")
     header.font = Font(bold=True)
@@ -6049,20 +6049,20 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                             denum = denum - temp
                             denum = round(denum, 3)
                             if abs(float(DataToBeValidated_num) - num) < 0.015 and abs(float(DataToBeValidated_denum) - denum) < 0.015:
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
                             else:
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
                         elif i == 554 or i == 555:
                             if int(DataToBeValidated_num) == int(DataToBeValidated_denum)-int(result[1])-int(result[2]):
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
                             else:
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
                         else:
                             if int(DataToBeValidated_num) == int(result[0]) and int(DataToBeValidated_denum) == int(
                                     result[0] + result[1] + result[2]):
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', '-', Provider_Specific_url])
                             else:
-                                ws.append([LOB_Name, Domain_comment, Measure, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
+                                ws.append([LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', '-', Provider_Specific_url])
                         k -= 1
                         driver.get(Measure_Specific_url)
                         sf.ajax_preloader_wait(driver)
@@ -6070,23 +6070,29 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                         By.TAG_NAME,"tbody").find_elements(By.TAG_NAME, 'tr')
             except NoSuchElementException:
                 if i == 33:
-                    Comments = "For LOB "+ Measure +",the Risk Measure- One Year Recapture Rate/Review of Chronic Conditions(ID:"+str(i)+") is not present"
+                    Comments = "For LOB "+ LOB_Name +",the Risk Measure- One Year Recapture Rate/Review of Chronic Conditions(ID:"+str(i)+") is not present"
+                    Measure = "One Year Recapture Rate/Review of Chronic Conditions"
                 elif i == 551:
-                    Comments = "For LOB " + Measure + ",the Risk Measure- Review of Suspect Conditions(ID:" + str(
+                    Comments = "For LOB " + LOB_Name + ",the Risk Measure- Review of Suspect Conditions(ID:" + str(
                         i) + ") is not present"
+                    Measure = "Review of Suspect Conditions"
                 elif i == 553:
-                    Comments = "For LOB " + Measure + ",the Risk Measure- HCC Score(ID:" + str(
+                    Comments = "For LOB " + LOB_Name + ",the Risk Measure- HCC Score(ID:" + str(
                         i) + ") is not present"
+                    Measure = "HCC Score"
                 elif i == 554:
-                    Comments = "For LOB " + Measure + ",the Risk Measure- Review of ACA Chronic Conditions(ID:" + str(
+                    Comments = "For LOB " + LOB_Name + ",the Risk Measure- Review of ACA Chronic Conditions(ID:" + str(
                         i) + ") is not present"
+                    Measure= "Review of ACA Chronic Conditions"
                 elif i == 555:
-                    Comments = "For LOB " + Measure + ",the Risk Measure- Review of ACA Suspect Conditions(ID:" + str(
+                    Comments = "For LOB " + LOB_Name + ",the Risk Measure- Review of ACA Suspect Conditions(ID:" + str(
                         i) + ") is not present"
+                    Measure = "Review of ACA Suspect Conditions"
                 else:
-                    Comments = "For LOB " + Measure + ",the Risk Measure- ACA HCC Score(ID:" + str(
+                    Comments = "For LOB " + LOB_Name + ",the Risk Measure- ACA HCC Score(ID:" + str(
                         i) + ") is not present"
-                ws.append([LOB_Name, '-', '-', '-', '-', 'Undetermined', Comments,'-'])
+                    Measure = "ACA HCC Score"
+                ws.append([LOB_Name, Measure, '-', '-', '-', 'Undetermined', Comments,'-'])
                 # cellname = "N" + str(SheetRowName)
                 # ws[''+cellname+''].fill = gray_background
                 # # ws.conditional_formatting.add("J1:O100", rule3)
