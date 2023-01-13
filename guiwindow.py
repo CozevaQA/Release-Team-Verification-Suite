@@ -216,17 +216,17 @@ def launchgui():
 
     def create_roleset():
         if limited_cozeva_support_var.get() == 1:
-            roleset.update({"Limited Cozeva Support":limited_cozeva_support_textbox.get()})
+            roleset.update({"Limited Cozeva Support":limited_cozeva_support_textbox.get().strip()})
         if customer_support_var.get() == 1:
-            roleset.update({"Customer Support": customer_support_textbox.get()})
+            roleset.update({"Customer Support": customer_support_textbox.get().strip()})
         if regional_support_var.get() == 1:
-            roleset.update({"Regional Support": regional_support_textbox.get()})
+            roleset.update({"Regional Support": regional_support_textbox.get().strip()})
         if office_admin_practice_var.get() == 1:
-            roleset.update({"Office Admin Practice Delegate": office_admin_practice_textbox.get()})
+            roleset.update({"Office Admin Practice Delegate": office_admin_practice_textbox.get().strip()})
         if office_admin_provider_var.get() == 1:
-            roleset.update({"Office Admin Provider Delegate": office_admin_provider_textbox.get()})
+            roleset.update({"Office Admin Provider Delegate": office_admin_provider_textbox.get().strip()})
         if provider_var.get() == 1:
-            roleset.update({"Provider": provider_textbox.get()})
+            roleset.update({"Provider": provider_textbox.get().strip()})
 
     def create_checklist():
         checklist[0] = support_sidemenu_var.get()
