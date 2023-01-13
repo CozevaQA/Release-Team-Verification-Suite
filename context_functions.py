@@ -5976,7 +5976,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                 else:
                     #k = random.randint(2, len(ListRow)-1)
                     #k = int(input("Enter the number of providers you want to check for the Measure "+Measure+" among the number of providers "+str(len(ListRow))+":\n"))
-                    k = 2
+                    k = 5
                     while k != 0:
                         Row = ListRow[random.randint(0, len(ListRow)-1)]
                         #Row = ListRow[random.randint(0, len(ListRow)-k)]
