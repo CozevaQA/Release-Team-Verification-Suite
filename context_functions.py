@@ -6092,7 +6092,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                     Comments = "For LOB " + LOB_Name + ",the Risk Measure- ACA HCC Score(ID:" + str(
                         i) + ") is not present"
                     Measure = "ACA HCC Score"
-                ws.append([LOB_Name, Measure, '-', '-', '-', 'Undetermined', Comments,'-'])
+                ws.append([LOB_Name, Measure, '-', '-', '-', 'Not Present', Comments,'-'])
                 # cellname = "N" + str(SheetRowName)
                 # ws[''+cellname+''].fill = gray_background
                 # # ws.conditional_formatting.add("J1:O100", rule3)
