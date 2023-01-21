@@ -78,85 +78,87 @@ def performGlobalSearch(role, username, keywords, driver, testID):
 
 
 if __name__ == '__main__':
-    print("Hello World")
-    file = str(sf.date_time())+"_GlobalSearch.xlsx"
-    driver = setups.driver_setup()
-    if ENV == 'CERT':
-        setups.login_to_cozeva_cert()
-    elif ENV == 'STAGE':
-        setups.login_to_cozeva_stage()
-    elif ENV == "PROD":
-        setups.login_to_cozeva()
-    else:
-        print("ENV INVALID")
-        exit(3)
+    x=0
 
-    sf.ajax_preloader_wait(driver)
+print("Hello World")
+file = str(sf.date_time())+"_GlobalSearch.xlsx"
+driver = setups.driver_setup()
+if ENV == 'CERT':
+    setups.login_to_cozeva_cert("1000")
+elif ENV == 'STAGE':
+    setups.login_to_cozeva_stage()
+elif ENV == "PROD":
+    setups.login_to_cozeva("1000")
+else:
+    print("ENV INVALID")
+    exit(3)
+
+sf.ajax_preloader_wait(driver)
 
 
-    #excel_path = ""
+#excel_path = ""
 
-    wb = load_workbook("assets\\GlobalSearch.xlsx")
-    ws = wb[ENV]
-    sheet_rows = ws.rows
-    users = []
-    keywords_list = []
-    roles = []
-    for cellval in sheet_rows:
-        users.append(cellval[0].value.strip())
-        keywords_list.append(cellval[1].value.strip().split(';'))
-        roles.append(cellval[2].value.strip())
+wb = load_workbook("assets\\GlobalSearch.xlsx")
+ws = wb[ENV]
+sheet_rows = ws.rows
+users = []
+keywords_list = []
+roles = []
+for cellval in sheet_rows:
+    users.append(cellval[0].value.strip())
+    keywords_list.append(cellval[1].value.strip().split(';'))
+    roles.append(cellval[2].value.strip())
 
-    # for user in users:
-    #     print(user)
-    #
-    # for keyword in keywords_list:
-    #     print(keyword)
+# for user in users:
+#     print(user)
+#
+# for keyword in keywords_list:
+#     print(keyword)
 
-    wb1 = Workbook()
-    ws1 = wb1.active
-    ws1.title = 'Global Search ' + ENV
+wb1 = Workbook()
+ws1 = wb1.active
+ws1.title = 'Global Search ' + ENV
 
-    ws1.append(['ID', 'ROLE', 'USERNAME', 'KEYWORD', 'TIME TAKEN', 'COMMENTS'])
-    header_font = Font(color='FFFFFF', bold=False, size=12)
-    header_cell_color = PatternFill('solid', fgColor='030303')
-    ws1['A1'].font = header_font
-    ws1['A1'].fill = header_cell_color
-    ws1['B1'].font = header_font
-    ws1['B1'].fill = header_cell_color
-    ws1['C1'].font = header_font
-    ws1['C1'].fill = header_cell_color
-    ws1['D1'].font = header_font
-    ws1['D1'].fill = header_cell_color
-    ws1['E1'].font = header_font
-    ws1['E1'].fill = header_cell_color
-    ws1['F1'].font = header_font
-    ws1['F1'].fill = header_cell_color
-    ws1.name = "Arial"
-    test_case_id = 1
+ws1.append(['ID', 'ROLE', 'USERNAME', 'KEYWORD', 'TIME TAKEN', 'COMMENTS'])
+header_font = Font(color='FFFFFF', bold=False, size=12)
+header_cell_color = PatternFill('solid', fgColor='030303')
+ws1['A1'].font = header_font
+ws1['A1'].fill = header_cell_color
+ws1['B1'].font = header_font
+ws1['B1'].fill = header_cell_color
+ws1['C1'].font = header_font
+ws1['C1'].fill = header_cell_color
+ws1['D1'].font = header_font
+ws1['D1'].fill = header_cell_color
+ws1['E1'].font = header_font
+ws1['E1'].fill = header_cell_color
+ws1['F1'].font = header_font
+ws1['F1'].fill = header_cell_color
+ws1.name = "Arial"
+test_case_id = 1
 
-    for user, keywords, role in zip(users, keywords_list, roles):
-        setups.login_to_user(user)
-        setups.switch_to_registries()
-        performGlobalSearch(role, user, keywords, driver, test_case_id)
-        wb1.save(locator.parent_dir+file)
-        setups.switch_back()
+for user, keywords, role in zip(users, keywords_list, roles):
+    setups.login_to_user(user)
+    setups.switch_to_registries()
+    performGlobalSearch(role, user, keywords, driver, test_case_id)
+    wb1.save(locator.parent_dir+file)
+    setups.switch_back()
 
-    rows = ws1.max_row
-    cols = ws1.max_column
-    for i in range(2, rows + 1):
-        for j in range(5, cols + 1):
-            try:
-                dum = int(ws1.cell(i, j).value)
-            except Exception as e:
-                continue
-            if int(ws1.cell(i, j).value) < 8:
-                ws1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
-            elif int(ws1.cell(i, j).value) > 20:
-                ws1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
-            elif int(ws1.cell(i, j).value) >= 8:
-                ws1.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
-    wb1.save(locator.parent_dir + file)
+rows = ws1.max_row
+cols = ws1.max_column
+for i in range(2, rows + 1):
+    for j in range(5, cols + 1):
+        try:
+            dum = int(ws1.cell(i, j).value)
+        except Exception as e:
+            continue
+        if int(ws1.cell(i, j).value) < 8:
+            ws1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+        elif int(ws1.cell(i, j).value) > 20:
+            ws1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+        elif int(ws1.cell(i, j).value) >= 8:
+            ws1.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+wb1.save(locator.parent_dir + file)
 
 
 

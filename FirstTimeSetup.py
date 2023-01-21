@@ -20,6 +20,11 @@ isdir = os.path.isdir(path)
 if not isdir:
     os.mkdir(path)
 
+path = os.path.join("c:\\VerificationReports", "TaskIngestion")
+isdir = os.path.isdir(path)
+if not isdir:
+    os.mkdir(path)
+
 
 
 
