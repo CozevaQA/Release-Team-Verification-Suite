@@ -43,6 +43,9 @@ def master_gui():
     def on_slow_trends():
         root.destroy()
         import slowLogPlotter
+    def on_role_access():
+        root.destroy()
+
 
 
     Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=1, column=1, columnspan=5, sticky="w")
@@ -66,6 +69,8 @@ def master_gui():
                                                                                                 column=1,
                                                                                                 columnspan=5,
                                                                                                 sticky="w")
+    Button(root, text="Multi-role Access Check", command=on_role_access, font=("Nunito Sans", 10)).grid(row=7, column=1, columnspan=5, sticky="w")
+
 
 
     root.title("Release Team Master Suite")
