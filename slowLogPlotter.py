@@ -128,6 +128,8 @@ def launch_gui():
 
 
     # Execute Tkinter
+    root.title("Slow Log Trend Plotter")
+    root.iconbitmap("assets/icon.ico")
     root.mainloop()
 
 
