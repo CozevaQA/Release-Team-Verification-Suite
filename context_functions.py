@@ -6300,7 +6300,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                 # ws[''+cellname+''].fill = gray_background
                 # # ws.conditional_formatting.add("J1:O100", rule3)
                 print(Comments)
-                workbook.save(screenshot_path + "\\HCC_validation_Multi_report.xlsx")
+                workbook.save(screenshot_path + "\\report.xlsx")
                 continue
                 if flag == 5:
                     print("No more HCC measures switching to next LOB")
