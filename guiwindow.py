@@ -1,4 +1,5 @@
 import time
+import traceback
 from os import getcwd
 from tkinter import *
 
@@ -711,6 +712,7 @@ def launchgui():
 
     except Exception as e:
         warninglabel.grid(row=13, columnspan=5, sticky="w")
+        traceback.print_exc()
         time.sleep(1)
 
 
