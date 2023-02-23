@@ -19,7 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'CERT'
+ENV = 'PROD'
 URL = ""
 client_list = []
 provider_count = 1
@@ -39,7 +39,7 @@ def get_ID_list():
 
 
     def on_submitbutton():
-        global provider_count
+        global provider_count, measurement_year
         provider_count = int(provider_count_entrybox.get().strip())
         measurement_year = str(measurement_year_entrybox.get().strip())
 
