@@ -6037,7 +6037,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
             break
     #Quarter_list[0].click()
     LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, 'li')
-    for i in range(0, len(LOB_list)):
+    for i in range(0, len(LOB_list)-1):
         LOB_Name = LOB_list[i].text
         print("LOB Name for 2022: " + LOB_Name)
         try:
