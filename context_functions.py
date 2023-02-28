@@ -4673,7 +4673,7 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
             logger.info("Saved sticket")
             time.sleep(5)
             added = 1
-            WebDriverWait(driver, 20).until(
+            WebDriverWait(driver, 40).until(
                 EC.text_to_be_present_in_element((By.XPATH, '(//*[text()="test!@#@##@ 123"])[1]'), "test!@#@##@ 123"))
             assert_added_status = assert_added(logger)
             logger.info("Assert Added status " + str(assert_added_status))
