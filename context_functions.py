@@ -5559,7 +5559,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
         driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
         patient_found = ""
         for quarter in range(2):
-            #quarter = quarter + 1
+            quarter = quarter + 1
             if (patient_found == "Found"):
                 break
             for lob in range(len(lobs)):
