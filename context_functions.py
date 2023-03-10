@@ -6334,7 +6334,7 @@ def hccvalidation(driver, workbook, logger, screenshot_path, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screenshot_path, run_from):
+def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screenshot_path, run_from, workbook_title):
     print("Customer "+str(cus_id))
     workbook.create_sheet(str(cus_id))
     ws = workbook[str(cus_id)]
@@ -6673,7 +6673,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 # ws[''+cellname+''].fill = gray_background
                 # # ws.conditional_formatting.add("J1:O100", rule3)
                 print(Comments)
-                workbook.save(screenshot_path + "\\HCC_validation_Multi_report.xlsx")
+                workbook.save(screenshot_path + "\\" + workbook_title)
                 continue
                 if flag == 5:
                     print("No more HCC measures switching to next LOB")
@@ -6689,7 +6689,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
             #time.sleep(3)
             if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
                 driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
-            workbook.save(screenshot_path + "\\HCC_validation_Multi_report.xlsx")
+            workbook.save(screenshot_path + "\\" + workbook_title)
         sf.ajax_preloader_wait(driver)
         driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
         LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, 'li')
@@ -6955,7 +6955,7 @@ def hccvalidation1(driver, workbook, logger, screenshot_path, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
             elif ws.cell(i, j).value == 'Failed':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
-            elif ws.cell(i, j).value == 'Undetermined':
+            elif ws.cell(i, j).value == 'Not Present':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='808080')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')

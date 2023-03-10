@@ -1,3 +1,4 @@
+import os
 import time
 import traceback
 
@@ -81,6 +82,13 @@ if __name__ == '__main__':
 
 print("Hello World")
 get_ID_list()
+
+report_folder = os.path.join(locator.parent_dir,"HCC Multi Validation Reports")
+isdir = os.path.isdir(report_folder)
+if not isdir:
+    os.mkdir(report_folder)
+workbook_title = "HCC Multi Validation_"+sf.date_time()+".xlsx"
+
 wb = Workbook()
 ws = wb.active
 ws.title = 'HCC_Validation ' + ENV
@@ -97,8 +105,8 @@ for ID in client_list:
         exit(3)
     print("Run HCC Validation for "+str(ID)+ ",For providers: "+str(provider_count))
 
-    cf.hccvalidation_multi(driver, ID, measurement_year, wb, provider_count, locator.parent_dir, "Cozeva Support")
-    wb.save(locator.parent_dir + "\\HCC_validation_Multi_report.xlsx")
+    cf.hccvalidation_multi(driver, ID, measurement_year, wb, provider_count, locator.parent_dir, "Cozeva Support", workbook_title)
+    wb.save(report_folder + "\\" + workbook_title)
     driver.quit()
 
 
