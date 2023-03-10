@@ -25,6 +25,9 @@ def master_gui():
 
     #TRYING SOMETHING ELSE, HOPING THIS WORKS ITS 3 AM
 
+    def on_first_time_setup():
+        root.destroy()
+        import FirstTimeSetup
     def on_verification_suite():
         root.destroy()
         import main
@@ -46,30 +49,43 @@ def master_gui():
     def on_role_access():
         root.destroy()
 
+    def on_special_columns():
+        root.destroy()
+        import special_columns
 
 
-    Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=1, column=1, columnspan=5, sticky="w")
-    Button(root, text="HCC Validation Multi", command=on_hcc_validation, font=("Nunito Sans", 10)).grid(row=2,
+
+    Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=2, column=1, columnspan=5, sticky="w")
+    Button(root, text="HCC Validation Multi", command=on_hcc_validation, font=("Nunito Sans", 10)).grid(row=3,
                                                                                                         column=1,
                                                                                                         columnspan=5,
                                                                                                         sticky="w")
-    Button(root, text="Global Search", command=on_global_search, font=("Nunito Sans", 10)).grid(row=3,
+    Button(root, text="Global Search", command=on_global_search, font=("Nunito Sans", 10)).grid(row=4,
                                                                                                 column=1,
                                                                                                 columnspan=5,
                                                                                                 sticky="w")
-    Button(root, text="Task Ingestion (AWV Only, Others WIP)", command=on_task_ingestion, font=("Nunito Sans", 10)).grid(row=4,
+    Button(root, text="Task Ingestion (AWV Only, Others WIP)", command=on_task_ingestion, font=("Nunito Sans", 10)).grid(row=5,
                                                                                                                         column=1,
                                                                                                                         columnspan=5,
                                                                                                                         sticky="w")
-    Button(root, text="Analytics (Default Config Schema)", command=on_analytics, font=("Nunito Sans", 10)).grid(row=5,
+    Button(root, text="Analytics (Default Config Schema)", command=on_analytics, font=("Nunito Sans", 10)).grid(row=6,
                                                                                                                 column=1,
                                                                                                                 columnspan=5,
                                                                                                                 sticky="w")
-    Button(root, text="Slow Log Trends", command=on_slow_trends, font=("Nunito Sans", 10)).grid(row=6,
+    Button(root, text="Slow Log Trends", command=on_slow_trends, font=("Nunito Sans", 10)).grid(row=7,
                                                                                                 column=1,
                                                                                                 columnspan=5,
                                                                                                 sticky="w")
-    Button(root, text="Multi-role Access Check", command=on_role_access, font=("Nunito Sans", 10)).grid(row=7, column=1, columnspan=5, sticky="w")
+    Button(root, text="Multi-role Access Check", command=on_role_access, font=("Nunito Sans", 10)).grid(row=8, column=1, columnspan=5, sticky="w")
+    Button(root, text="Special Columns", command=on_special_columns, font=("Nunito Sans", 10)).grid(row=9,
+                                                                                                column=1,
+                                                                                                columnspan=5,
+                                                                                                sticky="w")
+    Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
+                                                                                                    column=1,
+                                                                                                    columnspan=5,
+                                                                                                    sticky="w")
+
 
 
 
