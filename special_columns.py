@@ -160,7 +160,7 @@ for i in range(0, len(LOB_list)):
                 sf.ajax_preloader_wait(driver)
                 #click on first man icon
                 first_provider_element = driver.find_element(By.XPATH, "//*[@id='metric-support-prov-ls']").find_element(By.TAG_NAME,"tbody").find_elements(By.TAG_NAME, 'tr')[0]
-                if first_provider_element.text == "No Data Available":
+                if first_provider_element.text == "No data available":
                     driver.get(LOB_Specific_URL)
                     sf.ajax_preloader_wait(driver)
                     WebDriverWait(driver, 60).until(
