@@ -779,6 +779,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
             driver.switch_to.window(driver.window_handles[0])
 
     driver.get(main_registry_url)
+    #sf.ajax_preloader_wait(driver)
     rows = ws.max_row
     cols = ws.max_column
     for i in range(2, rows + 1):
@@ -1082,6 +1083,8 @@ def provider_registry(driver, workbook, logger, run_from):
 
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     rows = ws.max_row
     cols = ws.max_column
     for i in range(2, rows + 1):
@@ -1151,9 +1154,12 @@ def practice_registry(driver, workbook, logger, run_from):
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
                        "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied", driver.current_url])
             driver.get(main_registry_url)
+
             print(e)
             traceback.print_exc()
             sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             return
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
         ws.append(["1", run_from + " Role does not have access to practice Submenus"])
@@ -1240,6 +1246,7 @@ def practice_registry(driver, workbook, logger, run_from):
         test_case_id += 1
         print(driver.current_url)
         driver.get(registry_url)
+        sf.ajax_preloader_wait(driver)
 
 
     # Nav check two : Navigation to patient context through patient toggle of practice Metric Specific List
@@ -1336,6 +1343,7 @@ def practice_registry(driver, workbook, logger, run_from):
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
             else:
                 ws.append([test_case_id, selected_patient_name,
                            "Navigation to patient context through patient toggle of practice Metric Specific List",
@@ -1345,6 +1353,7 @@ def practice_registry(driver, workbook, logger, run_from):
                     driver.close()
                     driver.switch_to.window(driver.window_handles[0])
                 driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
 
         except Exception as e:
             print(e)
@@ -1358,6 +1367,7 @@ def practice_registry(driver, workbook, logger, run_from):
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
             driver.get(registry_url)
+            sf.ajax_preloader_wait(driver)
 
 
     except Exception as e:
@@ -1371,6 +1381,7 @@ def practice_registry(driver, workbook, logger, run_from):
         test_case_id += 1
 
         driver.get(registry_url)
+        sf.ajax_preloader_wait(driver)
 
     # nav check 3 : Navigation to provider registry through providers tab in of a practice
     registry_url = driver.current_url
@@ -1403,12 +1414,14 @@ def practice_registry(driver, workbook, logger, run_from):
                        round(time_taken, 3)])
             test_case_id += 1
             driver.get(registry_url)
+            sf.ajax_preloader_wait(driver)
         else:
             ws.append([test_case_id, selected_provider_name,
                        'Navigation to provider registry through providers tab in of a practice', 'Failed',
                        round(time_taken, 3), 'Unable to locate filter element on provider\'s registry', driver.current_url])
             test_case_id += 1
             driver.get(registry_url)
+            sf.ajax_preloader_wait(driver)
 
     except Exception as e:
         print(e)
@@ -1417,6 +1430,7 @@ def practice_registry(driver, workbook, logger, run_from):
                    'Failed', "", 'Unable to click on providers\' tab and navigate to their registry', driver.current_url])
         test_case_id += 1
         driver.get(registry_url)
+        sf.ajax_preloader_wait(driver)
 
     # nav check 4 : Navigation to Performance Stats from Practice Metric specific list
 
@@ -1427,6 +1441,7 @@ def practice_registry(driver, workbook, logger, run_from):
         driver.find_element_by_id("home").click()
         sf.ajax_preloader_wait(driver)
     driver.get(main_registry_url)
+    sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     rows = ws.max_row
