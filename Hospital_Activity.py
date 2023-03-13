@@ -70,7 +70,7 @@ for client_id in id_list:
         if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
             time.sleep(0.5)
             datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
-        ws.append([db.fetchCustomerName(client_id), "Failed", str(total_time), datatable_info])
+        ws.append([db.fetchCustomerName(client_id), "Failed", str(total_time), "-"])
     wb.save(report_folder + "\\" + filename)
 
 rows = ws.max_row
