@@ -1376,6 +1376,7 @@ def practice_registry(driver, workbook, logger, run_from):
     registry_url = driver.current_url
     try:
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        time.sleep(1)
         driver.find_element_by_id("providers-list").click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -1420,6 +1421,7 @@ def practice_registry(driver, workbook, logger, run_from):
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        time.sleep(1)
         driver.find_element_by_id("home").click()
         sf.ajax_preloader_wait(driver)
     driver.get(main_registry_url)
@@ -3348,6 +3350,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                             overall_rating = overall_rating.replace("Stars","").strip()
                     if div.text == "Patients":
                         patient_count = next_div.text.replace(",","").strip()
+                print(overall_rating)
                 if float(overall_rating)<1:
                     ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Failed", "Rating is 0", driver.current_url])
                 else:
