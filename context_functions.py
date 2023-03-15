@@ -493,7 +493,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 percent = selectedMetric.find_element_by_class_name('percent').text
         print("Found a Suitable Metric to click on")
         print("Attempting to click on " + selectedMetric.text)
-        #driver.execute_script("arguments[0].scrollIntoView();", selectedMetric)
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selectedMetric)
         #selectedMetric.click()
         sf.action_click(selectedMetric, driver)
         print("Click Performed")
