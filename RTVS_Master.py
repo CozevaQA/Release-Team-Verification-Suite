@@ -59,7 +59,7 @@ def master_gui():
         import Hospital_Activity
 
     def image_sizer(image_path):
-        image_small = Image.open(image_path).resize((20, 20))
+        image_small = Image.open(image_path).resize((25, 25))
 
         return image_small
     #making image widgets
@@ -103,7 +103,7 @@ def master_gui():
                                                                                                     column=1,
                                                                                                     columnspan=5,
                                                                                                     sticky="w")
-    Label(root, image=first_time_setup_image).grid(row=1, column=0, sticky="w")
+    Label(root, image=first_time_setup_image, width=40, height=40).grid(row=1, column=0, sticky="w")
     Label(root, image=verification_suite_image).grid(row=2, column=0, sticky="w")
 
 

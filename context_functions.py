@@ -6551,6 +6551,24 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                             # print("Dashboard Hcc Count = "+str(len(hcctable)))
                             suspect_list = []
                             clinical_score_list = []
+                            tag_count_list = [0,0,0]
+                            '''
+                            tag_count_list
+                            [0]= Recaptures
+                            [1]= Suspects
+                            [2]= New
+                            '''
+                            try:
+                                tag_count_list[0] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block magenta-color tiny-title']"))
+                                tag_count_list[1] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block blue-color tiny-title']"))
+                                tag_count_list[2] = len(
+                                    hcc_element.find_elements(By.XPATH, "//span[@class='tag-block yellow-ochre-color tiny-title']"))
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                tag_count_list = ["NaN", "NaN", "NaN"]
+
+
                             #Clinical score Check
                             for hcc_measures in hcctable:
                                 clinical_text = hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name("span")[1].text
@@ -6634,6 +6652,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                         print("Total Coded Score: " + str(result[5]))
                         print("Total Patient Count: " + str(result[6]))
                         os.remove(path)
+                        comments = "Recapture HCCs: %s, Suspects HCCs: %s, New HCCs: %s" % (str(tag_count_list[0]), str(tag_count_list[1]), str(tag_count_list[2]))
                         if i == 553 or i == 556:
                             DataToBeValidated_num = float(DataToBeValidated_denum) - float(DataToBeValidated_num)
                             DataToBeValidated_num = round(DataToBeValidated_num, 3)
@@ -6645,20 +6664,20 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                             denum = denum - temp
                             denum = round(denum, 3)
                             if abs(float(DataToBeValidated_num) - num) < 0.015 and abs(float(DataToBeValidated_denum) - denum) < 0.015:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                             else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                         elif i == 554 or i == 555:
                             if int(DataToBeValidated_num) == int(DataToBeValidated_denum)-int(result[1])-int(result[2]):
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                             else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                         else:
                             if int(DataToBeValidated_num) == int(result[0]) and int(DataToBeValidated_denum) == int(
                                     result[0] + result[1] + result[2]):
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                             else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], '-', Provider_Specific_url])
+                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
                         k -= 1
                         driver.get(Measure_Specific_url)
                         sf.ajax_preloader_wait(driver)
