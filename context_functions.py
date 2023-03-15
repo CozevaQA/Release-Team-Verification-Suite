@@ -6726,6 +6726,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='808080')
             elif ws.cell(i, j).value == 'Data table is empty':
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+    workbook.save(screenshot_path + "\\" + workbook_title)
 
 
 def hccvalidation1(driver, workbook, logger, screenshot_path, run_from):
