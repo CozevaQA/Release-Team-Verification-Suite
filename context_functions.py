@@ -6539,6 +6539,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                             WebDriverWait(driver, 120).until(
                                 EC.presence_of_element_located((By.CLASS_NAME, "patient_header_wrapper")))
                             window_switched = 1
+                            print("Patient Dashboard URL: "+driver.current_url)
                             #switched to patient dashboard, Checking for HCCs and scores
                             '''
                             0 = HCC count in care gap
@@ -6560,9 +6561,9 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                             '''
                             try:
                                 tag_count_list[0] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block magenta-color tiny-title']"))
-                                tag_count_list[1] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block blue-color tiny-title']"))
-                                tag_count_list[2] = len(
+                                tag_count_list[1] = len(
                                     hcc_element.find_elements(By.XPATH, "//span[@class='tag-block yellow-ochre-color tiny-title']"))
+                                tag_count_list[2] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block blue-color tiny-title']"))
                             except Exception as e:
                                 traceback.print_exc()
                                 print(e)
