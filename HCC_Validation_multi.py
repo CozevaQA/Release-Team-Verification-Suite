@@ -105,7 +105,7 @@ for ID in client_list:
         exit(3)
     print("Run HCC Validation for "+str(ID)+ ",For providers: "+str(provider_count))
 
-    cf.hccvalidation_multi(driver, ID, measurement_year, wb, provider_count, locator.parent_dir, "Cozeva Support", workbook_title)
+    cf.hccvalidation_multi(driver, ID, measurement_year, wb, provider_count, report_folder, "Cozeva Support", workbook_title)
     wb.save(report_folder + "\\" + workbook_title)
     driver.quit()
 

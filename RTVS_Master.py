@@ -58,7 +58,13 @@ def master_gui():
         root.destroy()
         import Hospital_Activity
 
+    def image_sizer(image_path):
+        image_small = Image.open(image_path).resize((20, 20))
+
+        return image_small
     #making image widgets
+    first_time_setup_image = ImageTk.PhotoImage(image_sizer("assets/images/first_time_setup.png"))
+    verification_suite_image = ImageTk.PhotoImage(image_sizer("assets/images/verification_suite.png"))
 
 
 
@@ -91,12 +97,15 @@ def master_gui():
                                                                                                 sticky="w")
     Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
                                                                                                     column=1,
-                                                                                                    columnspan=5,
+                                                                                                    columnspan=4,
                                                                                                     sticky="w")
     Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity, font=("Nunito Sans", 10)).grid(row=10,
                                                                                                     column=1,
                                                                                                     columnspan=5,
                                                                                                     sticky="w")
+    Label(root, image=first_time_setup_image).grid(row=1, column=0, sticky="w")
+    Label(root, image=verification_suite_image).grid(row=2, column=0, sticky="w")
+
 
 
 
