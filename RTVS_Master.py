@@ -1,4 +1,5 @@
 from tkinter import *
+from PIL import ImageTk, Image
 
 def master_gui():
     root = Tk()
@@ -53,10 +54,17 @@ def master_gui():
         root.destroy()
         import special_columns
 
+    def on_hospital_activity():
+        root.destroy()
+        import Hospital_Activity
+
+    #making image widgets
+
+
 
 
     Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=2, column=1, columnspan=5, sticky="w")
-    Button(root, text="HCC Validation Multi", command=on_hcc_validation, font=("Nunito Sans", 10)).grid(row=3,
+    Button(root, text="HCC Validation Multi (Custom client list)", command=on_hcc_validation, font=("Nunito Sans", 10)).grid(row=3,
                                                                                                         column=1,
                                                                                                         columnspan=5,
                                                                                                         sticky="w")
@@ -82,6 +90,10 @@ def master_gui():
                                                                                                 columnspan=5,
                                                                                                 sticky="w")
     Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
+                                                                                                    column=1,
+                                                                                                    columnspan=5,
+                                                                                                    sticky="w")
+    Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity, font=("Nunito Sans", 10)).grid(row=10,
                                                                                                     column=1,
                                                                                                     columnspan=5,
                                                                                                     sticky="w")
