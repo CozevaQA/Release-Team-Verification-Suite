@@ -65,46 +65,62 @@ def master_gui():
     #making image widgets
     first_time_setup_image = ImageTk.PhotoImage(image_sizer("assets/images/first_time_setup.png"))
     verification_suite_image = ImageTk.PhotoImage(image_sizer("assets/images/verification_suite.png"))
+    hcc_validation_image = ImageTk.PhotoImage(image_sizer("assets/images/hcc_validation.png"))
+    global_search_image = ImageTk.PhotoImage(image_sizer("assets/images/global_search.png"))
+    task_ingestion_image = ImageTk.PhotoImage(image_sizer("assets/images/task_ingestion.png"))
+    analytics_image = ImageTk.PhotoImage(image_sizer("assets/images/analytics.png"))
+    slow_log_image = ImageTk.PhotoImage(image_sizer("assets/images/slow_log_trends.png"))
+    multi_role_image = ImageTk.PhotoImage(image_sizer("assets/images/Multi_role_access.png"))
+    special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
+    hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
 
-
-
-
-    Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=2, column=1, columnspan=5, sticky="w")
+    Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
+                                                                                                      column=1,
+                                                                                                      columnspan=4,
+                                                                                                      sticky="w")
+    Button(root, text="Verification Suite", command=on_verification_suite, font=("Nunito Sans", 10)).grid(row=2, column=1, columnspan=4, sticky="w")
     Button(root, text="HCC Validation Multi (Custom client list)", command=on_hcc_validation, font=("Nunito Sans", 10)).grid(row=3,
                                                                                                         column=1,
-                                                                                                        columnspan=5,
+                                                                                                        columnspan=4,
                                                                                                         sticky="w")
     Button(root, text="Global Search", command=on_global_search, font=("Nunito Sans", 10)).grid(row=4,
                                                                                                 column=1,
-                                                                                                columnspan=5,
+                                                                                                columnspan=4,
                                                                                                 sticky="w")
     Button(root, text="Task Ingestion (AWV Only, Others WIP)", command=on_task_ingestion, font=("Nunito Sans", 10)).grid(row=5,
                                                                                                                         column=1,
-                                                                                                                        columnspan=5,
+                                                                                                                        columnspan=4,
                                                                                                                         sticky="w")
     Button(root, text="Analytics (Default Config Schema)", command=on_analytics, font=("Nunito Sans", 10)).grid(row=6,
                                                                                                                 column=1,
-                                                                                                                columnspan=5,
+                                                                                                                columnspan=4,
                                                                                                                 sticky="w")
     Button(root, text="Slow Log Trends", command=on_slow_trends, font=("Nunito Sans", 10)).grid(row=7,
                                                                                                 column=1,
-                                                                                                columnspan=5,
+                                                                                                columnspan=4,
                                                                                                 sticky="w")
     Button(root, text="Multi-role Access Check", command=on_role_access, font=("Nunito Sans", 10)).grid(row=8, column=1, columnspan=5, sticky="w")
     Button(root, text="Special Columns", command=on_special_columns, font=("Nunito Sans", 10)).grid(row=9,
                                                                                                 column=1,
-                                                                                                columnspan=5,
+                                                                                                columnspan=4,
                                                                                                 sticky="w")
-    Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
+    Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity, font=("Nunito Sans", 10)).grid(row=10,
                                                                                                     column=1,
                                                                                                     columnspan=4,
                                                                                                     sticky="w")
-    Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity, font=("Nunito Sans", 10)).grid(row=10,
-                                                                                                    column=1,
-                                                                                                    columnspan=5,
-                                                                                                    sticky="w")
     Label(root, image=first_time_setup_image, width=40, height=40).grid(row=1, column=0, sticky="w")
-    Label(root, image=verification_suite_image).grid(row=2, column=0, sticky="w")
+    Label(root, image=verification_suite_image, width=40, height=40).grid(row=2, column=0, sticky="w")
+    Label(root, image=hcc_validation_image, width=40, height=40).grid(row=3, column=0, sticky="w")
+    Label(root, image=global_search_image, width=40, height=40).grid(row=4, column=0, sticky="w")
+    Label(root, image=task_ingestion_image, width=40, height=40).grid(row=5, column=0, sticky="w")
+    Label(root, image=analytics_image, width=40, height=40).grid(row=6, column=0, sticky="w")
+    Label(root, image=slow_log_image, width=40, height=40).grid(row=7, column=0, sticky="w")
+    Label(root, image=multi_role_image, width=40, height=40).grid(row=8, column=0, sticky="w")
+    Label(root, image=special_column_image, width=40, height=40).grid(row=9, column=0, sticky="w")
+    Label(root, image=hospital_activity_image, width=40, height=40).grid(row=10, column=0, sticky="w")
+
+
+
 
 
 
