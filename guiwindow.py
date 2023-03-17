@@ -629,6 +629,7 @@ def launchgui():
     nextbutton1.grid(row=13, column=0, columnspan=5, pady=45)
     Checkbox_cozeva.select()
 
+
     #packing elements into frame 2
 
     frame2_info_label.grid(row=0, column=0, columnspan=5)
