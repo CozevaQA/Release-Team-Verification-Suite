@@ -103,6 +103,8 @@ def launchgui():
             env = "PROD"
         elif env_selector_var.get() == 1:
             env = "CERT"
+        elif env_selector_var.get() == 2:
+            env = "STAGE"
         headlessmode = headless_selector_var.get()
         verification_specs[0] = selected_cust.get()
         verification_specs[1] = db.fetchCustomerID(verification_specs[0])
@@ -390,6 +392,7 @@ def launchgui():
     radiobutton_env_label = Label(input_frame_1, text="Select Environment", font=("Nunito Sans", 10))
     radiobutton_env_prod = Radiobutton(input_frame_1, text="Production", variable=env_selector_var, value=0, font=("Nunito Sans", 10))
     radiobutton_env_cert = Radiobutton(input_frame_1, text="CERT", variable=env_selector_var, value=1, font=("Nunito Sans", 10))
+    radiobutton_env_stage = Radiobutton(input_frame_1, text="STAGE", variable=env_selector_var, value=2, font=("Nunito Sans", 10))
 
     headless_selector_var = IntVar()
     radiobutton_headless_label = Label(input_frame_1, text="Select Headless mode Yes/No", font=("Nunito Sans", 10))
