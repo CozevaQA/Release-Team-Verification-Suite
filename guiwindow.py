@@ -626,7 +626,7 @@ def launchgui():
     radiobutton_headless_label.grid(row=9, column=4)
     radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
     radiobutton_headless_no.grid(row=11, column=4, sticky="w")
-    nextbutton1.grid(row=12, column=0, columnspan=5, pady=45)
+    nextbutton1.grid(row=13, column=0, columnspan=5, pady=45)
     Checkbox_cozeva.select()
 
     #packing elements into frame 2
