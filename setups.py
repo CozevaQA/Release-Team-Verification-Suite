@@ -190,7 +190,7 @@ def login_to_cozeva_cert(CusID):
     print("Logged in to Cozeva!")
 
 
-def login_to_cozeva_stage():
+def login_to_cozeva_stage(CusID):
     driver.get(locator.logout_link_stage)
     driver.get(locator.login_link_stage)
     driver.maximize_window()
@@ -206,18 +206,6 @@ def login_to_cozeva_stage():
     otpurl = driver.current_url
     sub_str = "/twostepAuthSettings"
     if otpurl.find(sub_str) != -1:
-        # print("Need to enter OTP for login. Please paste the OTP here")
-        # wait_time = 60
-        # start_time = time.perf_counter()
-        # otp = ""
-        # while (time.perf_counter() - start_time) < wait_time:
-        #     otp = input()
-        #     if len(otp) > 0:
-        #         print("OTP Recieved")
-        # if len(otp) == 0:
-        #     print("You did not enter an OTP!!")
-        #     exit(999)
-
         timeout = 60
         t = Timer(timeout, print, ['You did not enter the OTP'])
         t.start()
@@ -230,6 +218,22 @@ def login_to_cozeva_stage():
 
         driver.find_element_by_id("edit-twostep").click()
 
+    WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
+    time.sleep(0.5)
+    global cust_switched
+    cust_switched = 0
+    try:
+        # trying to switch customercontext before registries load
+        dropdown_element = Select(driver.find_element(By.ID, "select-customer"))
+        time.sleep(1)
+        dropdown_element.select_by_value(CusID)
+        # dropdown_element.select_by_visible_text("OPTUM")
+        time.sleep(0.5)
+        cust_switched = 1
+    except Exception as e:
+        cust_switched = 0
+        traceback.print_exc()
 
     WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
     driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())

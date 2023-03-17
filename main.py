@@ -32,6 +32,8 @@ if environment == "PROD":
     setups.login_to_cozeva(guiwindow.verification_specs[1])
 elif environment == "CERT":
     setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
+elif environment == "STAGE":
+    setups.login_to_cozeva_stage(guiwindow.verification_specs[1])
 if guiwindow.verification_specs[2] == "Onshore":
     if launchstyle == "Def":
         setups.cozeva_support(environment)
