@@ -622,6 +622,7 @@ def launchgui():
     radiobutton_env_label.grid(row=9, column=2)
     radiobutton_env_prod.grid(row=10, column=2, sticky="w")
     radiobutton_env_cert.grid(row=11, column=2, sticky="w")
+    radiobutton_env_stage.grid(row=12, column=2, sticky="w")
     radiobutton_headless_label.grid(row=9, column=4)
     radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
     radiobutton_headless_no.grid(row=11, column=4, sticky="w")
