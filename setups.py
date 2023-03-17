@@ -361,7 +361,8 @@ def switch_to_registries():
     context_url = driver.current_url
     sub_str1 = "/case_management?"
     sub_str2 = "/ehr"
-    if context_url.find(sub_str1) > 0 or context_url.find(sub_str2) > 0 :
+    sub_str3 = "/cozeva_messages?"
+    if context_url.find(sub_str1) > 0 or context_url.find(sub_str2) > 0 or context_url.find(sub_str3):
         try:
             print("Not in registries!")
             WebDriverWait(driver, 30).until(
