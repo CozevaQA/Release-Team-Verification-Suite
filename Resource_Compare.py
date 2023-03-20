@@ -86,6 +86,13 @@ def collect_prod_data():
         time.sleep(1)
         driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")[1].click()
         sf.ajax_preloader_wait(driver)
+        #Driverget here
+        url = driver.current_url
+        url = url.replace("support_provider", "resources_test")
+        driver.get(url)
+        sf.ajax_preloader_wait(driver)
+
+
         try:
             document_element = driver.find_element_by_xpath("//h5[contains(text(),'DOCUMENT LIBRARY')]//parent::div")
         except Exception as e:
