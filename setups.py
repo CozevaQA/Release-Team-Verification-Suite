@@ -235,9 +235,6 @@ def login_to_cozeva_stage(CusID):
         cust_switched = 0
         traceback.print_exc()
 
-    WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
-    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
-    time.sleep(0.5)
     driver.find_element_by_id("edit-submit").click()
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 30).until(
