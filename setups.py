@@ -19,6 +19,7 @@ import logging
 from threading import Timer
 
 import summary_sheet as ss
+import support_functions as sf
 
 global cust_switched
 driver = ""
@@ -275,6 +276,19 @@ def switch_customer_context_cert(cusID):
         #logger.exception("Exception occurred in OpenRegistryPageforCS2 block!")
         raise
 
+def switch_customer_context_stage(cusID):
+    try:
+        sm_customer_id = (str(cusID)).strip()
+        #print(sm_customer_id)
+        session_var = 'app_id=registries&custId=' + str(sm_customer_id) + '&payerId=' + str(sm_customer_id) + '&orgId=' + str(sm_customer_id)
+        encoded_string = base64.b64encode(session_var.encode('utf-8'))
+        driver.get("https://stage.cozeva.com/registries?session=" + encoded_string.decode('utf-8'))
+        sf.ajax_preloader_wait(driver)
+        print("Navigated to customer's context")
+    except Exception as e:
+        print(e)
+        #logger.exception("Exception occurred in OpenRegistryPageforCS2 block!")
+        raise
 
 def login_to_user(Username):
     try:
@@ -393,11 +407,14 @@ def new_launch(environment):
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     if cust_switched == 0:
         if environment == "PROD":
             switch_customer_context(guiwindow.verification_specs[1])
         elif environment == "CERT":
             switch_customer_context_cert(guiwindow.verification_specs[1])
+        elif environment == "STAGE":
+            switch_customer_context_stage(guiwindow.verification_specs[1])
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
@@ -462,11 +479,14 @@ def cozeva_support(environment):
     report_folder = create_folders("Cozeva Support")
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     if cust_switched == 0:
         if environment == "PROD":
             switch_customer_context(guiwindow.verification_specs[1])
         elif environment == "CERT":
             switch_customer_context_cert(guiwindow.verification_specs[1])
+        elif environment == "STAGE":
+            switch_customer_context_stage(guiwindow.verification_specs[1])
 
     ws = None
     run_from = "Cozeva Support"
@@ -474,19 +494,19 @@ def cozeva_support(environment):
     context_functions.init_global_search()
     time.sleep(3)
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
-        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
         context_functions.practice_registry(driver, workbook, logger, run_from)
@@ -527,45 +547,46 @@ def limited_cozeva_support(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Limited Cozeva Support"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
-        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
-        context_functions.practice_registry(driver, workbook, logger, run_from)
+        context_functions.practice_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[6] == 1:
-        context_functions.support_level(driver, workbook, logger, run_from)
+        context_functions.support_level(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[9] == 1:
-        context_functions.time_capsule(driver, workbook, logger, run_from)
+        context_functions.time_capsule(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
-        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
         context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
@@ -584,45 +605,46 @@ def customer_support(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Customer Support"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
-        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
-        context_functions.practice_registry(driver, workbook, logger, run_from)
+        context_functions.practice_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[6] == 1:
-        context_functions.support_level(driver, workbook, logger, run_from)
+        context_functions.support_level(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[9] == 1:
-        context_functions.time_capsule(driver, workbook, logger, run_from)
+        context_functions.time_capsule(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
-        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
         context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
@@ -640,42 +662,43 @@ def regional_suport(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Regional Support"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
-        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
-        context_functions.practice_registry(driver, workbook, logger, run_from)
+        context_functions.practice_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[6] == 1:
-        context_functions.support_level(driver, workbook, logger, run_from)
+        context_functions.support_level(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
-        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
@@ -690,33 +713,34 @@ def office_admin_Prac(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Office Admin Practice Delegate"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[1] == 1:
-        context_functions.practice_menubar(driver, workbook, logger, run_from)
+        context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
-        context_functions.practice_registry(driver, workbook, logger, run_from)
+        context_functions.practice_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
@@ -731,27 +755,28 @@ def office_admin_prov(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Office Admin Provider Delegate"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
@@ -766,27 +791,28 @@ def prov(username):
     logger = logger_setup(report_folder)
     login_to_user(username)
     switch_to_registries()
+    sf.captureScreenshot(driver, "Landing page", report_folder)
     run_from = "Provider"
     ws = None
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[2] == 1:
-        context_functions.provider_menubar(driver, workbook, logger, run_from)
+        context_functions.provider_menubar(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
-        context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.patient_dashboard(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
-        context_functions.provider_registry(driver, workbook, logger, run_from)
+        context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")

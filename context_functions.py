@@ -21,8 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, TimeoutException as Exception
 from sigfig import round
 
 import support_functions as sf
@@ -47,7 +46,7 @@ def init_global_search():
 
 
 
-def support_menubar(driver, workbook, ws, logger, run_from):
+def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
     if ws is None:
         workbook.create_sheet('Support Menubar')
         ws = workbook['Support Menubar']
@@ -116,11 +115,6 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
         print(context_name)
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
-
-
-
-
-
         try:
             time.sleep(1.5)
             links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
@@ -183,9 +177,8 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                                        str(round(total_time, sigfigs=3))))
                         if link_name == "Patients":
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
-                                test_case_id+=1
+                                test_case_id += 1
                                 ws.append((test_case_id, context_name, 'Presence of Had ER Visit Tab', 'Passed'))
-
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -195,6 +188,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
             finally:
                 links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
                 names = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link_Name)
+                sf.captureScreenshot(driver, link_name + " " + run_from, report_folder)
 
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         WebDriverWait(driver, 10).until(
@@ -208,6 +202,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         traceback.print_exc()
         test_case_id += 1
         ws.append((test_case_id, "", 'Menubar Navigation', 'Failed', driver.current_url))
+        sf.captureScreenshot(driver, "Menubar failed" + run_from, report_folder)
 
     rows = ws.max_row
     cols = ws.max_column
@@ -221,7 +216,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def practice_menubar(driver, workbook, logger, run_from):
+def practice_menubar(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Practice Menubar')
     ws = workbook['Practice Menubar']
     main_registry_url = driver.current_url
@@ -268,14 +263,8 @@ def practice_menubar(driver, workbook, logger, run_from):
                     print("More than half the praciders have 0 patient counts")
                     prac_url = driver.current_url
                     zero_prac_flag[1] = 1
-
-
-
-
-
-
-
-            except:
+            except Exception as e:
+                print(e)
                 traceback.print_exc()
                 zero_prac_flag[2], zero_prac_flag[1], zero_prac_flag[0] = 2, 2, 2
 
@@ -298,7 +287,7 @@ def practice_menubar(driver, workbook, logger, run_from):
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
         ws.append(["1", run_from + " Role does not have access to practice Submenus"])
         return
-    support_menubar(driver, workbook, ws, logger, run_from)
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder)
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         if zero_prac_flag[2] == 1:
@@ -334,7 +323,7 @@ def practice_menubar(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def provider_menubar(driver, workbook, logger, run_from):
+def provider_menubar(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Provider Menubar')
     ws = workbook['Provider Menubar']
     main_registry_url = driver.current_url
@@ -379,15 +368,9 @@ def provider_menubar(driver, workbook, logger, run_from):
                     print("More than half the providers have 0 patient counts")
                     prov_url = driver.current_url
                     zero_prov_flag[1] = 1
-
-
-
-
-
-
-
-            except:
+            except Exception as e:
                 traceback.print_exc()
+                print(e)
                 zero_prov_flag[2],zero_prov_flag[1],zero_prov_flag[0] = 2,2,2
 
             if len(list_of_provider_elements) > 1:
@@ -410,7 +393,7 @@ def provider_menubar(driver, workbook, logger, run_from):
             traceback.print_exc()
             return
 
-    support_menubar(driver, workbook, ws, logger, run_from)
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder)
 
     # if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
     #     driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
@@ -455,7 +438,7 @@ def provider_menubar(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def patient_dashboard(driver, workbook, logger, run_from):
+def patient_dashboard(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Patient Dashboard')
     ws = workbook['Patient Dashboard']
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
@@ -472,7 +455,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
     ws.name = "Arial"
     test_case_id = 1
 
-    def hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id):
+    def hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id, report_folder):
         x = 1
 
     # From Starting point Registry, navigate to a random patient of a random metric
@@ -500,7 +483,6 @@ def patient_dashboard(driver, workbook, logger, run_from):
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
-
         if run_from == "Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Limited Cozeva Support":
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
@@ -511,6 +493,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+            sf.captureScreenshot(driver, "MSPL "+run_from, report_folder)
             patients = driver.find_element_by_id("metric-support-pat-ls").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
         elif run_from == "Office Admin Practice Delegate":
@@ -523,6 +506,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+            sf.captureScreenshot(driver, "MSPL " + run_from, report_folder)
             patients = driver.find_element_by_id("metric-support-pat-ls").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
         elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
@@ -533,6 +517,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
+            sf.captureScreenshot(driver, "MSPL " + run_from, report_folder)
             patients = driver.find_element_by_id("quality_registry_list").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
 
@@ -553,6 +538,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
             test_case_id += 1
             ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
                        'Failed', 'x', 'Access Denied', driver.current_url))
+            sf.captureScreenshot(driver, "Patient tab access denied " + run_from, report_folder)
 
         else:
             print("Access Check done!")
@@ -566,6 +552,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 ws.append \
                     ((test_case_id, patient_id, 'Navigation to dashboard page ',
                       'Failed', 'x', 'Error toast message is displayed', driver.current_url))
+                sf.captureScreenshot(driver, "Patient tab error toast " + run_from, report_folder)
 
             else:
                 measure_count_dashboard = len \
@@ -573,6 +560,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
                            'Passed', 'x', 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                sf.captureScreenshot(driver, "Patient tab navigated to " + run_from, report_folder)
                 logger.info(patient_id + ": Navigated to patient dashboard.")
                 """ **** PCP INFO BLOCK **** """
                 try:
@@ -648,7 +636,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     total_time = time.perf_counter() - start_time
                     current_url = driver.current_url
                     access_message = sf.CheckAccessDenied(current_url)
-
+                    sf.captureScreenshot(driver, "Patient tab " + item_name + " " + run_from, report_folder)
                     if access_message == 1:
                         print("Access Denied found!")
                         # logger.critical("Access Denied found!")
@@ -705,7 +693,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 total_time = time.perf_counter() - start_time
                 current_url = driver.current_url
                 access_message = sf.CheckAccessDenied(current_url)
-
+                sf.captureScreenshot(driver, "Patient information tab " + run_from, report_folder)
                 if access_message == 1:
                     print("Access Denied found!")
                     # logger.critical("Access Denied found!")
@@ -737,6 +725,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         sf.ajax_preloader_wait(driver)
                         total_time = time.perf_counter() - start_time
                         time.sleep(1)
+                        sf.captureScreenshot(driver, "Patient coverage " + run_from, report_folder)
                         coverage_number = len \
                             (driver.find_elements_by_xpath("//table[@id='patient_info_payment_table']"))
                         if coverage_number != 0:
@@ -754,6 +743,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                                 (By.XPATH, locator.xpath_patient_Info_Care_Team_Link)))
                         driver.find_element_by_xpath(locator.xpath_patient_Info_Care_Team_Link).click()
                         time.sleep(1)
+                        sf.captureScreenshot(driver, "Patient care team " + run_from, report_folder)
                         careteam_provider_number = len(driver.find_elements_by_xpath("//div[@class='mlm']/div"))
                         if careteam_provider_number != 0:
                             test_case_id += 1
@@ -792,7 +782,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def provider_registry(driver, workbook, logger, run_from):
+def provider_registry(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Provider Registry')
     ws = workbook['Provider Registry']
 
@@ -824,6 +814,7 @@ def provider_registry(driver, workbook, logger, run_from):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
+            sf.captureScreenshot(driver, "Provider List " + run_from, report_folder)
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
                 'tr')
             global global_search_prov
@@ -868,6 +859,7 @@ def provider_registry(driver, workbook, logger, run_from):
         total_time = time.perf_counter() - start_time
         current_url = driver.current_url
         access_message = sf.CheckAccessDenied(current_url)
+        sf.captureScreenshot(driver, "Provider MSPL " + run_from, report_folder)
 
         if access_message == 1:
             print("Access Denied found!")
@@ -1097,7 +1089,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def practice_registry(driver, workbook, logger, run_from):
+def practice_registry(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Practice Registry')
     ws = workbook['Practice Registry']
 
@@ -1456,7 +1448,7 @@ def practice_registry(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def support_level(driver, workbook, logger, run_from):
+def support_level(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Support Level')
     ws = workbook['Support Level']
 
@@ -1756,7 +1748,7 @@ def support_level(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def global_search(driver, workbook, logger, run_from):
+def global_search(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Global Search')
     ws = workbook['Global Search']
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
@@ -1966,7 +1958,7 @@ def global_search(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def provider_mspl(driver, workbook, logger, run_from):
+def provider_mspl(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Provider\'s MSPL')
     ws = workbook['Provider\'s MSPL']
 
@@ -2481,7 +2473,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def time_capsule(driver, workbook, logger, run_from):
+def time_capsule(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Time Capsule')
     ws = workbook['Time Capsule']
 
@@ -2689,7 +2681,7 @@ def time_capsule(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def secure_messaging(driver, workbook, logger, run_from):
+def secure_messaging(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Secure Messaging')
     ws = workbook['Secure Messaging']
 
@@ -2786,7 +2778,7 @@ def secure_messaging(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def analytics(driver, workbook, logger, run_from):
+def analytics(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Analytics')
     ws = workbook['Analytics']
 
@@ -2971,7 +2963,7 @@ def analytics(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def click_on_each_metric(customer, driver, workbook, path):
+def click_on_each_metric(customer, driver, workbook, path, report_folder):
     ws = workbook.create_sheet(customer)
     ws = workbook[customer]
     ws.append(['ID', 'List', 'Context', 'Time-Taken'])
@@ -3260,7 +3252,7 @@ def SupportpageAccordionValidationx(driver, workbook, logger, run_from):
 '''
 
 
-def SupportpageAccordionValidation(driver, workbook, logger, run_from):
+def SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder):
     try:
         workbook.create_sheet('Accordian Validation')
         ws = workbook['Accordian Validation']
@@ -6482,8 +6474,8 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 if "No data available" in ListRow[0].text and len(ListRow) == 1:
                     Comments = "No provider data in HCC measure " + str(i)
                     print(Comments)
-                    ws.append([cus_id,LOB_Name,Domain_name_UI,Domain_name_MSPL, Measure, '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0','Undetermined',Domain_comment,'NA','NA',
-                               Comments])
+                    URL = driver.current_url
+                    ws.append([cus_id, Measure, Domain_comment, 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined', Comments, URL])
                 elif len(ListRow) == 1:
                     ListRow[0].find_elements(By.TAG_NAME, 'a')[1].click()
                     sf.ajax_preloader_wait(driver)
@@ -6715,8 +6707,6 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 print(Comments)
                 workbook.save(screenshot_path + "\\" + workbook_title)
                 continue
-                if flag == 5:
-                    print("No more HCC measures switching to next LOB")
             except Exception as e:
                 traceback.print_exc()
                 print(e)
