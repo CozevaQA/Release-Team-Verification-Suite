@@ -121,7 +121,7 @@ def master_gui():
                                                                                                     column=1,
                                                                                                     columnspan=4,
                                                                                                     sticky="w")
-    Button(root, text="Confirm/Disconfirm", command=on_conf_dis, font=("Nunito Sans", 10)).grid(row=12,
+    Button(root, text="Confirm/Disconfirm(WIP)", command=on_conf_dis, font=("Nunito Sans", 10)).grid(row=12,
                                                                                                          column=1,
                                                                                                          columnspan=4,
                                                                                                          sticky="w")
