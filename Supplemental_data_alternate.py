@@ -278,9 +278,7 @@ def add_supplemental_data(measure_tiny_text, value):
 
 
 fetch_measures()
-ENV = 'CERT'
-client_id = str(1000)
-MY = "2023"
+
 print(client_id, MY)
 
 print("Hello World")
