@@ -510,6 +510,7 @@ for i in range(0, len(LOB_list)):
     driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
     LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, 'li')
 
+driver.quit()
 rows = ws.max_row
 cols = ws.max_column
 for i in range(2, rows + 1):
