@@ -46,9 +46,9 @@ MY = "2023"
 measure_map = [["BCS", "1", "NA"],
                ["COL", "3", "739"],
                ["CCS", "2", "NA"],
-               ["HbA1C Poor Control"],
-               ["BP Control"],
-               ["Placeholder"],
+               ["HBD1 (in progress)"],
+               ["HBD2 (in progress)"],
+               ["CBP (in progress)"],
                ["Placeholder"],
                ["Placeholder"]]
 
@@ -294,7 +294,7 @@ wb = Workbook()
 ws = wb.active
 workbook_title = str(db.fetchCustomerName(client_id))+"_Supplemental Data_"+sf.date_time()+"_"+ENV+".xlsx"
 ws.title = str(client_id)+"_"+ENV
-ws.append(["ID", "LoB", "Metric Name/ID", "Provider","Patient ID", "Scenario", "Task ID", "Status", "Comments", "URL"])
+ws.append(["ID", "LoB", "Metric Name/ID", "Provider","Patient ID", "Scenario", "Status", "Task ID", "Comments", "URL"])
 wb.save(report_folder+ "\\"+workbook_title)
 test_case_id = 1
 driver = setups.driver_setup()
