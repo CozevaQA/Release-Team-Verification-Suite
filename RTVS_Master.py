@@ -3,7 +3,7 @@ from PIL import ImageTk, Image
 
 def master_gui():
     root = Tk()
-    root.configure(background='white')
+    #root.configure(background='white')
 
     def on_nextbutton():
         x=0
