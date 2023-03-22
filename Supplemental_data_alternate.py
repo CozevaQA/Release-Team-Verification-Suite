@@ -27,6 +27,7 @@ config.read("locator-config.properties")
 ENV = 'CERT'
 client_id = str(1000)
 MY = "2023"
+wait_time = 60
 
 ''' 
     Checkbox value vs measure mapping
@@ -65,9 +66,10 @@ def fetch_measures():
 
 
     def on_start():
-        global client_id, MY
+        global client_id, MY, wait_time
         client_id = db.fetchCustomerID(selected_cust.get())
         MY = my_entry.get()
+        wait_time = int(wait_time_entry.get())
         for i in range(0, len(Checkbox_variables)):
             if Checkbox_variables[i].get() == 1:
                 final_measure_list.append(measure_map[i])
@@ -87,8 +89,13 @@ def fetch_measures():
     Label(root, text="Measurement Year",  font=("Nunito Sans", 10)).grid(row=0, column=3)
     my_entry = Entry(root)
     my_entry.grid(row=1, column=3)
+    my_entry.insert(0, "2023")
 
-    Button(root, text="Start Test", command=on_start, font=("Nunito Sans", 10)).grid(row=6, column=0, columnspan=5)
+    Button(root, text="Start Test", command=on_start, font=("Nunito Sans", 10)).grid(row=6, column=3)
+    wait_time_entry = Entry(root)
+    wait_time_entry.grid(row=6, column=1)
+    wait_time_entry.insert(0, "60")
+    Label(root, text="Wait time (s)", font=("Nunito Sans", 10)).grid(row=6, column=0)
     for i, measure in enumerate(measure_map):
         if i<=3:
             Checkbutton(root, text=measure[0], variable=Checkbox_variables[i], font=("Nunito Sans", 10)).grid(row=i+2, column=0, sticky='w')
@@ -179,8 +186,9 @@ def add_supplemental_data(measure_tiny_text, value):
                 ".//tr[contains(@class, 'row-group')]")
             selected_measure_xpath = "//div[contains(text(),'"+measure_tiny_text+"')]//..//..//..//..//..//.."
 
+            global wait_time
             start_time = time.perf_counter()
-            end_time = int(start_time) + 60
+            end_time = int(start_time) + wait_time
             while True:
                 try:
                     measure_element = driver.find_element_by_xpath(selected_measure_xpath)
@@ -199,19 +207,18 @@ def add_supplemental_data(measure_tiny_text, value):
                     ws.append(
                         [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
                          provider_name, patient_id, "Red dot Status",
-                         "Failed", task_id, "Taking too long! skipping and attempting delete", driver.current_url])
+                         "Failed", task_id, "Taking longer than wait time! skipping and attempting delete", driver.current_url])
                     break
 
                 if len(measure_element.find_elements_by_xpath(red_dot_xpath)) == 0:
-                    print("Found dot gone at " + str(int(end_time - time.perf_counter())))
+                    print("Dot gone after " + str(int(start_time - time.perf_counter()))+" seconds")
                     ws.append(
                         [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
                          provider_name, patient_id, "Red dot Status",
                          "Passed", task_id, "", driver.current_url])
                     break
                 else:
-                    print("Looking for red dot, waiting " + str(
-                        int(end_time - time.perf_counter())) + " Seconds")
+                    print("Looking for red dot, " + str(int(start_time - time.perf_counter())) + " seconds elapsed")
                     driver.refresh()
                     sf.ajax_preloader_wait(driver)
                     WebDriverWait(driver, 120).until(
@@ -353,7 +360,7 @@ for i in range(0, len(LOB_list)):
             if measure[2] == "NA":
                 driver.find_element_by_id(measure[1]).click()
             else:
-                anchor_tags = driver.find_elements_by_xpath("//a")
+                anchor_tags = driver.find_element_by_id(measure[1]).find_elements_by_tag_name("a")
                 for anchor in anchor_tags:
                     if str(measure[2]) in str(anchor.get_attribute("href")):
                         anchor.click()
