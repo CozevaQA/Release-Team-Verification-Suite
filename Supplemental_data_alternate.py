@@ -211,14 +211,14 @@ def add_supplemental_data(measure_tiny_text, value):
                     break
 
                 if len(measure_element.find_elements_by_xpath(red_dot_xpath)) == 0:
-                    print("Dot gone after " + str(int(start_time - time.perf_counter()))+" seconds")
+                    print("Dot gone after " + str(int(time.perf_counter() - start_time))+" seconds")
                     ws.append(
                         [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
                          provider_name, patient_id, "Red dot Status",
                          "Passed", task_id, "", driver.current_url])
                     break
                 else:
-                    print("Looking for red dot, " + str(int(start_time - time.perf_counter())) + " seconds elapsed")
+                    print("Looking for red dot, " + str(int(time.perf_counter() - start_time)) + " seconds elapsed")
                     driver.refresh()
                     sf.ajax_preloader_wait(driver)
                     WebDriverWait(driver, 120).until(
