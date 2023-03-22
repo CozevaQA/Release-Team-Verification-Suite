@@ -47,6 +47,7 @@ xpath_resources_link="//a[@data-target='help_menu_dropdown']"
 xpath_resources_page_prac_sup="//span[@data-badge-caption='Practice Support Page']"
 xpath_had_er_visit="//li[@id='had_er_visit_tab']"
 xpath_skip_button="//button[@value='Skip']"
+xpath_submit_button = "//*[@data-badge-caption='Submit' and contains(@style,'float: left !important; padding: 0 10px !important;')]"
 
 
 #css_selectors

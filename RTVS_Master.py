@@ -58,6 +58,10 @@ def master_gui():
         root.destroy()
         import Hospital_Activity
 
+    def on_supp_data():
+        root.destroy()
+        import Supplemental_data_alternate
+
     def image_sizer(image_path):
         image_small = Image.open(image_path).resize((25, 25))
 
@@ -73,6 +77,7 @@ def master_gui():
     multi_role_image = ImageTk.PhotoImage(image_sizer("assets/images/Multi_role_access.png"))
     special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
+    supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
 
     Button(root, text="First time Setup", command=on_first_time_setup, font=("Nunito Sans", 10)).grid(row=1,
                                                                                                       column=1,
@@ -108,6 +113,10 @@ def master_gui():
                                                                                                     column=1,
                                                                                                     columnspan=4,
                                                                                                     sticky="w")
+    Button(root, text="Supplemental Data Addition", command=on_supp_data, font=("Nunito Sans", 10)).grid(row=11,
+                                                                                                    column=1,
+                                                                                                    columnspan=4,
+                                                                                                    sticky="w")
     Label(root, image=first_time_setup_image, width=40, height=40).grid(row=1, column=0, sticky="w")
     Label(root, image=verification_suite_image, width=40, height=40).grid(row=2, column=0, sticky="w")
     Label(root, image=hcc_validation_image, width=40, height=40).grid(row=3, column=0, sticky="w")
@@ -118,6 +127,8 @@ def master_gui():
     Label(root, image=multi_role_image, width=40, height=40).grid(row=8, column=0, sticky="w")
     Label(root, image=special_column_image, width=40, height=40).grid(row=9, column=0, sticky="w")
     Label(root, image=hospital_activity_image, width=40, height=40).grid(row=10, column=0, sticky="w")
+    Label(root, image=supp_data_image, width=40, height=40).grid(row=11, column=0, sticky="w")
+
 
 
 
