@@ -154,7 +154,7 @@ for i in range(0, len(LOB_list)):
             print(LOB_Name + "-" + str(metric_id) + "-" + measure[0])
             if k == 0:
                 continue
-            if registry_element.find_elements_by_id(metric_id):
+            if len(registry_element.find_elements_by_id(metric_id)) > 0:
                 registry_element.find_element_by_id(metric_id).click()
                 print('validating')
                 sf.ajax_preloader_wait(driver)

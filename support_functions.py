@@ -101,7 +101,10 @@ def CheckErrorMessage(driver):
         i = 1
         while i <= len(toast_messages):
             toast_message_xpath_new = "(//div[@class='drupal_message_text'])" + str([i])
-            toast_message = driver.find_element_by_xpath(toast_message_xpath_new).text
+            try:
+                toast_message = driver.find_elements_by_xpath(toast_message_xpath_new)[0].text
+            except IndexError as e:
+                toast_message = [""]
             if toast_message.count(sub_str) > 0:
                 err_msg = 1
                 break
