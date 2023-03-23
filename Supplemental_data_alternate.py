@@ -41,14 +41,22 @@ wait_time = 60
     7 = Placeholder 
     NA = Not Accordion
     A = Accordion 
+    
+    Measure type
+    0 = One supplemental data entry, one code needed
+    1 = Multiple codes per entry (KED)
+    2 = Multiple data entries needed (CIS)
+    
+    measure_map = [Measure Abbr, parent measure ID, Child measure ID or NA, Value or None, measure_type)
+    
 '''
 
 
-measure_map = [["BCS", "1", "NA"],
-               ["COL", "3", "739"],
-               ["CCS", "2", "NA"],
-               ["HBD1 (in progress)"],
-               ["HBD2 (in progress)"],
+measure_map = [["BCS", "1", "NA", None, 0],
+               ["COL", "3", "739", "4", 0],
+               ["CCS", "2", "NA", None, 0],
+               ["HBD1", "20", "NA", "4", 0],
+               ["HBD2", "84", "NA", "4", 0],
                ["CBP (in progress)"],
                ["Placeholder"],
                ["Placeholder"]]
@@ -114,11 +122,13 @@ def fetch_measures():
     # root.geometry("400x400")
     root.mainloop()
 
-def add_supplemental_data(measure_tiny_text, value):
+
+def add_supplemental_data(measure_tiny_text):
     try:
         task_id = "Couldn't Fetch Task ID"
         sf.ajax_preloader_wait(driver)
         task_id = driver.find_element_by_xpath("//div[@class='task_def left pts prm']").text
+        task_id = task_id.replace("Task ", "").replace(": Quality Supplemental Data", "").strip()
 
         attachment_element = driver.find_element_by_class_name("file_upload_attachment")
         attachment_path = os.getcwd()
@@ -157,8 +167,8 @@ def add_supplemental_data(measure_tiny_text, value):
             codes[0].click()
             time.sleep(1)
 
-            if value is not None:
-                driver.find_element_by_xpath("//input[@class='code-box-hidden-field value_box']").send_keys(str(value))
+            if measure[3] is not None:
+                driver.find_element_by_xpath("//input[@class='code-box-hidden-field value_box']").send_keys(str(measure[3]))
                 time.sleep(1)
 
             task_url = driver.current_url
@@ -462,11 +472,15 @@ for i in range(0, len(LOB_list)):
                                         # After entering the coding tool
                                         #task_id = "Unable to fetch"
                                         if measure[0] == "BCS":
-                                            add_supplemental_data("BCS · Preventive Health Screening", None)
+                                            add_supplemental_data("BCS · Preventive Health Screening")
                                         elif measure[0] == "CCS":
-                                            add_supplemental_data("CCS · Preventive Health Screening", None)
+                                            add_supplemental_data("CCS · Preventive Health Screening")
                                         elif measure[0] == "COL":
-                                            add_supplemental_data("COL_50_75 · Preventive Health Screening", 4)
+                                            add_supplemental_data("COL_50_75 · Preventive Health Screening")
+                                        elif measure[0] == "HBD1":
+                                            add_supplemental_data("HBD1 · Diabetes Care")
+                                        elif measure[0] == "HBD2":
+                                            add_supplemental_data("HBD2 · Diabetes Care")
                                         break
                             if found_flags[measure_index] == 1:
                                 break
