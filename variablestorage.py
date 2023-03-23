@@ -48,6 +48,7 @@ xpath_resources_page_prac_sup="//span[@data-badge-caption='Practice Support Page
 xpath_had_er_visit="//li[@id='had_er_visit_tab']"
 xpath_skip_button="//button[@value='Skip']"
 xpath_submit_button = "//*[@data-badge-caption='Submit' and contains(@style,'float: left !important; padding: 0 10px !important;')]"
+xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
 
 
 #css_selectors
