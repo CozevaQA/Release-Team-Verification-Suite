@@ -943,10 +943,10 @@ def provider_registry(driver, workbook, logger, run_from):
                                    'Passed', total_time,
                                    'Measures count in dashboard: ' + str(measure_count_dashboard)))
                         logger.info(patient_id + ": Navigated to patient dashboard.")
-                        if sf.check_exists_by_class(driver, 'primary_val'):
+                        if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                             test_case_id += 1
                             ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
-                                       'Count: ' + driver.find_element_by_class_name("primary_val").text])
+                                       'Count: ' + driver.find_element_by_xpath(locator.xpath_careops).text])
                         else:
                             test_case_id += 1
                             ws.append([test_case_id, patient_id, 'CareOps count present', 'Failed', 'x',
@@ -1039,10 +1039,10 @@ def provider_registry(driver, workbook, logger, run_from):
             ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
                        'Passed', total_time, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
             logger.info(patient_id + ": Navigated to patient dashboard.")
-            if sf.check_exists_by_class(driver, 'primary_val'):
+            if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                 test_case_id += 1
                 ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
-                           'Count: ' + driver.find_element_by_class_name("primary_val").text])
+                           'Count: ' + driver.find_element_by_xpath(locator.xpath_careops).text])
             else:
                 test_case_id += 1
                 ws.append(
@@ -1334,8 +1334,8 @@ def practice_registry(driver, workbook, logger, run_from):
                 sf.ajax_preloader_wait(driver)
             time_taken = round((time.perf_counter() - start_time), 3)
             WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "primary_val")))
-            if len(driver.find_elements_by_class_name("primary_val")) != 0:
+                EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
+            if len(driver.find_elements_by_xpath(locator.xpath_careops)) != 0:
                 ws.append([test_case_id, selected_patient_name,
                            "Navigation to patient context through patient toggle of practice Metric Specific List",
                            'Passed', time_taken])
@@ -1672,7 +1672,7 @@ def support_level(driver, workbook, logger, run_from):
             patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
             global global_search_pat
             global_search_pat = patient_id
-            if sf.check_exists_by_class(driver, 'primary_val'):
+            if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                 measure_count_dashboard = len(
                     driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
                 test_case_id += 1
@@ -1683,7 +1683,7 @@ def support_level(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append(
                     [test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
-                     'Passed', 'x', 'Count: ' + driver.find_element_by_class_name("primary_val").text])
+                     'Passed', 'x', 'Count: ' + driver.find_element_by_xpath(locator.xpath_careops).text])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(metric_url)
@@ -2224,8 +2224,8 @@ def provider_mspl(driver, workbook, logger, run_from):
                 # print("current window is "+driver.title)
                 # -------------------------Window Switch---------------------------
                 WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located((By.CLASS_NAME, "primary_val")))
-                Dashboard_caregap = driver.find_element_by_class_name("primary_val").text
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
+                Dashboard_caregap = driver.find_element_by_xpath(locator.xpath_careops).text
                 # print("Dashboard caregaps = "+Dashboard_caregap)
                 driver.find_element_by_class_name("select-dropdown").click()
                 dropdown_contents = driver.find_element_by_class_name("filter-panel").find_elements_by_tag_name(
