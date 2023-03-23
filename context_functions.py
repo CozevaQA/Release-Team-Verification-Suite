@@ -1663,6 +1663,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+            sf.captureScreenshot(driver, "Patient list " + run_from, report_folder)
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
             if len(patients) > 1:
@@ -1677,6 +1678,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
+            sf.captureScreenshot(driver, "Patient dashboard " + run_from, report_folder)
             time_taken = round((time.perf_counter() - start_time), 3)
             patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
             global global_search_pat
@@ -1725,6 +1727,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
+            sf.captureScreenshot(driver, "Performance tab " + run_from, report_folder)
             time_taken = time.perf_counter() - start_time
             if driver.find_elements_by_id('performance_details') != 0:
                 ws.append([test_case_id, context_name,
@@ -1811,6 +1814,7 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             driver.find_element_by_id('search_practices_link').click()
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, 'search_practices')))
+            sf.captureScreenshot(driver, "Practice global search " + run_from, report_folder)
             driver.find_element_by_id('search_practices').find_elements_by_tag_name('a')[0].click()
             driver.switch_to.window(driver.window_handles[1])
             window_switched = 1
@@ -1854,6 +1858,7 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             time_taken = round(time.perf_counter() - start_time)
             # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
             driver.find_element_by_id('search_providers_link').click()
+            sf.captureScreenshot(driver, "Provider global search " + run_from, report_folder)
             driver.find_element_by_id('search_providers').find_elements_by_tag_name('a')[0].click()
             driver.switch_to.window(driver.window_handles[1])
             window_switched = 1
@@ -1896,7 +1901,7 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             time_taken = round(time.perf_counter() - start_time)
             driver.find_element_by_id('search_patients_link').click()
-
+            sf.captureScreenshot(driver, "Patient global search " + run_from, report_folder)
             driver.find_element_by_id('search_patients').find_elements_by_tag_name('li')[
                 1].find_element_by_css_selector("a[href*='patient_detail']").click()
             driver.switch_to.window(driver.window_handles[1])
