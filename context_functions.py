@@ -596,7 +596,7 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Passed', 'x', Pcp_hover))
                         # function for hovercheck
-                        hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id)
+                        hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id, report_folder)
                 except Exception as e:
                     print(e)
                     traceback.print_exc()
