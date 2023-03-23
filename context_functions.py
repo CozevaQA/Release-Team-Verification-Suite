@@ -859,7 +859,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         total_time = time.perf_counter() - start_time
         current_url = driver.current_url
         access_message = sf.CheckAccessDenied(current_url)
-        sf.captureScreenshot(driver, "Provider MSPL " + run_from, report_folder)
+        sf.captureScreenshot(driver, "Provider All patients " + run_from, report_folder)
 
         if access_message == 1:
             print("Access Denied found!")
@@ -902,6 +902,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                 total_time = time.perf_counter() - start_time
                 WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
+                sf.captureScreenshot(driver, "Patient Dashboard " + run_from, report_folder)
                 patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
                 current_url = driver.current_url
                 access_message = sf.CheckAccessDenied(current_url)
@@ -991,10 +992,11 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
         test_case_id += 1
+        sf.captureScreenshot(driver, "Provider MSPL " + run_from, report_folder)
         ws.append([test_case_id, current_context, "Navigation to MSPL", 'Passed', total_time])
         window_switched = 0
         try:
-            patient_id = 'Couldn\'t Fetch'
+            patient_id = "Could not Fetch"
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
@@ -1019,6 +1021,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
             window_switched = 1
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
+            sf.captureScreenshot(driver, "Patient Dashboard from MSPL " + run_from, report_folder)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
             total_time = time.perf_counter() - start_time
@@ -1120,6 +1123,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
+            sf.captureScreenshot(driver, "Provider list " + run_from, report_folder)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name("tabs").find_elements_by_tag_name('li')[0].click()
@@ -1142,6 +1146,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                 list_of_practice_elements[0].find_element_by_tag_name('a').click()
 
             sf.ajax_preloader_wait(driver)
+            sf.captureScreenshot(driver, "Practice Registry " + run_from, report_folder)
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
                        "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied", driver.current_url])
@@ -1188,6 +1193,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located(
                     (By.ID, 'metric-support-prov-ls')))
+            sf.captureScreenshot(driver, "Practice MSPL " + run_from, report_folder)
             providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
             if len(providers) != 1:
@@ -1202,6 +1208,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+            sf.captureScreenshot(driver, "Provider Registry " + run_from, report_folder)
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
                 ws.append([test_case_id, selected_provider_name,
@@ -1276,6 +1283,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
+            sf.captureScreenshot(driver, "Performance stat tab " + run_from, report_folder)
             time_taken = time.perf_counter() - start_time
             if driver.find_elements_by_id('performance_details') != 0:
                 ws.append([test_case_id, context_name,
@@ -1304,6 +1312,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                 sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+            sf.captureScreenshot(driver, "Patients list tab " + run_from, report_folder)
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
             if len(patients) > 1:
@@ -1327,6 +1336,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             time_taken = round((time.perf_counter() - start_time), 3)
             WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "primary_val")))
+            sf.captureScreenshot(driver, "Patient dashboard " + run_from, report_folder)
             if len(driver.find_elements_by_class_name("primary_val")) != 0:
                 ws.append([test_case_id, selected_patient_name,
                            "Navigation to patient context through patient toggle of practice Metric Specific List",
@@ -1385,6 +1395,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
+        sf.captureScreenshot(driver, "Provider list " + run_from, report_folder)
         list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name('tr')
         if len(list_of_provider_elements) > 1:
             selected_provider = list_of_provider_elements[
@@ -1399,6 +1410,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+        sf.captureScreenshot(driver, "Provider registry " + run_from, report_folder)
         time_taken = time.perf_counter() - time_start
         if driver.find_elements_by_xpath(locator.xpath_filter_measure_list) != 0:
             ws.append([test_case_id, selected_provider_name,
@@ -1476,6 +1488,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
     try:
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
+        sf.captureScreenshot(driver, "Registry page " + run_from, report_folder)
         selected_metric_name = 'Couldnt fetch Metric Name'
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
 
@@ -1495,6 +1508,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+        sf.captureScreenshot(driver, "Provider list from " + run_from, report_folder)
         metric_url = driver.current_url
         # nav 1 : Practice Tab
         try:
@@ -1503,6 +1517,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
+            sf.captureScreenshot(driver, "Practice list " + run_from, report_folder)
             practices = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
 
@@ -1541,6 +1556,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+            sf.captureScreenshot(driver, "Practice registry " + run_from, report_folder)
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
                 ws.append([test_case_id, selectedPracticeName,
@@ -1612,6 +1628,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+            sf.captureScreenshot(driver, "Provider Registry " + run_from, report_folder)
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
                 ws.append([test_case_id, selectedProviderName,
