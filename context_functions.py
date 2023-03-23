@@ -2008,6 +2008,7 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
+            sf.captureScreenshot(driver, "Provider list " + run_from, report_folder)
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name('tbody').find_elements_by_tag_name(
                 'tr')
             if len(list_of_provider_elements) > 1:
@@ -2026,6 +2027,7 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+            sf.captureScreenshot(driver, "Provider registry " + run_from, report_folder)
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed', "Either the Provider list is empty", driver.current_url])
             print(e)
@@ -2070,6 +2072,7 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             mspl_link = driver.current_url
+            sf.captureScreenshot(driver, "MSPL from provider registry " + run_from, report_folder)
             # now, at the MSPL, Process starts.
             # Nav 1 : Performance Statistics
             try:
@@ -2104,6 +2107,7 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
                 sf.ajax_preloader_wait(driver)
                 WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
+                sf.captureScreenshot(driver, "Performance stat " + run_from, report_folder)
                 time_taken = round((time.perf_counter() - start_time), 3)
                 if driver.find_elements_by_id('network-table_info') != 0:
                     data_info = driver.find_element_by_id('network-table_info').text
@@ -2239,6 +2243,7 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
                 # -------------------------Window Switch---------------------------
                 WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.CLASS_NAME, "primary_val")))
+                sf.captureScreenshot(driver, "Patient Dashboard " + run_from, report_folder)
                 Dashboard_caregap = driver.find_element_by_class_name("primary_val").text
                 # print("Dashboard caregaps = "+Dashboard_caregap)
                 driver.find_element_by_class_name("select-dropdown").click()
@@ -2526,6 +2531,7 @@ def time_capsule(driver, workbook, logger, run_from, report_folder):
         try:
             sf.ajax_preloader_wait(driver)
             current_url = driver.current_url
+            sf.captureScreenshot(driver, "Time Capsule " + run_from, report_folder)
             access_message = sf.CheckAccessDenied(current_url)
 
             if access_message == 1:
@@ -2738,6 +2744,7 @@ def secure_messaging(driver, workbook, logger, run_from, report_folder):
         try:
             sf.ajax_preloader_wait(driver)
             current_url = driver.current_url
+            sf.captureScreenshot(driver, "Secure Messaging " + run_from, report_folder)
             access_message = sf.CheckAccessDenied(current_url)
 
             if access_message == 1:
@@ -2833,6 +2840,7 @@ def analytics(driver, workbook, logger, run_from, report_folder):
         try:
             sf.ajax_preloader_wait(driver)
             current_url = driver.current_url
+            sf.captureScreenshot(driver, "Analytics main page " + run_from, report_folder)
             access_message = sf.CheckAccessDenied(current_url)
 
             if access_message == 1:
