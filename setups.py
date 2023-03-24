@@ -423,7 +423,7 @@ def new_launch(environment):
         context_functions.market_sheet(driver, workbook,logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[0] == 1:
-        context_functions.support_menubar(driver,workbook, ws, logger, run_from)
+        context_functions.support_menubar(driver,workbook, ws, logger, run_from, "")
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
         context_functions.practice_menubar(driver, workbook, logger, run_from)
@@ -494,7 +494,7 @@ def cozeva_support(environment):
     context_functions.init_global_search()
     time.sleep(3)
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder, "")
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
         context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
@@ -553,7 +553,7 @@ def limited_cozeva_support(username):
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder, "")
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
         context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
@@ -611,7 +611,7 @@ def customer_support(username):
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder, "")
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
         context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
@@ -668,7 +668,7 @@ def regional_suport(username):
     context_functions.init_global_search()
     checklist = guiwindow.verification_specs[4]
     if checklist[0] == 1:
-        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+        context_functions.support_menubar(driver, workbook, ws, logger, run_from, report_folder, "")
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[1] == 1:
         context_functions.practice_menubar(driver, workbook, logger, run_from, report_folder)
