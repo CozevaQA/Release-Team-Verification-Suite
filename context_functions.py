@@ -3361,7 +3361,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 overall_rating = ""
                 patient_count = ""
                 for div, next_div in zip(summaryList, summaryList[1:] + [summaryList[0]]):
-                    if div.text == "Overall Rating":
+                    if "Overall Rating" in div.text:
                         overall_rating = next_div.text.replace("%","").strip()
                         if 'Stars' in overall_rating:
                             overall_rating = overall_rating.replace("Stars","").strip()
