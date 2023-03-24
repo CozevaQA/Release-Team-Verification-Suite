@@ -5,6 +5,7 @@ import time
 import traceback
 
 from openpyxl.styles import Font, PatternFill
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from tkinter import *
@@ -237,6 +238,161 @@ def add_supplemental_data(measure_tiny_text):
 
                     continue
 
+            #check if task has appeared in patient supplemental data list
+            try:
+                WebDriverWait(driver, 30).until(EC.presence_of_element_located(
+                    (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+                history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+                ActionChains(driver).move_to_element(history_link).perform()
+                patient_history_items = driver.find_elements_by_xpath(
+                    locator.xpath_patient_History_Item_Link)
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+                history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+                time.sleep(0.5)
+                ActionChains(driver).move_to_element(history_link).perform()
+                patient_history_items = driver.find_elements_by_xpath(
+                    locator.xpath_patient_History_Item_Link)
+                child_task_ids = []
+                parent_task_ids = []
+                child_task_id_xpath = "//div/a[@class='pat_name left']"
+                parent_task_ids_xpath = "//span[@data-tooltip='Parent Task #']"
+                time.sleep(1)
+                suppdata_option_flag = 0
+                for item_counter in range(len(patient_history_items)):
+                    patient_history_items = driver.find_elements_by_xpath(
+                        locator.xpath_patient_History_Item_Link)
+                    if "Supplemental Data" in patient_history_items[item_counter].text:
+                        time.sleep(0.5)
+                        patient_history_items[item_counter].click()
+                        sf.ajax_preloader_wait(driver)
+                        suppdata_option_flag = 0
+                        break
+                    else:
+                        suppdata_option_flag = 1
+                if suppdata_option_flag == 1:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Patient Level",
+                         "Failed", task_id, "Supplemental Data list not present in patient history",
+                         driver.current_url])
+
+
+
+
+                #reached patient supplemental data page
+                patient_suppdata_url = driver.current_url
+
+                child_task_ids = []
+                parent_task_ids = []
+
+                child_task_ids = driver.find_elements_by_xpath(child_task_id_xpath)
+                parent_task_ids = driver.find_elements_by_xpath(parent_task_ids_xpath)
+
+                all_tasks = child_task_ids + parent_task_ids
+                if len(all_tasks) > 0:
+                    for task_index in range(0, len(all_tasks)):
+                        all_tasks[task_index] = all_tasks[task_index].text
+
+                    if task_id in all_tasks:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Patient Level",
+                             "Passed", task_id, "Added Task is present in supplemental data list",
+                             driver.current_url])
+                    else:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Patient Level",
+                             "Failed", task_id, "Added Task is not present in supplemental data list",
+                             driver.current_url])
+
+
+                else:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Patient Level",
+                         "Failed", task_id, "Supplemental data list is empty, no entries",
+                         driver.current_url])
+
+
+
+
+
+            except Exception as e:
+                traceback.print_exc()
+                ws.append(
+                    [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                     provider_name, patient_id, "Supplemental Data list - Patient Level",
+                     "Failed", task_id, "Unknown error occured, Deleting task now",
+                     driver.current_url])
+
+            #Check for task in main supplemental data list
+            try:
+                driver.get(Registry_URL)
+                sf.ajax_preloader_wait(driver)
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+                driver.find_element_by_xpath("//li[@data-list-type='1']").click()
+                sf.ajax_preloader_wait(driver)
+                support_suppdata_url = driver.current_url
+
+                child_task_ids = []
+                parent_task_ids = []
+
+                child_task_ids = driver.find_elements_by_xpath(child_task_id_xpath)
+                parent_task_ids = driver.find_elements_by_xpath(parent_task_ids_xpath)
+
+                all_tasks = child_task_ids + parent_task_ids
+                if len(all_tasks) > 0:
+                    for task_index in range(0, len(all_tasks)):
+                        all_tasks[task_index] = all_tasks[task_index].text
+
+                    if task_id in all_tasks:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Support Level",
+                             "Passed", task_id, "Added Task is present in supplemental data list",
+                             driver.current_url])
+                    else:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Support Level",
+                             "Failed", task_id, "Added Task is not present in supplemental data list",
+                             driver.current_url])
+
+
+                else:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Support Level",
+                         "Failed", task_id, "Supplemental data list is empty, no entries",
+                         driver.current_url])
+
+
+
+
+
+            except:
+                traceback.print_exc()
+                ws.append(
+                    [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                     provider_name, patient_id, "Supplemental Data list - Support Level",
+                     "Failed", task_id, "Unknown error occured, Deleting task now",
+                     driver.current_url])
+
+
+
+
             # deleting the task
             driver.get(task_url)
             sf.ajax_preloader_wait(driver)
@@ -284,6 +440,158 @@ def add_supplemental_data(measure_tiny_text):
                     [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
                      provider_name, patient_id, "Delete Supp Data",
                      "Failed", task_id, "Manual Intervention needed", driver.current_url])
+
+            #checking if task deleted
+            try:
+                WebDriverWait(driver, 30).until(EC.presence_of_element_located(
+                    (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+                history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+                ActionChains(driver).move_to_element(history_link).perform()
+                patient_history_items = driver.find_elements_by_xpath(
+                    locator.xpath_patient_History_Item_Link)
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+                history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+                time.sleep(0.5)
+                ActionChains(driver).move_to_element(history_link).perform()
+                patient_history_items = driver.find_elements_by_xpath(
+                    locator.xpath_patient_History_Item_Link)
+                child_task_ids = []
+                parent_task_ids = []
+                child_task_id_xpath = "//div/a[@class='pat_name left']"
+                parent_task_ids_xpath = "//span[@data-tooltip='Parent Task #']"
+                time.sleep(1)
+                suppdata_option_flag = 0
+                for item_counter in range(len(patient_history_items)):
+                    patient_history_items = driver.find_elements_by_xpath(
+                        locator.xpath_patient_History_Item_Link)
+                    if "Supplemental Data" in patient_history_items[item_counter].text:
+                        time.sleep(0.5)
+                        patient_history_items[item_counter].click()
+                        sf.ajax_preloader_wait(driver)
+                        suppdata_option_flag = 0
+                        break
+                    else:
+                        suppdata_option_flag = 1
+                if suppdata_option_flag == 1:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Patient Level",
+                         "Failed", task_id, "Supplemental Data list not present in patient history",
+                         driver.current_url])
+
+
+
+
+                #reached patient supplemental data page
+                patient_suppdata_url = driver.current_url
+
+                child_task_ids = []
+                parent_task_ids = []
+
+                child_task_ids = driver.find_elements_by_xpath(child_task_id_xpath)
+                parent_task_ids = driver.find_elements_by_xpath(parent_task_ids_xpath)
+
+                all_tasks = child_task_ids + parent_task_ids
+                if len(all_tasks) > 0:
+                    for task_index in range(0, len(all_tasks)):
+                        all_tasks[task_index] = all_tasks[task_index].text
+
+                    if task_id in all_tasks:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Patient Level",
+                             "Failed", task_id, "Added Task is still present, please check",
+                             driver.current_url])
+                    else:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Patient Level",
+                             "Passed", task_id, "Added Task is not present in supplemental data list",
+                             driver.current_url])
+
+
+                else:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Patient Level",
+                         "Passed", task_id, "Supplemental data list is empty, no entries",
+                         driver.current_url])
+
+
+
+
+
+            except Exception as e:
+                traceback.print_exc()
+                ws.append(
+                    [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                     provider_name, patient_id, "Supplemental Data list - Patient Level",
+                     "Failed", task_id, "Unknown error occured, please check",
+                     driver.current_url])
+
+            #Check for task in main supplemental data list
+            try:
+                driver.get(Registry_URL)
+                sf.ajax_preloader_wait(driver)
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+                driver.find_element_by_xpath("//li[@data-list-type='1']").click()
+                sf.ajax_preloader_wait(driver)
+                support_suppdata_url = driver.current_url
+
+                child_task_ids = []
+                parent_task_ids = []
+
+                child_task_ids = driver.find_elements_by_xpath(child_task_id_xpath)
+                parent_task_ids = driver.find_elements_by_xpath(parent_task_ids_xpath)
+
+                all_tasks = child_task_ids + parent_task_ids
+                if len(all_tasks) > 0:
+                    for task_index in range(0, len(all_tasks)):
+                        all_tasks[task_index] = all_tasks[task_index].text
+
+                    if task_id in all_tasks:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Support Level",
+                             "Failed", task_id, "Added Task is still present, please check",
+                             driver.current_url])
+                    else:
+                        ws.append(
+                            [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                             provider_name, patient_id, "Supplemental Data list - Support Level",
+                             "Passed", task_id, "Added Task is deleted successfully",
+                             driver.current_url])
+
+
+                else:
+                    ws.append(
+                        [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                         provider_name, patient_id, "Supplemental Data list - Support Level",
+                         "Passed", task_id, "Supplemental data list is empty, no entries",
+                         driver.current_url])
+
+
+
+
+
+            except:
+                traceback.print_exc()
+                ws.append(
+                    [test_case_id, LOB_Name, measure[0] + "_" + measure[1],
+                     provider_name, patient_id, "Supplemental Data list - Support Level",
+                     "Failed", task_id, "Unknown error occured, please check",
+                     driver.current_url])
     except Exception as e:
         traceback.print_exc()
         print(e)
