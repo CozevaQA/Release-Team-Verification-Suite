@@ -7,7 +7,7 @@ def master_gui():
     root.configure(background='white')
     style = ttk.Style()
     style.theme_use('alt')
-    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#6FBF3D', padding=10, highlightthickness=0)
+    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#6FBF3D', padding=15, highlightthickness=0, height=1, width=25)
 
     #style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
     style.map('My.TButton', background=[('active', '#5BA72A')])
