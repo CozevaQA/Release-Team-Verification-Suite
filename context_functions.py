@@ -34,6 +34,25 @@ config.read("locator-config.properties")
 
 global global_search_prov, global_search_prac, global_search_pat
 
+#in development
+def submit_support_ticket(driver):
+    driver.find_element(By.XPATH, '//*[@data-target="help_menu_dropdown"]').click()
+    driver.find_element(By.XPATH, '//*[@id="help_menu_options"]/li[4]/a').click();
+    time.sleep(4)
+
+    today = date.today()
+    driver.find_element(By.XPATH, '//*[@id="edit-subject"]').send_keys("Test Automation" + str(today))
+    driver.find_element(By.XPATH, '//*[@id="edit-problem-cozeva-id"]').send_keys("Test Automation" + str(today))
+    driver.find_element(By.XPATH, '//*[@id="recreate_issue_note"]').send_keys("Test Automation" + str(today))
+    driver.find_element(By.XPATH, '//*[@id="select_div_lower"]/div[9]/div/div/input').click()
+
+    driver.find_element(By.XPATH, "//*[text()='Normal (Minimal impact or maintenance of business request)']").click()
+    driver.find_element(By.XPATH, '//*[@id="edit-file-upload"]').send_keys(os.getcwd() + "/Doc_pdf.pdf")
+
+    ele = driver.find_element(By.TAG_NAME, 'body')
+    ele.send_keys(Keys.END)
+    time.sleep(3)
+    driver.find_element(By.XPATH, '//*[@id="phi_warning_cust_data"]/button').click()
 
 def init_global_search():
     global global_search_pat
@@ -46,7 +65,7 @@ def init_global_search():
 
 
 
-def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
+def support_menubar(driver, workbook, ws, logger, run_from, report_folder, context):
     if ws is None:
         workbook.create_sheet('Support Menubar')
         ws = workbook['Support Menubar']
@@ -68,6 +87,8 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
     ws.name = "Arial"
     test_case_id = 1
     main_registry_url = driver.current_url
+    if context == "":
+        context = "Support_level"
 
     try:
         logger.info("Menubar navigation block started.")
@@ -163,8 +184,7 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
                             datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
                             print(datatable_info)
                             test_case_id += 1
-
-
+                            sf.captureScreenshot(driver, link_name + " " + run_from + " "+ context, report_folder)
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3)),
                                        datatable_info))
@@ -188,7 +208,6 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
             finally:
                 links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
                 names = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link_Name)
-                sf.captureScreenshot(driver, link_name + " " + run_from, report_folder)
 
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         WebDriverWait(driver, 10).until(
@@ -202,7 +221,7 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder):
         traceback.print_exc()
         test_case_id += 1
         ws.append((test_case_id, "", 'Menubar Navigation', 'Failed', driver.current_url))
-        sf.captureScreenshot(driver, "Menubar failed" + run_from, report_folder)
+        sf.captureScreenshot(driver, "Menubar failed" + run_from + " " + context, report_folder)
 
     rows = ws.max_row
     cols = ws.max_column
@@ -287,7 +306,7 @@ def practice_menubar(driver, workbook, logger, run_from, report_folder):
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
         ws.append(["1", run_from + " Role does not have access to practice Submenus"])
         return
-    support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Provider Context")
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         if zero_prac_flag[2] == 1:
@@ -393,7 +412,7 @@ def provider_menubar(driver, workbook, logger, run_from, report_folder):
             traceback.print_exc()
             return
 
-    support_menubar(driver, workbook, ws, logger, run_from, report_folder)
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Practice Context")
 
     # if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
     #     driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
@@ -455,7 +474,7 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
     ws.name = "Arial"
     test_case_id = 1
 
-    def hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id, report_folder):
+    def hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id):
         x = 1
 
     # From Starting point Registry, navigate to a random patient of a random metric
@@ -596,7 +615,7 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Passed', 'x', Pcp_hover))
                         # function for hovercheck
-                        hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id, report_folder)
+                        hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id)
                 except Exception as e:
                     print(e)
                     traceback.print_exc()
@@ -3655,7 +3674,7 @@ def group_menubar(driver, workbook, logger, screenshot_path, run_from):
                         else:
                             sf.captureScreenshot(driver, group_name2, screenshot_path)
 
-                            support_menubar(driver, workbook, ws, logger, run_from)
+                            support_menubar(driver, workbook, ws, logger, run_from, "Group level")
                     except Exception as e:
                         print(e)
                         logger.critical(
