@@ -7,10 +7,10 @@ def master_gui():
     root.configure(background='white')
     style = ttk.Style()
     style.theme_use('alt')
-    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#6FBF3D', padding=15, highlightthickness=0, height=1, width=25)
+    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#5a9c32', padding=15, highlightthickness=0, height=1, width=25)
 
     #style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
-    style.map('My.TButton', background=[('active', '#5BA72A')])
+    style.map('My.TButton', background=[('active', '#72B132')])
 
     def image_sizer(image_path):
         image_small = Image.open(image_path).resize((25, 25))
