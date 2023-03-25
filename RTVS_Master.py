@@ -29,18 +29,23 @@ def master_gui():
     special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
     supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
-    cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((300, 66)))
+    cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
 
     #Widgets+
 
     logo_label = Label(root, image=cozeva_logo_image, background="white")
     logo_label.grid(row=0, column=1)
 
-    root.columnconfigure(1, weight=2)
-    root.rowconfigure(0, weight=2)
-    logo_label.grid(sticky="w")
-    please_select_label = Label(root, text="Release Team Verification Suite", background="white", font=("Times New Roman", 18))
-    please_select_label.grid(row=1, column=1, columnspan=3, sticky='w')
+    root.columnconfigure(1, weight=1)
+    root.rowconfigure(0, weight=1)
+    logo_label.grid(sticky="n")
+    please_select_label = Label(root, text="Release Team Verification Suite", background="white", font=("Times New Roman", 15))
+    please_select_label.grid(row=1, column=1)
+    root.rowconfigure(1, weight=1)
+    please_select_label.grid(sticky='n')
+
+
+
     #TRYING SOMETHING ELSE, HOPING THIS WORKS ITS 3 AM
 
     def on_first_time_setup():
