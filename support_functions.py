@@ -165,6 +165,7 @@ def captureScreenshot(driver, page_title, screenshot_path):
             final_title_text = page_title.replace(i, '_')
 
         driver.save_screenshot(screenshot_path + "/" + final_title_text + "_" + str(date) + ".png")
+        print("Screenshot taken")
         #driver.save_screenshot(screenshot_path + "/" + page_title + "_" + str(date) + ".png")
 
     except Exception as e:

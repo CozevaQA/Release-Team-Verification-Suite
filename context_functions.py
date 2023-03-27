@@ -21,7 +21,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, TimeoutException as Exception
+from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, TimeoutException
 from sigfig import round
 
 import support_functions as sf
@@ -306,7 +306,7 @@ def practice_menubar(driver, workbook, logger, run_from, report_folder):
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
         ws.append(["1", run_from + " Role does not have access to practice Submenus"])
         return
-    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Provider Context")
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Practice Context")
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         if zero_prac_flag[2] == 1:
@@ -412,7 +412,7 @@ def provider_menubar(driver, workbook, logger, run_from, report_folder):
             traceback.print_exc()
             return
 
-    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Practice Context")
+    support_menubar(driver, workbook, ws, logger, run_from, report_folder, "Provider Context")
 
     # if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
     #     driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
