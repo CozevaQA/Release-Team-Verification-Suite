@@ -9,7 +9,7 @@ def master_gui():
     style.theme_use('alt')
     style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#5a9c32', padding=15, highlightthickness=0, height=1, width=25)
     style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32', padding=15,
-                    highlightthickness=0, height=1, width=5)
+                    highlightthickness=0)
 
     #style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
     style.map('My.TButton', background=[('active', '#72B132')])
@@ -32,7 +32,8 @@ def master_gui():
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
     supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
     cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
-    help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((10, 10)))
+    help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((20, 20)))
+    update_image = ImageTk.PhotoImage(Image.open("assets/images/update_image_2.png").resize((20, 20)))
 
     #Widgets+
 
@@ -100,6 +101,10 @@ def master_gui():
     def on_help():
         x=0
 
+    def on_update():
+        root.destroy()
+        #your update - code here
+
 
 
 
@@ -142,6 +147,8 @@ def master_gui():
 
     help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,
                    compound="left", style='Configs.TButton')
+    update_button = ttk.Button(root, text="Check for Updates", command=on_help, image=update_image,
+                             compound="left", style='Configs.TButton')
 
     widget_counter = 0
     loopbreak = 0
@@ -157,6 +164,7 @@ def master_gui():
             break
 
     help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
+    update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
 
     root.title("Release Team Master Suite")
     root.iconbitmap("assets/icon.ico")
