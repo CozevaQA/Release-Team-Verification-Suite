@@ -1,3 +1,6 @@
+import sys
+sys.path.append("libs")
+
 import base64
 import configparser
 import os

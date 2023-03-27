@@ -1,3 +1,6 @@
+import sys
+sys.path.append("libs")
+
 from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import ttk
