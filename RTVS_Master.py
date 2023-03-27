@@ -147,7 +147,7 @@ def master_gui():
 
     help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,
                    compound="left", style='Configs.TButton')
-    update_button = ttk.Button(root, text="Check for Updates", command=on_help, image=update_image,
+    update_button = ttk.Button(root, text="Check for Updates", command=on_update, image=update_image,
                              compound="left", style='Configs.TButton')
 
     widget_counter = 0
