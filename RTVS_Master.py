@@ -99,6 +99,7 @@ def master_gui():
         root.destroy()
 
     def on_help():
+        root.destroy()
         x=0
 
     def on_update():
