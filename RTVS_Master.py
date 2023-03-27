@@ -8,6 +8,8 @@ def master_gui():
     style = ttk.Style()
     style.theme_use('alt')
     style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#5a9c32', padding=15, highlightthickness=0, height=1, width=25)
+    style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32', padding=15,
+                    highlightthickness=0, height=1, width=5)
 
     #style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
     style.map('My.TButton', background=[('active', '#72B132')])
@@ -30,6 +32,7 @@ def master_gui():
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
     supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
     cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
+    help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((10, 10)))
 
     #Widgets+
 
@@ -51,24 +54,31 @@ def master_gui():
     def on_first_time_setup():
         root.destroy()
         import FirstTimeSetup
+
     def on_verification_suite():
         root.destroy()
         import main
+
     def on_hcc_validation():
         root.destroy()
         import HCC_Validation_multi
+
     def on_global_search():
         root.destroy()
         import global_search
+
     def on_task_ingestion():
         root.destroy()
         import ProspectInjestHCC
+
     def on_analytics():
         root.destroy()
         import runner
+
     def on_slow_trends():
         root.destroy()
         import slowLogPlotter
+
     def on_role_access():
         root.destroy()
 
@@ -86,6 +96,9 @@ def master_gui():
 
     def on_conf_dis():
         root.destroy()
+
+    def on_help():
+        x=0
 
 
 
@@ -127,6 +140,9 @@ def master_gui():
         ttk.Button(root, text="Confirm/Disconfirm(WIP)", command=on_conf_dis, image=hcc_validation_image,
                    compound="left", style='My.TButton'))
 
+    help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,
+                   compound="left", style='Configs.TButton')
+
     widget_counter = 0
     loopbreak = 0
     for i in range(2, 6):
@@ -139,6 +155,8 @@ def master_gui():
             widget_counter += 1
         if loopbreak == 1:
             break
+
+    help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
 
     root.title("Release Team Master Suite")
     root.iconbitmap("assets/icon.ico")
