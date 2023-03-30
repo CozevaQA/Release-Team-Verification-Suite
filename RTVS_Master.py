@@ -3,11 +3,12 @@ from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
+import git
 import subprocess
 #some update
 #some update
 #more update
-repo = "https://github.com/CozevaQA/Release-Team-Verification-Suite"
+local_repo = "C:\\Users\\wdey\\PycharmProjects\\Release-Team-Verification-Suite"
 
 def master_gui():
     root = Tk()
@@ -114,15 +115,18 @@ def master_gui():
         webbrowser.open_new(pdf_path)
 
     def on_update():
-        def has_commits(path):
+        def has_incoming_commits(repo_path):
             try:
-                output = subprocess.check_output(["git", "-C", path, "rev-list", "--count", "HEAD"])
-                commit_count = int(output.decode("utf-8").strip())
-                return commit_count > 0
-            except (subprocess.CalledProcessError, FileNotFoundError):
+                repo = git.Repo(repo_path)
+                for fetch_info in repo.remote().fetch():
+                    commits_behind = repo.iter_commits('HEAD..{}'.format(fetch_info.ref.name))
+                    if len(list(commits_behind)) > 0:
+                        return True
+                return False
+            except:
                 return False
 
-        if has_commits(repo):
+        if has_incoming_commits(local_repo):
             update_button.configure(text="Updates Available")
         else:
             update_button.configure(text="No Updates")
