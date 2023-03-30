@@ -6,7 +6,7 @@ import random
 # Initialising Dimensions of Game
 WIDTH = 500
 HEIGHT = 500
-SPEED = 200
+SPEED = 100
 SPACE_SIZE = 20
 BODY_SIZE = 4
 SNAKE = "#00FF00"
