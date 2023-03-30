@@ -111,7 +111,7 @@ def master_gui():
 
     def on_update():
         root.destroy()
-        import update_exe
+        #import update_RTVS
 
 
 
