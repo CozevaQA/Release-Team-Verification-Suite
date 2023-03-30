@@ -4,5 +4,6 @@ import subprocess
 # Get the current working directory
 cwd = os.getcwd()
 
-# Execute the git pull command in the current working directory
-subprocess.call(f"cd {cwd} && git pull", shell=True)
+# Open a new terminal console and run the git pull command
+subprocess.Popen(["gnome-terminal", "--", "bash", "-c", f"cd {cwd} && git pull; exec bash"], stdin=subprocess.PIPE)
+
