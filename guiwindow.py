@@ -1,5 +1,4 @@
-import sys
-sys.path.append("libs")
+
 import time
 import traceback
 from os import getcwd

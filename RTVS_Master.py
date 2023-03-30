@@ -1,5 +1,3 @@
-import sys
-sys.path.append("libs")
 
 from tkinter import *
 from PIL import ImageTk, Image
@@ -108,7 +106,7 @@ def master_gui():
 
     def on_update():
         root.destroy()
-        #your update - code here
+        import update_exe
 
 
 
