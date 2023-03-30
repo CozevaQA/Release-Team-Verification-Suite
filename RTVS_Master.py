@@ -7,7 +7,7 @@ import git
 import subprocess
 #some update
 #some update
-#more update
+#more
 
 
 def master_gui():
