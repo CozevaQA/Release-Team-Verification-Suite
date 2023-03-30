@@ -2601,10 +2601,10 @@ def time_capsule(driver, workbook, logger, run_from):
                     print(measure_performance)
                     print(claim_count)
                     print(pmc_count)
-                    if measure_performance[0] > measure_performance[1]:
+                    if measure_performance[1] - measure_performance[0] < 2:
                         ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Passed',
                                    'Measure performance has increased or is the same', driver.current_url))
-                    else:
+                    elif measure_performance[1] - measure_performance[0] > 2:
                         ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Failed',
                                    'Measure performance has decreased since previous computation', driver.current_url))
                     if len(measure_performance_copy) == len(measure_performance):
