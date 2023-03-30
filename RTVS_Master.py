@@ -8,7 +8,7 @@ import subprocess
 #some update
 #some update
 #more update
-local_repo = os.getcwd()
+
 
 def master_gui():
     root = Tk()
@@ -115,26 +115,26 @@ def master_gui():
         webbrowser.open_new(pdf_path)
 
     def on_update():
-        def has_incoming_commits(repo_path):
-            try:
-                repo = git.Repo(repo_path)
-                for fetch_info in repo.remote().fetch():
-                    commits_behind = repo.iter_commits('HEAD..{}'.format(fetch_info.ref.name))
-                    if len(list(commits_behind)) > 0:
-                        return True
-                return False
-            except:
-                return False
+        import git
+        import subprocess
 
-        if has_incoming_commits(local_repo):
+        def has_new_commits():
+            local_repo = os.getcwd()
+            print(local_repo)
+            subprocess.run(["git", "fetch"], check=True, cwd=local_repo, shell=True)
+            status = subprocess.run(["git", "status", "-uno"], check=True, cwd=local_repo, shell=False, capture_output=True, text=True)
+            print(status.stdout)
+            if "Your branch is up to date" in str(status):
+                return False
+            elif "Your branch is behind" in str(status):
+                return True
+            return False
+
+
+        if has_new_commits():
             update_button.configure(text="Updates Available")
         else:
             update_button.configure(text="No Updates")
-
-
-
-
-
 
     button_widgets = []
     button_widgets.append(
