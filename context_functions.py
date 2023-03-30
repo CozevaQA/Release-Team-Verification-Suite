@@ -2601,10 +2601,10 @@ def time_capsule(driver, workbook, logger, run_from):
                     print(measure_performance)
                     print(claim_count)
                     print(pmc_count)
-                    if measure_performance[1] - measure_performance[0] < 2:
+                    if float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) < 2:
                         ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Passed',
                                    'Measure performance has increased or is the same', driver.current_url))
-                    elif measure_performance[1] - measure_performance[0] > 2:
+                    elif float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) > 2:
                         ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Failed',
                                    'Measure performance has decreased since previous computation', driver.current_url))
                     if len(measure_performance_copy) == len(measure_performance):
@@ -6594,8 +6594,11 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
 
                             #Clinical score Check
                             for hcc_measures in hcctable:
-                                clinical_text = hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name("span")[1].text
+
                                 try:
+                                    clinical_text = \
+                                    hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name(
+                                        "span")[1].text
                                     clinical_score_list.append(float(clinical_text.replace('Clinical Factor', '').strip()))
                                 except Exception as e:
                                     hcc_flag_list[2] = "Failed"
