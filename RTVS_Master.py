@@ -6,7 +6,7 @@ import webbrowser
 import git
 import subprocess
 #some update
-#some update
+#some upd
 #more
 
 
