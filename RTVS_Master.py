@@ -122,11 +122,12 @@ def master_gui():
             local_repo = os.getcwd()
             print(local_repo)
             subprocess.run(["git", "fetch"], check=True, cwd=local_repo, shell=True)
-            status = subprocess.run(["git", "status", "-uno"], check=True, cwd=local_repo, shell=False, capture_output=True, text=True)
-            print(status.stdout)
-            if "Your branch is up to date" in str(status):
+            result = subprocess.run(["git", "status", "-uno"], check=True, cwd=local_repo, shell=False, capture_output=True, text=True)
+            output = result.stdout.strip()
+            #print(status.stdout)
+            if "Your branch is up to date" in output:
                 return False
-            elif "Your branch is behind" in str(status):
+            elif "Your branch is behind" in output:
                 return True
             return False
 
