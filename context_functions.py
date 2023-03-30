@@ -6484,8 +6484,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 if "No data available" in ListRow[0].text and len(ListRow) == 1:
                     Comments = "No provider data in HCC measure " + str(i)
                     print(Comments)
-                    ws.append([cus_id,LOB_Name,Domain_name_UI,Domain_name_MSPL, Measure, '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0','Undetermined',Domain_comment,'NA','NA',
-                               Comments])
+                    ws.append([cus_id, LOB_Name, Measure, Domain_comment, 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined',Comments , driver.current_url])
                 elif len(ListRow) == 1:
                     ListRow[0].find_elements(By.TAG_NAME, 'a')[1].click()
                     sf.ajax_preloader_wait(driver)
