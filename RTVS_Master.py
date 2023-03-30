@@ -8,7 +8,7 @@ import subprocess
 #some update
 #some update
 #more update
-local_repo = "C:\\Users\\wdey\\PycharmProjects\\Release-Team-Verification-Suite"
+local_repo = os.getcwd()
 
 def master_gui():
     root = Tk()
