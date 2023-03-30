@@ -1,7 +1,8 @@
-#test update 1
+import os
 from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import ttk
+import webbrowser
 
 def master_gui():
     root = Tk()
@@ -101,8 +102,11 @@ def master_gui():
         import secret_menu
 
     def on_help():
-        root.destroy()
-        x=0
+        #root.destroy()
+        pdf_path = os.getcwd()
+        pdf_file_path2 = "assets/RTVS Documentation.pdf"
+        pdf_path = os.path.join(pdf_path, pdf_file_path2)
+        webbrowser.open_new(pdf_path)
 
     def on_update():
         root.destroy()
