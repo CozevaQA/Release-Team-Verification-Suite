@@ -3,3 +3,5 @@
 Release team readme test
 
 Branch update
+
+Testing commit checks
