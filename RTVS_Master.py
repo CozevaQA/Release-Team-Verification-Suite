@@ -1,3 +1,6 @@
+import sys
+sys.path.append("libs")
+
 from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import ttk
@@ -7,10 +10,12 @@ def master_gui():
     root.configure(background='white')
     style = ttk.Style()
     style.theme_use('alt')
-    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#6FBF3D', padding=15, highlightthickness=0, height=1, width=25)
+    style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#5a9c32', padding=15, highlightthickness=0, height=1, width=25)
+    style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32',
+                    highlightthickness=0)
 
     #style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
-    style.map('My.TButton', background=[('active', '#5BA72A')])
+    style.map('My.TButton', background=[('active', '#72B132')])
 
     def image_sizer(image_path):
         image_small = Image.open(image_path).resize((25, 25))
@@ -29,41 +34,55 @@ def master_gui():
     special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
     supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
-    cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((300, 66)))
+    cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
+    help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((20, 20)))
+    update_image = ImageTk.PhotoImage(Image.open("assets/images/update_image_2.png").resize((20, 20)))
 
     #Widgets+
 
     logo_label = Label(root, image=cozeva_logo_image, background="white")
     logo_label.grid(row=0, column=1)
 
-    root.columnconfigure(1, weight=2)
-    root.rowconfigure(0, weight=2)
-    logo_label.grid(sticky="w")
-    please_select_label = Label(root, text="Release Team Verification Suite", background="white", font=("Times New Roman", 18))
-    please_select_label.grid(row=1, column=1, columnspan=3, sticky='w')
+    root.columnconfigure(1, weight=1)
+    root.rowconfigure(0, weight=1)
+    logo_label.grid(sticky="n")
+    please_select_label = Label(root, text="Release Team Verification Suite", background="white", font=("Times New Roman", 15))
+    please_select_label.grid(row=1, column=1)
+    root.rowconfigure(1, weight=1)
+    please_select_label.grid(sticky='n')
+
+
+
     #TRYING SOMETHING ELSE, HOPING THIS WORKS ITS 3 AM
 
     def on_first_time_setup():
         root.destroy()
         import FirstTimeSetup
+
     def on_verification_suite():
         root.destroy()
         import main
+
     def on_hcc_validation():
         root.destroy()
         import HCC_Validation_multi
+
     def on_global_search():
         root.destroy()
         import global_search
+
     def on_task_ingestion():
         root.destroy()
         import ProspectInjestHCC
+
     def on_analytics():
         root.destroy()
         import runner
+
     def on_slow_trends():
         root.destroy()
         import slowLogPlotter
+
     def on_role_access():
         root.destroy()
 
@@ -81,6 +100,15 @@ def master_gui():
 
     def on_conf_dis():
         root.destroy()
+        import secret_menu
+
+    def on_help():
+        root.destroy()
+        x=0
+
+    def on_update():
+        root.destroy()
+        #your update - code here
 
 
 
@@ -122,6 +150,11 @@ def master_gui():
         ttk.Button(root, text="Confirm/Disconfirm(WIP)", command=on_conf_dis, image=hcc_validation_image,
                    compound="left", style='My.TButton'))
 
+    help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,
+                   compound="left", style='Configs.TButton')
+    update_button = ttk.Button(root, text="Check for Updates", command=on_update, image=update_image,
+                             compound="left", style='Configs.TButton')
+
     widget_counter = 0
     loopbreak = 0
     for i in range(2, 6):
@@ -134,6 +167,9 @@ def master_gui():
             widget_counter += 1
         if loopbreak == 1:
             break
+
+    help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
+    update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
 
     root.title("Release Team Master Suite")
     root.iconbitmap("assets/icon.ico")
