@@ -100,6 +100,7 @@ def master_gui():
 
     def on_conf_dis():
         root.destroy()
+        import secret_menu
 
     def on_help():
         root.destroy()
