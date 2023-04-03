@@ -1,8 +1,12 @@
 import os
+import traceback
 from tkinter import *
+
+import openpyxl
 from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
+import variablestorage as locator
 import git
 import subprocess
 #some update
@@ -42,6 +46,9 @@ def master_gui():
     cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
     help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((20, 20)))
     update_image = ImageTk.PhotoImage(Image.open("assets/images/update_image_2.png").resize((20, 20)))
+    green_dot_image = ImageTk.PhotoImage(Image.open("assets/images/GreenDot.png").resize((10, 10)))
+    red_dot_image = ImageTk.PhotoImage(Image.open("assets/images/RedDot.png").resize((10, 10)))
+    orange_dot_image = ImageTk.PhotoImage(Image.open("assets/images/OrangeDot.png").resize((10, 10)))
 
     #Widgets+
 
@@ -192,6 +199,36 @@ def master_gui():
 
     help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
     update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
+    chrome_profile_frame = Frame(root, background="white")
+    Label(chrome_profile_frame, text="Chrome Profile Status", background="white", font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
+
+    GUI_workbook = openpyxl.load_workbook('assets/profile_info.xlsx')
+    GUI_sheet = GUI_workbook.active
+
+    chrome_profile_info = []
+
+    for row in GUI_sheet.iter_rows():
+        row_data = []
+        for cell in row:
+            row_data.append(cell.value)
+        chrome_profile_info.append(row_data)
+    row_counter = 1
+    for profile_row in chrome_profile_info:
+        profile_name_label = Label(chrome_profile_frame, text=profile_row[1], background="white", font=("Times New Roman", 10))
+        profile_name_label.grid(row=row_counter, column=0)
+        profile_status_label = Label(chrome_profile_frame, text=profile_row[2],  background="white", image=green_dot_image, compound="left", font=("Times New Roman", 10))
+        profile_status_label.grid(row=row_counter, column=1, sticky="w", padx=10)
+        row_counter+=1
+
+        if profile_row[2] == "In Use":
+            profile_status_label.configure(image=red_dot_image)
+        if profile_row[1] == locator.free_chrome_profile:
+            profile_status_label.configure(image=orange_dot_image, text=profile_row[2]+" (Current)")
+            #test comment
+
+
+
+    chrome_profile_frame.grid(row=1, rowspan=4, column=3, sticky="NE")
 
     root.title("Release Team Master Suite")
     root.iconbitmap("assets/icon.ico")
@@ -199,4 +236,24 @@ def master_gui():
     root.mainloop()
 
 
-master_gui()
+try:
+    master_gui()
+except Exception as e:
+    print(e)
+    traceback.print_exc()
+finally:
+    file_location = "assets/profile_info.xlsx"
+    chrome_profiles = openpyxl.load_workbook(file_location)
+    chrome_profiles_sheet = chrome_profiles.active
+    chrome_profile_available = False
+    # Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+    for profile_index in range(1, 6):
+        if str(chrome_profiles_sheet.cell(row=profile_index, column=2).value).strip() == locator.free_chrome_profile:
+            chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'Available'
+            break
+
+    chrome_profiles.save("assets/profile_info.xlsx")
+
+
+
+

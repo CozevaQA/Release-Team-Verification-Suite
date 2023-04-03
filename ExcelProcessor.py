@@ -25,10 +25,10 @@ Excel_sheet = Excel_file.active
 
 def getCustomerList():
     customer_list = []
-    customer_name = (str)(Excel_sheet.cell(row=1,column=1).value).strip()
+    customer_name = str(Excel_sheet.cell(row=1,column=1).value).strip()
     row_counter = 2
     while customer_name != "None":
-        customer_name = (str)(Excel_sheet.cell(row=row_counter, column=1).value).strip()
+        customer_name = str(Excel_sheet.cell(row=row_counter, column=1).value).strip()
         if customer_list.count(customer_name) < 1:
             customer_list.append(customer_name)
             #print(customer_name)
@@ -40,10 +40,10 @@ def getDefaultUserNames(customer):
     customer_name = (str)(Excel_sheet.cell(row=1, column=1).value).strip()
     row_counter = 2
     while customer_name != "None":
-        customer_name = (str)(Excel_sheet.cell(row=row_counter, column=1).value).strip()
+        customer_name = str(Excel_sheet.cell(row=row_counter, column=1).value).strip()
         if customer_name == customer:
-            role_name = (str)(Excel_sheet.cell(row=row_counter, column=3).value).strip()
-            user_name = (str)(Excel_sheet.cell(row=row_counter, column=4).value).strip()
+            role_name = str(Excel_sheet.cell(row=row_counter, column=3).value).strip()
+            user_name = str(Excel_sheet.cell(row=row_counter, column=4).value).strip()
             if user_name != 'None':
                 username_dict.update({role_name: user_name})
         row_counter = row_counter + 1
@@ -51,22 +51,22 @@ def getDefaultUserNames(customer):
 
 def fetchCustomerID(customer):
     ID = 1
-    customer_name = (str)(Excel_sheet.cell(row=1, column=1).value).strip()
+    customer_name = str(Excel_sheet.cell(row=1, column=1).value).strip()
     row_counter = 2
     while customer_name != "None":
-        customer_name = (str)(Excel_sheet.cell(row=row_counter, column=1).value).strip()
+        customer_name = str(Excel_sheet.cell(row=row_counter, column=1).value).strip()
         if customer_name == customer:
-            ID = (str)(Excel_sheet.cell(row=row_counter, column=2).value).strip()
+            ID = str(Excel_sheet.cell(row=row_counter, column=2).value).strip()
             break
         row_counter = row_counter + 1
     return ID
 
 def fetchCustomerName(ID):
     name=""
-    sheet_ID = (str)(Excel_sheet.cell(row=1, column=2).value).strip()
+    sheet_ID = str(Excel_sheet.cell(row=1, column=2).value).strip()
     row_counter = 2
     while sheet_ID != "None":
-        sheet_ID = (str)(Excel_sheet.cell(row=row_counter, column=2).value).strip()
+        sheet_ID = str(Excel_sheet.cell(row=row_counter, column=2).value).strip()
         if sheet_ID == ID:
             name = str(Excel_sheet.cell(row=row_counter, column=1).value).strip()
             break
