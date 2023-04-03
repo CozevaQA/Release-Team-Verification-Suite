@@ -6,11 +6,16 @@ import openpyxl
 from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
-try:
-    import variablestorage as locator
-except IndexError as e:
+file = open(r"assets\loginInfo.txt", "r+")
+file_content = str(file.read())
+file.seek(0)
+file.close()
+print(file_content)
+if len(file_content) < 4:
     import FirstTimeSetup
-import variablestorage as locator
+    import variablestorage as locator
+else:
+    import variablestorage as locator
 import git
 import subprocess
 #some update
