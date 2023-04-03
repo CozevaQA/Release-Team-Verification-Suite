@@ -1,6 +1,8 @@
 
 
 #xpaths
+import openpyxl
+
 xpath_filter_measure_list = "//a[@data-target='qt-reg-nav-filters']"
 xpath_switch_back = '//*[@id="nav"]/div/ul/li[2]/a'
 xpath_switch_back2 = '//*[@id="quick_switch_links"]/div/ul/li/a'
@@ -55,11 +57,38 @@ xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
 
 #ids
 
+def fetch_free_chrome_profile():
+    file_location = "assets/profile_info.xlsx"
+    chrome_profiles = openpyxl.load_workbook(file_location)
+    chrome_profiles_sheet = chrome_profiles.active
+    chrome_profile_available = False
+    #Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+    for profile_index in range(1, 6):
+        if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available":
+            chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
+            chrome_profile_available = True
+            chrome_profile = str(chrome_profiles_sheet.cell(row=profile_index, column=2).value).strip()
+            chrome_profiles.save("assets/profile_info.xlsx")
+            break
+        else:
+            chrome_profile_available = False
+            chrome_profile = None
+
+    if chrome_profile_available:
+        return chrome_profile
+    else:
+        return chrome_profile
+
 #misc
+free_chrome_profile = fetch_free_chrome_profile()
+if free_chrome_profile is None:
+    print("All chromeprofiles in use.")
+    exit(4)
 file = open(r"assets\loginInfo.txt", "r+")
-chrome_profile_path = "user-data-dir=C:\\Users\\"+file.readlines()[2].strip()+"\\AppData\\Local\\Google\\Chrome\\User Data\\UnifiedTestProfile"
+chrome_profile_path = "user-data-dir=C:\\Users\\"+file.readlines()[2].strip()+"\\AppData\\Local\\Google\\Chrome\\User Data\\"+free_chrome_profile
 file.seek(0)
 file.close()
+print(chrome_profile_path)
 #chrome_driver_path = "C:\\cdriver\\chromedriver.exe"
 chrome_driver_path = "assets\\chromedriver.exe"
 login_link = "https://www.cozeva.com/user/login"
