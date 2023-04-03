@@ -6,6 +6,10 @@ import openpyxl
 from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
+try:
+    import variablestorage as locator
+except IndexError as e:
+    import FirstTimeSetup
 import variablestorage as locator
 import git
 import subprocess
