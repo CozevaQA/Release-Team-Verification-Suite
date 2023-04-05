@@ -10,7 +10,6 @@ file = open(r"assets\loginInfo.txt", "r+")
 file_content = str(file.read())
 file.seek(0)
 file.close()
-print(file_content)
 if len(file_content) < 4:
     import FirstTimeSetup
     import variablestorage as locator
