@@ -197,10 +197,13 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                                        str(round(total_time, sigfigs=3))))
                         if link_name == "Bridge":
                             dashboard_links = driver.find_element(By.XPATH, "//ul[@id='user_bridge_ls']").find_elements(By.TAG_NAME, "li")
-                            for i in range(2, len(dashboard_links)):
+                            for i in range(1, len(dashboard_links), 1):
                                 dashboard_links[i].click()
                                 sf.ajax_preloader_wait(driver)
+                                WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//*[@id='user_bridge_ls']")))
+                                dashboard_links = driver.find_element(By.XPATH, "//*[@id='user_bridge_ls']").find_elements(By.TAG_NAME, "li")
                                 sf.captureScreenshot(driver, dashboard_links[i].text, report_folder)
+
                         if link_name == "Patients":
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
                                 test_case_id += 1
