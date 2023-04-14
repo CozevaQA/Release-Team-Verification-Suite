@@ -894,7 +894,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                 driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
             sf.captureScreenshot(driver, name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
             patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
-            if int(temp) >= int(patient_count):
+            if int(temp) <= int(patient_count):
                 temp = patient_count
                 target_url = driver.current_url
             driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
@@ -1253,7 +1253,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                                  name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text,
                                  report_folder)
             patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
-            if int(temp) >= int(patient_count):
+            if int(temp) <= int(patient_count):
                 temp = patient_count
                 target_url = driver.current_url
             driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
