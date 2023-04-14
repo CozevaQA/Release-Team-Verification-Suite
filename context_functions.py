@@ -843,7 +843,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
-            sf.captureScreenshot(driver, "Provider List " + run_from, report_folder)
+            sf.captureScreenshot(driver, "Provider List " + run_from + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
                 'tr')
             global global_search_prov
@@ -867,6 +867,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
             test_case_id += 1
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
+            sf.captureScreenshot(driver, "Provider navigation failed "+ driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             print(e)
@@ -874,8 +875,48 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
             return
 
     # Store registry url for back navigation
+    #Newly added
+    sf.ajax_preloader_wait(driver)
+    driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+    time.sleep(1)
+    flag = 0
+    Comment = ""
+    target_url = ""
+    try:
+        LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+        temp = 0
+        for LOB in LOB_list:
+            LOB.click()
+            name = LOB.text
+            driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
+            sf.ajax_preloader_wait(driver)
+            if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+            sf.captureScreenshot(driver, name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
+            patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+            if int(temp) >= int(patient_count):
+                temp = patient_count
+                target_url = driver.current_url
+            driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+            time.sleep(1)
+            LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+        driver.get(target_url)
+        sf.ajax_preloader_wait()
+    except Exception as e:
+        print("No LOBs for the provider")
+        print(e)
+        flag = 1
+    patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+    if flag == 1:
+        Comment = "Provider does not have any patients in current registry and has only one LOB"
+    else:
+        Comment = "Provider does not have any patients in current registry"
+    if patient_count == '0':
+        ws.append([test_case_id, "Attempting to navigate to a random provider", 'Navigation to provider context',
+                   'Failed', 'x',
+                   Comment,
+                   driver.current_url])
     registry_url = driver.current_url
-
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
         current_context = driver.find_element_by_class_name("current_context").text
@@ -1191,6 +1232,49 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         ws.append(["1", run_from + " Role does not have access to practice Submenus"])
         return
     context_name = "Couldn't Fetch"
+    #newly added
+    sf.ajax_preloader_wait(driver)
+    driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+    time.sleep(1)
+    flag = 0
+    Comment = ""
+    target_url = ""
+    try:
+        LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+        temp = 0
+        for LOB in LOB_list:
+            LOB.click()
+            name = LOB.text
+            driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
+            sf.ajax_preloader_wait(driver)
+            if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+            sf.captureScreenshot(driver,
+                                 name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text,
+                                 report_folder)
+            patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+            if int(temp) >= int(patient_count):
+                temp = patient_count
+                target_url = driver.current_url
+            driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+            time.sleep(1)
+            LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+        driver.get(target_url)
+        sf.ajax_preloader_wait()
+    except Exception as e:
+        print("No LOBs for the practice")
+        print(e)
+        flag = 1
+    patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+    if flag == 1:
+        Comment = "Practice does not have any patients in current registry and has only one LOB"
+    else:
+        Comment = "Practice does not have any patients in current registry"
+    if patient_count == '0':
+        ws.append([test_case_id, "Attempting to navigate to a random practice", 'Navigation to practice context',
+                   'Failed', 'x',
+                   Comment,
+                   driver.current_url])
     registry_url = driver.current_url
     # Nav check one : Navigation to provider registry through MSPL of a practice
     try:
