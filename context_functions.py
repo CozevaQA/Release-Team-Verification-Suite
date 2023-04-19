@@ -496,13 +496,18 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         print("Provider Registry metrics loaded into a variable")
         percent = '0.00'
-        while percent == '0.00' or percent == '0.00 %':
+        loop_count = 0
+        while percent == '0.00' or percent == '0.00 %' and loop_count < 20:
             if len(metrics) > 1:
                 selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
                 percent = selectedMetric.find_element_by_class_name('percent').text
             else:
                 selectedMetric = metrics[0]
                 percent = selectedMetric.find_element_by_class_name('percent').text
+            if loop_count > 18:
+                break
+            else:
+                loop_count += 1
         print("Found a Suitable Metric to click on")
         print("Attempting to click on " + selectedMetric.text)
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selectedMetric)
@@ -885,28 +890,69 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
     try:
         LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
         temp = 0
-        for LOB in LOB_list:
-            LOB.click()
-            name = LOB.text
-            driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
-            sf.ajax_preloader_wait(driver)
-            if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
-                driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
-            sf.captureScreenshot(driver, name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
-            patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
-            if int(temp) <= int(patient_count):
-                temp = patient_count
-                target_url = driver.current_url
-            driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
-            time.sleep(1)
-            LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
-        driver.get(target_url)
-        sf.ajax_preloader_wait()
+        count = 0
+        for i in range(0, len(LOB_list)):
+            if count < len(LOB_list):
+                LOB_list[i].click()
+                name = LOB_list[i].text
+                driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
+                sf.ajax_preloader_wait(driver)
+                if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                    driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+                current_context = driver.find_element(By.XPATH, "//span[@class='specific_most']").text
+                sf.captureScreenshot(driver, name + " " + current_context, report_folder)
+                patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+                patient_count = patient_count.replace(",", "")
+                print(patient_count)
+                if int(patient_count) > int(temp):
+                    temp = patient_count
+                    target_url = driver.current_url
+                home_url = driver.current_url
+                # driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
+                # time.sleep(0.5)
+                # option = driver.find_elements(By.XPATH, "//input[@class='select-dropdown dropdown-trigger']")[0]
+                # option.click()
+                # lists = driver.find_elements(By.XPATH, "//ul[@class='dropdown-content select-dropdown']")[0]
+                # options = lists.find_elements(By.TAG_NAME, 'li')
+                # for option in options:
+                #     if option.text == "Denominator":
+                #         option.click()
+                # apply_btn = driver.find_element(By.XPATH, "//button[@id='qt-apply-search']")
+                # driver.execute_script("arguments[0].scrollIntoView();", apply_btn)
+                # apply_btn.click()
+                # time.sleep(0.5)
+                try:
+                    metric = driver.find_element(By.XPATH, "//*[@id='registry_body']").find_elements(By.TAG_NAME, "li")[0]
+                    metric.click()
+                    sf.ajax_preloader_wait(driver)
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[@class='tabs']")))
+                    if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
+                        driver.find_element_by_class_name('dt_tag_close').click()
+                        sf.ajax_preloader_wait(driver)
+                    time.sleep(3)
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "quality_registry_list")))
+                    sf.captureScreenshot(driver, current_context + " MSPL " + name, report_folder)
+                    ws.append([test_case_id, current_context, 'Navigation to MSPL' + driver.find_element(By.XPATH, "//*[@class='ch metric_specific_patient_list_title']").text,
+                               'Passed', 'x', name, driver.current_url])
+                except Exception as e:
+                    ws.append([test_case_id, current_context, 'Navigation to MSPL failed', 'Failed', 'x', name, driver.current_url])
+                    sf.captureScreenshot(driver, "MSPL " + name, report_folder)
+                driver.get(home_url)
+                sf.ajax_preloader_wait(driver)
+                driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+                time.sleep(1)
+                LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+                count += 1
+            else:
+                driver.get(target_url)
+                sf.ajax_preloader_wait()
     except Exception as e:
         print("No LOBs for the provider")
         print(e)
         flag = 1
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[@id='quality_registry']")))
     patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+    patient_count = patient_count.replace(",", "")
     if flag == 1:
         Comment = "Provider does not have any patients in current registry and has only one LOB"
     else:
@@ -1242,125 +1288,82 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
     try:
         LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
         temp = 0
-        for LOB in LOB_list:
-            LOB.click()
-            name = LOB.text
-            driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
-            sf.ajax_preloader_wait(driver)
-            if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
-                driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
-            sf.captureScreenshot(driver,
-                                 name + " " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text,
-                                 report_folder)
-            patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
-            if int(temp) <= int(patient_count):
-                temp = patient_count
-                target_url = driver.current_url
-            driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
-            time.sleep(1)
-            LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
-        driver.get(target_url)
-        sf.ajax_preloader_wait()
+        count = 0
+        for i in range(0, len(LOB_list)):
+            if count < len(LOB_list):
+                LOB_list[i].click()
+                name = LOB_list[i].text
+                driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
+                sf.ajax_preloader_wait(driver)
+                if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                    driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+                current_context = driver.find_element(By.XPATH, "//span[@class='specific_most']").text
+                sf.captureScreenshot(driver, name + " " + current_context, report_folder)
+                patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+                patient_count = patient_count.replace(",", "")
+                print(patient_count)
+                if int(patient_count) > int(temp):
+                    temp = patient_count
+                    target_url = driver.current_url
+                home_url = driver.current_url
+                # driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
+                # time.sleep(0.5)
+                # option = driver.find_elements(By.XPATH, "//input[@class='select-dropdown dropdown-trigger']")[0]
+                # option.click()
+                # lists = driver.find_elements(By.XPATH, "//ul[@class='dropdown-content select-dropdown']")[0]
+                # options = lists.find_elements(By.TAG_NAME, 'li')
+                # for option in options:
+                #     if option.text == "Denominator":
+                #         option.click()
+                # apply_btn = driver.find_element(By.XPATH, "//button[@id='qt-apply-search']")
+                # driver.execute_script("arguments[0].scrollIntoView();", apply_btn)
+                # apply_btn.click()
+                # time.sleep(0.5)
+                try:
+                    metric = driver.find_element(By.XPATH, "//*[@id='registry_body']").find_elements(By.TAG_NAME, "li")[
+                        0]
+                    metric.click()
+                    sf.ajax_preloader_wait(driver)
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[@class='tabs']")))
+                    if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
+                        driver.find_element_by_class_name('dt_tag_close').click()
+                        sf.ajax_preloader_wait(driver)
+                    time.sleep(3)
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "quality_registry_list")))
+                    sf.captureScreenshot(driver, current_context + " MSPL " + name, report_folder)
+                    ws.append([test_case_id, current_context, 'Navigation to MSPL' + driver.find_element(By.XPATH,
+                                                                                                         "//*[@class='ch metric_specific_patient_list_title']").text,
+                               'Passed', 'x', name, driver.current_url])
+                except Exception as e:
+                    ws.append([test_case_id, current_context, 'Navigation to MSPL failed', 'Failed', 'x', name,
+                               driver.current_url])
+                    sf.captureScreenshot(driver, "MSPL " + name, report_folder)
+                driver.get(home_url)
+                sf.ajax_preloader_wait(driver)
+                driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
+                time.sleep(1)
+                LOB_list = driver.find_element(By.XPATH, "//*[@id='filter-lob']").find_elements(By.TAG_NAME, "li")
+                count += 1
+            else:
+                driver.get(target_url)
+                sf.ajax_preloader_wait()
     except Exception as e:
         print("No LOBs for the practice")
         print(e)
         flag = 1
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[@id='quality_registry']")))
     patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
+    patient_count = patient_count.replace(",", "")
     if flag == 1:
         Comment = "Practice does not have any patients in current registry and has only one LOB"
     else:
         Comment = "Practice does not have any patients in current registry"
     if patient_count == '0':
-        ws.append([test_case_id, "Attempting to navigate to a random practice", 'Navigation to practice context',
+        ws.append([test_case_id, "Attempting to navigate to a random Practice", 'Navigation to practice context',
                    'Failed', 'x',
                    Comment,
                    driver.current_url])
     registry_url = driver.current_url
-    # Nav check one : Navigation to provider registry through MSPL of a practice
-    try:
-        # selecting a random non zero metric from the registry
-        context_name = driver.find_element_by_class_name("specific_most").text
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.ID, "registry_body")))
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
-        percent = '0.00'
-        loop_count = 0
-        while percent == '0.00' or percent == '0.00%':
-            if loop_count < 10:
-                selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
-                percent = selectedMetric.find_element_by_class_name('percent').text
-                loop_count += 1
-            else:
-                ws.append([test_case_id, context_name, 'Skipped this because control was stuck in infinite loop'])
-                driver.get(main_registry_url)
-                sf.ajax_preloader_wait(driver)
-                WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
-                return
-        selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
-        sf.ajax_preloader_wait(driver)
-
-        # clicking on a random provider name from the practice MSPL
-        try:
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located(
-                    (By.ID, 'metric-support-prov-ls')))
-            sf.captureScreenshot(driver, "Practice MSPL " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
-            providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
-                'tbody').find_elements_by_tag_name('tr')
-            if len(providers) != 1:
-                selected_provider = \
-                    providers[sf.RandomNumberGenerator(len(providers), 1)[0]].find_elements_by_tag_name('a')[2]
-                selected_provider_name = selected_provider.text
-                selected_provider.click()
-            else:
-                selected_provider_name = providers[0].find_elements_by_tag_name('a')[2].text
-                providers[0].find_elements_by_tag_name('a')[2].click()
-            start_time = time.perf_counter()
-            sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
-            sf.captureScreenshot(driver, "Provider Registry " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
-            time_taken = round((time.perf_counter() - start_time), 3)
-            if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
-                ws.append([test_case_id, selected_provider_name,
-                           "Navigation to provider registry through MSPL of a practice: " + selected_metric_name,
-                           'Passed', time_taken])
-                test_case_id += 1
-                driver.get(registry_url)
-
-            else:
-                ws.append(
-                    [test_case_id, selected_provider_name,
-                     "Navigation to provider registry through MSPL of a practice: " + selected_metric_name,
-                     'Failed', time_taken, driver.current_url])
-                test_case_id += 1
-                driver.get(registry_url)
-
-
-
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            ws.append(
-                [test_case_id, context_name, "Navigation to provider registry through MSPL of a practice", 'Failed', '',
-                 'Couldn\'t navigate into a random provider from the MSPL: ' + selected_metric_name, driver.current_url])
-            test_case_id += 1
-            driver.get(registry_url)
-
-    except Exception as e:
-        print(e)
-        traceback.print_exc()
-        ws.append(
-            [test_case_id, context_name, "Navigation to provider registry through MSPL of a practice", 'Failed', '',
-             'Couldn\'t navigate into a random metric from the provivdr registry', driver.current_url])
-        test_case_id += 1
-        print(driver.current_url)
-        driver.get(registry_url)
-        sf.ajax_preloader_wait(driver)
-
-
     # Nav check two : Navigation to patient context through patient toggle of practice Metric Specific List
 
     try:
