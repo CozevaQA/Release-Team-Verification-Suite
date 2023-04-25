@@ -842,6 +842,10 @@ def provider_registry(driver, workbook, logger, run_from):
             elif len(list_of_provider_elements) == 1:
                 list_of_provider_elements[0].find_elements_by_tag_name('a')[1].click()
 
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
         except Exception as e:
             ws.append([test_case_id, "Attempting to navigate to a random provider", 'Navigation to provider context',
                        'Failed', 'x',
@@ -864,8 +868,9 @@ def provider_registry(driver, workbook, logger, run_from):
         print('1.5')
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         print('2')
-        time.sleep(1)
-        driver.find_element_by_id("all_patients_tab").click()
+        time.sleep(3)
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "all_patients_tab"))).click()
+        #driver.find_element_by_id("all_patients_tab").click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
