@@ -163,7 +163,7 @@ def captureScreenshot(driver, page_title, screenshot_path):
     try:
         date = datetime.now().strftime('%H_%M_%S_%p')
 
-        bad_chars = [';', ':', '|', ' ']
+        bad_chars = [';', ':', '|', ' ', '/', '\\']
         for i in bad_chars:
             final_title_text = page_title.replace(i, '_')
 
