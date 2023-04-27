@@ -193,6 +193,7 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                         else:
                             print("No datatable!")
                             test_case_id += 1
+                            sf.captureScreenshot(driver, link_name + " No Data " + context, report_folder)
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3))))
                         if link_name == "Bridge":
@@ -203,6 +204,11 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                                 WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//*[@id='user_bridge_ls']")))
                                 dashboard_links = driver.find_element(By.XPATH, "//*[@id='user_bridge_ls']").find_elements(By.TAG_NAME, "li")
                                 sf.captureScreenshot(driver, dashboard_links[i].text, report_folder)
+                        if link_name == "Providers":
+                            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@id='qt-mt-support-ls']")))
+                            driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']//li[1]").click()
+                            sf.ajax_preloader_wait(driver)
+                            sf.captureScreenshot(driver, "Practice tab " + context, report_folder)
 
                         if link_name == "Patients":
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
@@ -1087,6 +1093,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
         loop_counter = 0
+        selectedMetric = ""
         while percent == '0.00' or percent == '0.00 %':
             if loop_counter < 10:
                 if len(metrics) > 1:
@@ -1104,12 +1111,13 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                 ws.append(['Quit this section because there are no metrics with patients'])
                 raise Exception("No Metrics with Available Patients")
         selectedMetric.click()
+        selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
         test_case_id += 1
         sf.captureScreenshot(driver, "Provider MSPL " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
-        ws.append([test_case_id, current_context, "Navigation to MSPL", 'Passed', total_time])
+        ws.append([test_case_id, current_context, "Navigation to MSPL of " + selected_metric_name, 'Passed', total_time])
         window_switched = 0
         try:
             patient_id = "Could not Fetch"
@@ -1324,20 +1332,17 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                         0]
                     metric.click()
                     sf.ajax_preloader_wait(driver)
-                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[@class='tabs']")))
-                    if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
-                        driver.find_element_by_class_name('dt_tag_close').click()
-                        sf.ajax_preloader_wait(driver)
-                    time.sleep(3)
-                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "quality_registry_list")))
-                    sf.captureScreenshot(driver, current_context + " MSPL " + name, report_folder)
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
+                    driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[1].click()
+                    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
+                    sf.captureScreenshot(driver, current_context + " Patient tab " + name, report_folder)
                     ws.append([test_case_id, current_context, 'Navigation to MSPL' + driver.find_element(By.XPATH,
                                                                                                          "//*[@class='ch metric_specific_patient_list_title']").text,
                                'Passed', 'x', name, driver.current_url])
                 except Exception as e:
-                    ws.append([test_case_id, current_context, 'Navigation to MSPL failed', 'Failed', 'x', name,
+                    ws.append([test_case_id, current_context, 'Navigation to Patient tab failed', 'Failed', 'x', name,
                                driver.current_url])
-                    sf.captureScreenshot(driver, "MSPL " + name, report_folder)
+                    sf.captureScreenshot(driver, "Patient tab " + name, report_folder)
                 driver.get(home_url)
                 sf.ajax_preloader_wait(driver)
                 driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
@@ -1376,6 +1381,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
         loop_count = 0
+        selectedMetric = ""
         while percent == '0.00' or percent == '0.00%':
             if loop_count < 10:
                 selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
@@ -1431,6 +1437,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
             sf.captureScreenshot(driver, "Patients list tab " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
+            selected_patient = ""
             if len(patients) > 1:
                 selected_patient = patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name(
                     'pat_name')
