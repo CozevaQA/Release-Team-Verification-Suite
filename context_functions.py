@@ -208,9 +208,10 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                                 sf.captureScreenshot(driver, dashboard_links[i].text, report_folder)
                         if link_name == "Providers":
                             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@class='dataTables_info']")))
-                            driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']").find_elements(By.TAG_NAME, "li")[1].click()
-                            sf.ajax_preloader_wait(driver)
-                            sf.captureScreenshot(driver, "Practice tab " + context, report_folder)
+                            if sf.check_exists_by_xpath(driver, "//*[@id='qt-mt-support-ls']"):
+                                driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']").find_elements(By.TAG_NAME, "li")[1].click()
+                                sf.ajax_preloader_wait(driver)
+                                sf.captureScreenshot(driver, "Practice tab " + context, report_folder)
 
                         if link_name == "Patients":
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
