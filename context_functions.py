@@ -184,6 +184,7 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                             datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
                             print(datatable_info)
                             test_case_id += 1
+                            time.sleep(2)
                             sf.captureScreenshot(driver, link_name + " " + context, report_folder)
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3)),
@@ -203,10 +204,11 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                                 sf.ajax_preloader_wait(driver)
                                 WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//*[@id='user_bridge_ls']")))
                                 dashboard_links = driver.find_element(By.XPATH, "//*[@id='user_bridge_ls']").find_elements(By.TAG_NAME, "li")
+                                time.sleep(2)
                                 sf.captureScreenshot(driver, dashboard_links[i].text, report_folder)
                         if link_name == "Providers":
-                            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@id='qt-mt-support-ls']")))
-                            driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']//li[1]").click()
+                            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@class='dataTables_info']")))
+                            driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']").find_elements(By.TAG_NAME, "li")[1].click()
                             sf.ajax_preloader_wait(driver)
                             sf.captureScreenshot(driver, "Practice tab " + context, report_folder)
 
@@ -1112,8 +1114,8 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
             else:
                 ws.append(['Quit this section because there are no metrics with patients'])
                 raise Exception("No Metrics with Available Patients")
-        selectedMetric.click()
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
+        selectedMetric.click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
@@ -1247,6 +1249,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         # Switching to random Practice name from default set context, main page
         try:
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(1)
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
             sf.captureScreenshot(driver, "Provider list " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
@@ -1314,7 +1317,9 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                 print(patient_count)
                 if int(patient_count) > int(temp):
                     temp = patient_count
+                    print(temp)
                     target_url = driver.current_url
+                    print(target_url)
                 home_url = driver.current_url
                 # driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
                 # time.sleep(0.5)
@@ -1518,6 +1523,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         driver.execute_script("arguments[0].scrollIntoView();", driver.find_element_by_id("providers-list"))
         driver.find_element_by_id("providers-list").click()
         sf.ajax_preloader_wait(driver)
+        time.sleep(1)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
         sf.captureScreenshot(driver, "Provider list " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
