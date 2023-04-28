@@ -898,7 +898,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         temp = 0
         count = 0
         for i in range(0, len(LOB_list)):
-            if count < len(LOB_list):
+            if count <= len(LOB_list):
                 LOB_list[i].click()
                 name = LOB_list[i].text
                 driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
@@ -951,7 +951,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                 count += 1
             else:
                 driver.get(target_url)
-                sf.ajax_preloader_wait()
+                sf.ajax_preloader_wait(driver)
     except Exception as e:
         print("No LOBs for the provider")
         print(e)
@@ -969,8 +969,10 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                    Comment,
                    driver.current_url])
     registry_url = driver.current_url
+    main_registry_url = driver.current_url
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
+        sf.ajax_preloader_wait(driver)
         current_context = driver.find_element_by_class_name("current_context").text
         print('1.5')
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
@@ -1298,7 +1300,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         temp = 0
         count = 0
         for i in range(0, len(LOB_list)):
-            if count < len(LOB_list):
+            if count <= len(LOB_list):
                 LOB_list[i].click()
                 name = LOB_list[i].text
                 driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
@@ -1328,8 +1330,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                 # apply_btn.click()
                 # time.sleep(0.5)
                 try:
-                    metric = driver.find_element(By.XPATH, "//*[@id='registry_body']").find_elements(By.TAG_NAME, "li")[
-                        0]
+                    metric = driver.find_element(By.XPATH, "//*[@id='registry_body']").find_elements(By.TAG_NAME, "li")[0]
                     metric.click()
                     sf.ajax_preloader_wait(driver)
                     WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
@@ -1351,7 +1352,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                 count += 1
             else:
                 driver.get(target_url)
-                sf.ajax_preloader_wait()
+                sf.ajax_preloader_wait(driver)
     except Exception as e:
         print("No LOBs for the practice")
         print(e)
@@ -1369,6 +1370,7 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                    Comment,
                    driver.current_url])
     registry_url = driver.current_url
+    main_registry_url = driver.current_url
     # Nav check two : Navigation to patient context through patient toggle of practice Metric Specific List
 
     try:

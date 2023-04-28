@@ -99,10 +99,6 @@ def launchgui():
     def frame1next():
         global env, headlessmode, Window_location
         if env_selector_var.get() == 0:
-            env = "PROD"
-        elif env_selector_var.get() == 1:
-            env = "CERT"
-        elif env_selector_var.get() == 2:
             env = "STAGE"
         headlessmode = headless_selector_var.get()
         verification_specs[0] = selected_cust.get()
@@ -347,6 +343,7 @@ def launchgui():
         Checkbox_cozeva.select()
         Checkbox_analytics.select()
         customer_drop.config(state='active')
+        radiobutton_env_stage.config(state='active')
         #customer_drop.set('Customer')
 
     def analytics_radio():
@@ -389,7 +386,7 @@ def launchgui():
     nextbutton1 = Button(input_frame_1, text="Lock choices and Proceed", command=frame1next, font=("Nunito Sans", 10))
     env_selector_var = IntVar()
     radiobutton_env_label = Label(input_frame_1, text="Select Environment", font=("Nunito Sans", 10))
-    radiobutton_env_stage = Radiobutton(input_frame_1, text="STAGE", variable=env_selector_var, value=2, font=("Nunito Sans", 10))
+    radiobutton_env_stage = Radiobutton(input_frame_1, text="STAGE", variable=env_selector_var, value=0, font=("Nunito Sans", 10))
 
     headless_selector_var = IntVar()
     radiobutton_headless_label = Label(input_frame_1, text="Select Headless mode Yes/No", font=("Nunito Sans", 10))
