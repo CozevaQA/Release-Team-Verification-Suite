@@ -244,12 +244,15 @@ def master_gui():
     root.mainloop()
 
 
+code_directory = os.getcwd()
+
 try:
     master_gui()
 except Exception as e:
     print(e)
     traceback.print_exc()
 finally:
+    os.chdir(code_directory)
     file_location = "assets/profile_info.xlsx"
     chrome_profiles = openpyxl.load_workbook(file_location)
     chrome_profiles_sheet = chrome_profiles.active
