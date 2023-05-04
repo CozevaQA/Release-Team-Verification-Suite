@@ -71,6 +71,12 @@ def summarize_report(sum_workbook, folder_path):
                 ws_main.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
+#test Code
+#wb = load_workbook("C:\\VerificationReports\\2023-05-03"+"\\Report.xlsx")
+
+#summarize_report(wb, "C:\\VerificationReports\\2023-05-03")
+
+
 
 
 

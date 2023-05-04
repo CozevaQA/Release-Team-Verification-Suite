@@ -482,6 +482,7 @@ def cozeva_support(environment):
         context_functions.provider_menubar(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
+        print("Patient Dashboard")
         context_functions.patient_dashboard(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
