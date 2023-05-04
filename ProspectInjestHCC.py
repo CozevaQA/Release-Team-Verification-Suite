@@ -1014,12 +1014,15 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
 
     rows = sh1.max_row
     cols = sh1.max_column
-    for i in range(1, rows + 1):
-        for j in range(1, cols + 1):
-            if sh1.cell(i, j).value == 'PASS':
-                sh1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
-            elif 'FAIL' in sh1.cell(i, j).value:
-                sh1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+    try:
+        for i in range(1, rows + 1):
+            for j in range(1, cols + 1):
+                if sh1.cell(i, j).value == 'PASS':
+                    sh1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+                elif 'FAIL' in sh1.cell(i, j).value:
+                    sh1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+    except Exception as e:
+        traceback.print_exc()
     workbook.save("Report_HCCCoding.xlsx")
     # apply link status
 
