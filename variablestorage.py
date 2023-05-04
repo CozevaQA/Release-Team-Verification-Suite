@@ -1,5 +1,6 @@
 
 
+
 #xpaths
 import openpyxl
 
@@ -51,7 +52,9 @@ xpath_had_er_visit="//li[@id='had_er_visit_tab']"
 xpath_skip_button="//button[@value='Skip']"
 xpath_submit_button = "//*[@data-badge-caption='Submit' and contains(@style,'float: left !important; padding: 0 10px !important;')]"
 xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
-
+xpath_coding_tool_kebab = "//a[@class='action_list_dropdown not_disable']"
+xpath_audit_log_download = "//a[@onclick='return download_audit_log();']"
+xpath_annotation_tab = "//a[@class='chart_notes_tab tab_on_demand']"
 
 #css_selectors
 
