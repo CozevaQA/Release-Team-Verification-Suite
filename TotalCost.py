@@ -154,7 +154,7 @@ class TotalCost:
                         not_closed = not_closed + 1
                     except (ElementNotInteractableException, NoSuchElementException) as e:
                         print(e)
-                self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
+                self.action_click(self.driver.find_element_by_xpath(self.apply_filter_xpath))
                 # essential wait for loading page
                 wait_to_load(self.driver)
                 if self.check_exists_byclass("nodata"):
@@ -182,7 +182,7 @@ class TotalCost:
                         if b > 0:
                             continue
                         wait_to_load(self.driver)
-                        self.driver.find_element_by_id(self.select_all_id).click()
+                        self.action_click(self.driver.find_element_by_id(self.select_all_id))
                         drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
                         # print(drilldown_element)
                         ele = self.driver.find_element_by_xpath(drilldown_element)
@@ -256,7 +256,7 @@ class TotalCost:
                         # print("j value in the end ",j)
                     loader_element = 'sm_download_cssload_loader_wrap'
                     wait_to_load(self.driver)
-                    self.driver.find_element_by_xpath(self.overview_xpath).click()
+                    self.action_click(self.driver.find_element_by_xpath(self.overview_xpath))
                     count = count + 1
 
 

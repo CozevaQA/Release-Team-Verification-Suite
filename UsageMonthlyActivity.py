@@ -34,7 +34,7 @@ def create_connection(db_file):  # creating connection
 def wait_to_load(driver):
     loader=config.get("Usage-MonthlyActivity-Prod","loader_element")
     try :
-        WebDriverWait(driver, 400).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
+        WebDriverWait(driver, 1000).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
     except UnexpectedAlertPresentException:
         print("Unknown Error Occurred while loading page ")
 
