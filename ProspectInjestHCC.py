@@ -1,5 +1,8 @@
 import base64
 import traceback
+import tkinter as tk
+from os.path import isfile, join
+from tkinter import filedialog
 
 import pytz
 from openpyxl import Workbook, load_workbook
@@ -38,6 +41,8 @@ import variablestorage as locator
 import guiwindow
 import support_functions as sf
 from threading import Timer
+
+selected_month = ""
 
 
 config = configparser.RawConfigParser()
@@ -98,7 +103,7 @@ def driver_setup(path):
     options.add_argument("--no-sandbox")
     options.add_argument("--dns-prefetch-disable")
     preferences = {
-        "download.default_directory": locator.download_dir}
+        "download.default_directory": "c:\\VerificationReports\\TaskIngestion\\AuditLogDownload"}
     options.add_experimental_option("prefs", preferences)
     global driver
     driver = webdriver.Chrome(executable_path=path, options=options)
@@ -203,7 +208,7 @@ def login_to_cozeva(CusID, path):
 
 def wait_to_load(element_xpath):
     try:
-        WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.XPATH, element_xpath)))
+        WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.XPATH, element_xpath)))
 
     except TimeoutException:
         print("Time out loaded ")
@@ -211,7 +216,7 @@ def wait_to_load(element_xpath):
 
 def wait_to_load_service_year(element_xpath):
     try:
-        WebDriverWait(driver, 300).until(EC.visibility_of_element_located((By.XPATH, element_xpath)))
+        WebDriverWait(driver, 100).until(EC.visibility_of_element_located((By.XPATH, element_xpath)))
     except TimeoutException:
         print("Time out loaded ")
         pass
@@ -546,16 +551,22 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
             sh1['A1'].font = Font(bold=True, size=13)
             sh1['B1'].value = "Service Date Match"  # if missing , test case is fail
             sh1['B1'].font = Font(bold=True, size=13)
-            sh1['C1'].value = "Rendering Provider Match" # if missing , test case is fail
+            sh1['C1'].value = "Month = "+str(selected_month)  # if missing , test case is fail
             sh1['C1'].font = Font(bold=True, size=13)
-            sh1['D1'].value = "Measure/Condition Match"  #if missing , ignore
+            sh1['D1'].value = "Rendering Provider Match" # if missing , test case is fail
             sh1['D1'].font = Font(bold=True, size=13)
-            sh1['E1'].value = "Code & Value match "  #if missing , ignore
+            sh1['E1'].value = "Measure/Condition Match"  #if missing , ignore
             sh1['E1'].font = Font(bold=True, size=13)
-            sh1['F1'].value = "Review 1 Present"
+            sh1['F1'].value = "Code & Value match "  #if missing , ignore
             sh1['F1'].font = Font(bold=True, size=13)
-            sh1['G1'].value = "URL"
+            sh1['G1'].value = "Review 1 Present"
             sh1['G1'].font = Font(bold=True, size=13)
+            sh1['H1'].value = "Audit Log"
+            sh1['H1'].font = Font(bold=True, size=13)
+            sh1['I1'].value = "No Annotation/Notes"
+            sh1['I1'].font = Font(bold=True, size=13)
+            sh1['J1'].value = "URL"
+            sh1['J1'].font = Font(bold=True, size=13)
 
     except Exception as e:
         print("Report Sheet not created ")
@@ -701,6 +712,25 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
             #             service_date.append(service_date_data_claim[q].get_attribute("innerHTML"))
 
             print(service_date)
+            #check if task is in selected month
+
+            month_match = ""
+            for taskdate in service_date:
+                month_number = taskdate.split('/')[0]
+
+                months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+                          'August', 'September', 'October', 'November', 'December']
+
+                if int(months.index(str(selected_month)))+1 == int(month_number):
+                    month_match = "PASS"
+                else:
+                    month_match = "FAIL"
+                    break
+
+
+
+
+
 
             # extract rendering provider
 
@@ -917,10 +947,63 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
 
             print("Code status ", code_status)
 
+            #Check Audit log download, data present
+            audit_log_download = ""
+
+            try:
+                driver.find_element(By.XPATH, locator.xpath_coding_tool_kebab).click()
+                time.sleep(1)
+                driver.find_element(By.XPATH, locator.xpath_audit_log_download).click()
+                time.sleep(2)
+
+                onlyfiles = [f for f in os.listdir("c:\\VerificationReports\\TaskIngestion\\AuditLogDownload") if
+                             isfile(join("c:\\VerificationReports\\TaskIngestion\\AuditLogDownload", f))]
+                audit_log_path = "c:\\VerificationReports\\TaskIngestion\\AuditLogDownload\\" + onlyfiles[0]
+
+                def is_csv_file_empty(file_path):
+                    with open(file_path, 'r') as csvfile:
+                        reader = csv.reader(csvfile)
+                        for row in reader:
+                            if row:  # Check if the row is not empty
+                                return False  # File has data
+                    return True  # File is empty
+
+                # Example usage
+                file_path = audit_log_path
+                if is_csv_file_empty(file_path):
+                    audit_log_download = "FAIL"
+                else:
+                    audit_log_download = "PASS"
+
+                os.remove(audit_log_path)
+
+            except Exception as e:
+                traceback.print_exc()
+                audit_log_download = "FAIL"
+
+            #Check that no annotations are present
+            try:
+                annotation_check = ""
+
+                annotation_count = driver.find_element(By.XPATH, locator.xpath_annotation_tab).get_attribute("data-count")
+
+                if annotation_count == "0":
+                    annotation_check = "PASS"
+                else:
+                    annotation_check = "FAIL"
+            except Exception as e:
+                traceback.print_exc()
+                annotation_check = "FAIL"
+
+
+
+
+
+
             # write status in report
 
-            sh1.append((str(task_id), str(service_date_matched), str(rendering_provider_matched), str(condition_found),
-                        str(code_status), str(review_status), str(driver.current_url)))
+            sh1.append((str(task_id), str(service_date_matched), str(month_match), str(rendering_provider_matched), str(condition_found),
+                        str(code_status), str(review_status),str(audit_log_download),str(annotation_check), str(driver.current_url)))
             workbook.save("Report_HCCCoding.xlsx")
             # if failed, provide task number,Encounter Mismatch/Code Not found, URL
 
@@ -929,6 +1012,18 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
             driver.switch_to.window(driver.window_handles[0])
             logger.info("Window closed and moved to previous tab ")
 
+    rows = sh1.max_row
+    cols = sh1.max_column
+    try:
+        for i in range(1, rows + 1):
+            for j in range(1, cols + 1):
+                if sh1.cell(i, j).value == 'PASS':
+                    sh1.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+                elif 'FAIL' in sh1.cell(i, j).value:
+                    sh1.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+    except Exception as e:
+        traceback.print_exc()
+    workbook.save("Report_HCCCoding.xlsx")
     # apply link status
 
     # link_dropdown_xpath='//div[text()="Link Status:"]//parent::div//following-sibling::div'
@@ -1155,10 +1250,56 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
     #     driver.execute_script("arguments[0].scrollIntoView();", next)
     #     next.click()
 
+def fetch_tasks():
+
+    def save_to_file():
+        file_path = source_directory + "\\assets\\Tasks.txt"
+
+        with open(file_path, 'w') as f:
+            f.write(text_widget.get(1.0, tk.END).strip())
+
+        global selected_month
+        selected_month = selected_month.get()
+
+        root.destroy()
+
+
+
+    # Create tkinter window and configure its settings
+    root = tk.Tk()
+    root.title("Task Ingestion")
+    root.iconbitmap("assets/icon.ico")
+    #root.geometry("300x400")
+
+    # Create a label for the dropdown widget
+    month_label = tk.Label(root, text="Select Month:")
+    month_label.pack(side=tk.TOP, padx=10, pady=10)
+
+    # Create a dropdown widget for month selection
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+              'August', 'September', 'October', 'November', 'December']
+    global selected_month
+    selected_month = tk.StringVar(root)
+    selected_month.set(months[0])  # Set the default value to the first month
+    month_dropdown = tk.OptionMenu(root, selected_month, *months)
+    month_dropdown.pack(side=tk.TOP, padx=10, pady=10)
+
+    # Create a text widget to accept user input
+    text_widget = tk.Text(root, wrap=tk.WORD, width=25)
+    text_widget.pack(expand=True, fill=tk.BOTH)
+
+    # Create a button to save the contents of the text widget to the notepad file
+    save_button = tk.Button(root, text="Start Script", command=save_to_file)
+    save_button.pack(side=tk.BOTTOM, pady=10)
+
+    # Start the tkinter main loop
+    root.mainloop()
+
 #create Folder or working directory
 dateandtime = date_time()
 source_directory = os.getcwd()
 
+fetch_tasks()
 taskpath = source_directory + "\\assets\\Tasks.txt"
 cdriver_path = source_directory + "\\assets\\chromedriver.exe"
 login_file = source_directory + "\\assets\\loginInfo.txt"
@@ -1196,9 +1337,11 @@ verify_codingsheetHCC(driver, wb, logger, "CozevaSupport", taskpath)
 
 
 
+
     # convert into string
     # :26613`MeasureName`Servicedate`CodeValue`RenderingProvider`
     # chalk out a string for BP
 end = time.time()
+driver.quit()
 print(f"Total runtime of the program is {end - begin}")
 # sys.stdout.close()

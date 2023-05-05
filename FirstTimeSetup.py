@@ -25,6 +25,11 @@ isdir = os.path.isdir(path)
 if not isdir:
     os.mkdir(path)
 
+path = os.path.join("c:\\VerificationReports\\TaskIngestion", "AuditLogDownload")
+isdir = os.path.isdir(path)
+if not isdir:
+    os.mkdir(path)
+
 
 
 
