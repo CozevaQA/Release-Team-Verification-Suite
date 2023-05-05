@@ -84,10 +84,10 @@ class MedicareRiskByHierarchy:
             b = self.driver.find_element_by_id(id)
             self.driver.execute_script("arguments[0].click();", b)
     def yearconverter(self,year):
-        if (year == "2019"):
-            j = "2019 (PY 2020)"
-        elif year == "2020":
-            j = "2020 (PY 2021)"
+        if (year == "2023"):
+            j = "2023 (PY 2024)"
+        elif year == "2022":
+            j = "2022 (PY 2023)"
         elif year == "2021":
             j = "2021 (PY 2022)"
         else:
@@ -108,8 +108,8 @@ class MedicareRiskByHierarchy:
         if self.hasXpath(self.lob_xpath):
             for i in year:
                 i=int(i)
-                if i == 2019:
-                    j = "2019 (PY 2020)"
+                if i == 2023:
+                    j = "2023 (PY 2024)"
                 elif i == 2020:
                     j = "2020 (PY 2021)"
                 elif i == 2021:
@@ -121,7 +121,7 @@ class MedicareRiskByHierarchy:
                 WebDriverWait(self.driver, 100).until(
                     EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
                 selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
-                if selected_value != j:
+                if str(selected_value) != str(j):
                     service_year = self.driver.find_element_by_xpath(self.service_year_xpath)
                     ActionChains(self.driver).move_to_element(service_year).click(service_year).perform()
                     year_selector = "//label[@class=\"radio\" and @title=\"%s\"]" % str(j)

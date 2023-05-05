@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException
+    ElementClickInterceptedException, UnexpectedAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
@@ -30,6 +30,14 @@ def create_connection(db_file):  # creating connection
         print(e)
 
     return None
+
+def wait_to_load_filter(driver):
+    loader=config.get("CohortAnalyzer-Prod","loader_element_filter")
+    try :
+        WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
+    except UnexpectedAlertPresentException:
+        print("Unknown Error Occurred while loading page ")
+
 
 def wait_to_load(driver):
     loader=config.get("CohortAnalyzerSummary-Prod","loader_element")
@@ -127,6 +135,7 @@ class CohortAnalyzerSummary:
                     ele = self.driver.find_element_by_xpath(year_selector)
                     ele.location_once_scrolled_into_view
                     self.action_click(ele)
+                    wait_to_load_filter(self.driver)
                 except NoSuchElementException:
                     with self.conn:
                         self.cur.execute(

@@ -98,15 +98,19 @@ class MedicareRAF:
             return False
 
     def yearconverterBTP(self,year):
-        if (year == "2021"):
-            j = "2021 (PY2022-Final)"
+        if (year == "2023"):
+            j = "2023 (PY2024-Final)"
+        elif year == "2022":
+            j = "2022 (PY 2023)"
         else:
             j="null"
         return j
 
     def yearconverterProspect(self,year):
-        if (year == "2021"):
-            j = "2021 (PY 2022)"
+        if (year == "2023"):
+            j = "2023 (PY 2024)"
+        elif year == "2022":
+            j = "2022 (PY 2023)"
         else:
             j="null"
         return j

@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException
+    ElementClickInterceptedException, StaleElementReferenceException, UnexpectedAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
@@ -34,8 +34,13 @@ def create_connection(db_file):  # creating connection
 
 def wait_to_load(driver):
     loader=config.get("QualityOverview-Prod","loader_element")
-    WebDriverWait(driver,200).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
-
+    WebDriverWait(driver,300).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
+def wait_to_load_filter(driver):
+    loader=config.get("CohortAnalyzer-Prod","loader_element_filter")
+    try :
+        WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
+    except UnexpectedAlertPresentException:
+        print("Unknown Error Occurred while loading page ")
 
 class QualityOverview:
 
@@ -108,6 +113,7 @@ class QualityOverview:
                     ele = self.driver.find_element_by_xpath(year_selector)
                     ele.location_once_scrolled_into_view
                     self.action_click(ele)
+                    wait_to_load_filter(self.driver)
                 except NoSuchElementException:
                     with self.conn:
                         self.cur.execute(
@@ -117,7 +123,13 @@ class QualityOverview:
                     break
             print(i)
             lob = self.driver.find_element_by_xpath(self.lob_xpath)
-            self.action_click(lob)
+            try:
+                self.action_click(lob)
+            except StaleElementReferenceException :
+                self.driver.implicitly_wait(10)
+                self.action_click(lob)
+
+
             lob_elements = self.driver.find_elements_by_xpath(self.lob_elements_xpath)
             print("Number of LOBs ", len(lob_elements))
             count = 1

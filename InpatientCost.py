@@ -121,17 +121,17 @@ class InpatientCost:
             for lob_element in lob_elements:
                 wait_to_load(self.driver)
                 if (count > 1):
-                    lob.click()
+                    self.action_click(lob)
                 print(lob_element.get_attribute("value"))
                 val = lob_element.get_attribute("value")
                 lob_selector = "//label[@class=\"radio\"]//input[@value=\"%s\"]/following-sibling::span "% (val)
                 # print(st)
                 try:
-                    self.driver.find_element_by_xpath(lob_selector).click()
+                    self.action_click(self.driver.find_element_by_xpath(lob_selector))
                 except ElementNotInteractableException:
                     b = self.driver.find_element_by_xpath(lob_selector)
                     self.driver.execute_script("arguments[0].click();", b)
-                self.driver.find_element_by_xpath(self.apply_filter_xpath).click()
+                self.action_click(self.driver.find_element_by_xpath(self.apply_filter_xpath))
                 # essential wait for loading page
                 wait_to_load(self.driver)
                 if self.check_exists_byclass("nodata"):
@@ -159,7 +159,7 @@ class InpatientCost:
                         if b > 0:
                             continue
                         wait_to_load(self.driver)
-                        self.driver.find_element_by_id(self.select_all_id).click()
+                        self.action_click(self.driver.find_element_by_id(self.select_all_id))
                         drilldown_element = "//div[@class=\"breadcrumb_dropdown\"]//child::a[%s]" % (j)
                         # print(drilldown_element)
                         ele = self.driver.find_element_by_xpath(drilldown_element)
@@ -233,7 +233,7 @@ class InpatientCost:
                         # print("j value in the end ",j)
                     loader_element = 'sm_download_cssload_loader_wrap'
                     wait_to_load(self.driver)
-                    self.driver.find_element_by_xpath(self.overview_xpath).click()
+                    self.action_click(self.driver.find_element_by_xpath(self.overview_xpath))
                     count = count + 1
 
 

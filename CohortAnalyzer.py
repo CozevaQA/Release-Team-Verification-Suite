@@ -101,7 +101,7 @@ class CohortAnalyzer:
         wbpath = self.makedir(customer)
         #report_directory=os.path.join(report_directory,wbpath)
         wait_to_load(self.driver)
-        self.driver.find_element_by_xpath(self.insert_chart_xpath).click()
+        self.action_click(self.driver.find_element_by_xpath(self.insert_chart_xpath))
         lob_outer_elements = self.driver.find_elements_by_xpath(self.lob_outer_elements_xpath)
         count_outer = len(lob_outer_elements)
         #print(count_outer)

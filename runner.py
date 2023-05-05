@@ -34,7 +34,7 @@ import shutil
 # from SuspectAnalytics import SuspectAnalytics
 # from MedicareCodingDiscontinuation import MedicareCodingDiscontinuation
 import configparser
-
+from plyer import notification
 # from PharmacyCost import PharmacyCost
 # #from InpatientCost import InpatientCost
 # from MedicareRAF import MedicareRAF
@@ -270,7 +270,7 @@ def nav_back():
     WebDriverWait(driver, 90).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
     back_xpath = "//i[text()=\"arrow_back\"]"
     back = driver.find_element_by_xpath(back_xpath)
-    back.click()
+    action_click(back)
 
 
 # def verify_totalcost(year, customer_id):
@@ -352,12 +352,14 @@ def verify_Cohort(service_year,customer_id):
     str2 = '//td[@class="sm_tab_link" and text()="Cohort Analyzer"]'
     try:
         wb = driver.find_element_by_xpath(str2)
-    except NoSuchElementException :
+        action_click(wb)
+        print("clicked on Cohort analyzer ")
+    except NoSuchElementException as e :
         print("Cohort not found ",customer_id)
-        return 0
+        return e
         pass
     service_year=[service_year]
-    wb.click()
+
     f = CohortAnalyzer(driver)
     try:
         f.iterate_filter(service_year, customer_id)
@@ -372,29 +374,29 @@ def verify_Cohort(service_year,customer_id):
         action_click(close_button_when_loading)
         nav_back()
         pass
-    except (
-            WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
-            StaleElementReferenceException) as e:
-        print(e)
-        print("Exception occurred in Utilization  " + "Cohort Analyzer")
-        logger.error(str(e) + str(customer_id) + "Cohort Analyzer" + "\n")
-        nav_back()
-        pass
+    # except (
+    #         WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
+    #         StaleElementReferenceException) as e:
+    #     print(e)
+    #     print("Exception occurred in clicking on  " + "Cohort Analyzer")
+    #     logger.error(str(e) + str(customer_id) + "Cohort Analyzer" + "\n")
+    #     nav_back()
+    #     pass
     # updated sm_tab_link
     # str2 = "//td[@class=\"sm_tab_link\" and text()=\"%s\"]" % "Cohort Analyzer Summary"
     #str2 = "//td[@class=\"sm_tab_link\" and text()=\"%s\"]" % "Cohort Analyzer Summary"
-    str2 = '//td[@class="sm_tab_link" and text()="Cohort Analyzer Summary"]'
+    str23 = '//td[@class="sm_tab_link" and text()="Cohort Analyzer Summary"]'
     try:
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, str2)))
-        wb = driver.find_element_by_xpath(str2)
+        wb2 = driver.find_element_by_xpath(str23)
+        action_click(wb2)
     except NoSuchElementException:
         print("Cohort Summary not found ", customer_id)
         return 0
         pass
     #wb.click()
 
-    action_click(wb)
     f = CohortAnalyzerSummary(driver)
     try:
         f.iterate_filter(service_year, customer_id)
@@ -409,14 +411,14 @@ def verify_Cohort(service_year,customer_id):
         action_click(close_button_when_loading)
         nav_back()
         pass
-    except (
-            WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
-            StaleElementReferenceException) as e:
-        print(e)
-        print("Exception occurred in Utilization  " + "Cohort Analyzer")
-        logger.error(str(e) + str(customer_id) + "Cohort Analyzer Summary" + "\n")
-        nav_back()
-        pass
+    # except (
+    #         WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
+    #         StaleElementReferenceException) as e:
+    #     print(e)
+    #     print("Exception occurred in Utilization  " + "Cohort Analyzer")
+    #     logger.error(str(e) + str(customer_id) + "Cohort Analyzer Summary" + "\n")
+    #     nav_back()
+    #     pass
 
 
 def verify_quality(year, customer_id):
@@ -1088,6 +1090,18 @@ for i in range(2, num_of_rows + 1):
 get_error(config.get("runner", "dbpath"))
 os.chdir("C://")
 driver.quit()
+notification_title = "Analytics Execution Complete "
+
+notification_message = "Please check report here" + "C:\\VerificationReports\\ExportReport\\"
+
+notification.notify(
+            title=notification_title,
+            message=notification_message,
+            app_icon=None,
+            timeout=20,
+            toast=False
+        )
+
 print("Execution time ", datetime.now() - begin_time)
 config_path = Path(source_directory + "\\" + "locator-config.properties")
 config.set('runner', 'dbpath', "assets\\suremetrics_log.db")
