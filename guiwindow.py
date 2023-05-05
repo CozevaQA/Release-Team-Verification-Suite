@@ -1,7 +1,9 @@
+
 import time
 import traceback
 from os import getcwd
 from tkinter import *
+from tkinter import ttk
 
 import variablestorage as locator
 from selenium import webdriver

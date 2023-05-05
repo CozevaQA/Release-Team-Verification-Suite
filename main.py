@@ -17,7 +17,7 @@ print("Headless Mode: "+str(guiwindow.headlessmode))
 environment = guiwindow.env
 
 launchstyle= "Def"
-if 'NC' in guiwindow.verification_specs[0]:
+if 'NC_' in guiwindow.verification_specs[0]:
     launchstyle = "NC"
 print(launchstyle)
 if guiwindow.verification_specs[0] == 'Name' or guiwindow.verification_specs[0] == 'Customer' and guiwindow.verification_specs[4][13] == 0:

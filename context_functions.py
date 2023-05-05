@@ -1,3 +1,5 @@
+
+
 import base64
 import configparser
 import os
@@ -840,6 +842,10 @@ def provider_registry(driver, workbook, logger, run_from):
             elif len(list_of_provider_elements) == 1:
                 list_of_provider_elements[0].find_elements_by_tag_name('a')[1].click()
 
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
         except Exception as e:
             ws.append([test_case_id, "Attempting to navigate to a random provider", 'Navigation to provider context',
                        'Failed', 'x',
@@ -862,7 +868,9 @@ def provider_registry(driver, workbook, logger, run_from):
         print('1.5')
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         print('2')
-        driver.find_element_by_id("all_patients_tab").click()
+        time.sleep(3)
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "all_patients_tab"))).click()
+        #driver.find_element_by_id("all_patients_tab").click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
@@ -2597,6 +2605,12 @@ def time_capsule(driver, workbook, logger, run_from):
                     print(measure_performance)
                     print(claim_count)
                     print(pmc_count)
+                    if float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) < 2:
+                        ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Passed',
+                                   'Measure performance has increased or is the same', driver.current_url))
+                    elif float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) > 2:
+                        ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Failed',
+                                   'Measure performance has decreased since previous computation', driver.current_url))
                     if len(measure_performance_copy) == len(measure_performance):
                         ws.append((test_case_id, 'Time Capsule', 'Measure Performance Duplicates', 'Passed',
                                    'All cards have different values', driver.current_url))
@@ -2635,6 +2649,9 @@ def time_capsule(driver, workbook, logger, run_from):
                     if len(lab_count_copy) == len(lab_count):
                         ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
                                    'All cards have different values', driver.current_url))
+                    elif "0" in lab_count_copy or "1" in lab_count_copy:
+                        ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
+                                   'Card values are 0 or 1', driver.current_url))
                     else:
                         ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Failed',
                                    'Unique values: \"'+'\",\"'.join([str(elem) for elem in lab_count_copy])+'\"', driver.current_url))
@@ -2642,10 +2659,17 @@ def time_capsule(driver, workbook, logger, run_from):
                     if len(lab_members_count_copy) == len(lab_members_count):
                         ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
                                    'All cards have different values', driver.current_url))
+                    elif "0" in lab_members_count_copy or "1" in lab_members_count_copy:
+                        ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
+                                   'Card values are 0 or 1', driver.current_url))
                     else:
                         ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Failed',
                                    'Unique values: \"'+'\",\"'.join([str(elem) for elem in lab_members_count_copy])+'\"', driver.current_url))
                     test_case_id+=1
+
+                    #measure performance check for lower performance in nearest week
+
+
 
 
 
@@ -3361,7 +3385,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 overall_rating = ""
                 patient_count = ""
                 for div, next_div in zip(summaryList, summaryList[1:] + [summaryList[0]]):
-                    if div.text == "Overall Rating":
+                    if "Overall Rating" in div.text:
                         overall_rating = next_div.text.replace("%","").strip()
                         if 'Stars' in overall_rating:
                             overall_rating = overall_rating.replace("Stars","").strip()
@@ -6484,8 +6508,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 if "No data available" in ListRow[0].text and len(ListRow) == 1:
                     Comments = "No provider data in HCC measure " + str(i)
                     print(Comments)
-                    ws.append([cus_id,LOB_Name,Domain_name_UI,Domain_name_MSPL, Measure, '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0','Undetermined',Domain_comment,'NA','NA',
-                               Comments])
+                    ws.append([cus_id, LOB_Name, Measure, Domain_comment, 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined',Comments , driver.current_url])
                 elif len(ListRow) == 1:
                     ListRow[0].find_elements(By.TAG_NAME, 'a')[1].click()
                     sf.ajax_preloader_wait(driver)
@@ -6574,8 +6597,11 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
 
                             #Clinical score Check
                             for hcc_measures in hcctable:
-                                clinical_text = hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name("span")[1].text
+
                                 try:
+                                    clinical_text = \
+                                    hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name(
+                                        "span")[1].text
                                     clinical_score_list.append(float(clinical_text.replace('Clinical Factor', '').strip()))
                                 except Exception as e:
                                     hcc_flag_list[2] = "Failed"
