@@ -53,27 +53,11 @@ def ajax_preloader_wait(driver):
 
 
 def ajax_preloader_wait2(driver):
-    wait_time = 300
+    time.sleep(2)
+    WebDriverWait(driver, 300).until(EC.invisibility_of_element((By.CLASS_NAME, "ajax_preloader")))
     time.sleep(1)
-    loader_start_time = time.perf_counter()
-    while time.perf_counter() - loader_start_time < wait_time:
-        try:
-            inner_content = driver.find_element_by_class_name("ajax_preloader").get_attribute("innerHTML")
-            print(inner_content)
-            if inner_content == "":
-                time.sleep(1)
-                break
-        except NoSuchElementException as e:
-            #traceback.print_exc()
-            time.sleep(1)
-            break
-        except Exception as e:
-            traceback.print_exc()
-            time.sleep(1)
-            continue
-
-    return
-
+    WebDriverWait(driver, 300).until(EC.invisibility_of_element((By.CLASS_NAME, "drupal_message_text")))
+    time.sleep(2)
 
 
 
@@ -122,7 +106,7 @@ def RandomNumberGenerator(maximum_range,number):
 
 def check_exists_by_xpath(driver, xpath):
     try:
-        driver.find_element_by_xpath(xpath)
+        driver.find_element(By.XPATH, xpath)
     except NoSuchElementException:
         return False
     return True

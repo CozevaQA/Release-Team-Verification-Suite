@@ -469,7 +469,7 @@ def new_launch(environment):
     if checklist[23] == 1:
         context_functions.cetoggle(driver, workbook, logger, report_folder, run_from)
     if checklist[29] == 1:
-        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        context_functions.analytics(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
 
 
@@ -533,7 +533,7 @@ def cozeva_support(environment):
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
-        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        context_functions.analytics(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
 
     workbook.save(report_folder+"\\Report.xlsx")
@@ -589,7 +589,7 @@ def limited_cozeva_support(username):
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
-        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        context_functions.analytics(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")
@@ -647,7 +647,7 @@ def customer_support(username):
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
-        context_functions.hccvalidation(driver, workbook, logger, report_folder, run_from)
+        context_functions.analytics(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     time.sleep(5)
     workbook.save(report_folder + "\\Report.xlsx")

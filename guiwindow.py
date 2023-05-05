@@ -70,7 +70,7 @@ def launchgui():
     26 = Coding tool
     27 = Denominator Eligblity for CBP/HbA1c
     28 = Group1/2 sidemenus
-    29 = HCC Validation
+    29 = Analytics verification
 
 
     """
@@ -239,7 +239,7 @@ def launchgui():
         checklist[9] = time_capsule_var.get()
         checklist[10] = secure_messaging_var.get()
         checklist[12] = accordion_verification_var.get()
-        checklist[29] = hcc_validation_var.get()
+        checklist[29] = analytics_verification_var.get()
 
     def create_NL_checklist():
         if all_navigation_var.get() == 1:
@@ -265,7 +265,7 @@ def launchgui():
         checklist[25] = NL_patient_dashboard_var.get()
         checklist[26] = coding_tool_var.get()
         checklist[27] = denom_eligibility_var.get()
-        checklist[29] = NL_hcc_validation_var.get()
+        checklist[29] = NL_analytics_verification_checkbox.get()
 
     def select_all():
         if select_var.get() == 1:
@@ -281,7 +281,7 @@ def launchgui():
             time_capsule.select()
             secure_messaging_checkbox.select()
             accordion_verification_checkbox.select()
-            hcc_validation_checkbox.select()
+            analytics_verification_checkbox.select()
         elif select_var.get() == 0:
             support_sidemenu_checkbox.deselect()
             practice_sidemenu_checkbox.deselect()
@@ -295,7 +295,7 @@ def launchgui():
             time_capsule.deselect()
             secure_messaging_checkbox.deselect()
             accordion_verification_checkbox.deselect()
-            hcc_validation_checkbox.select()
+            analytics_verification_checkbox.select()
 
     def NL_select_all():
         if NL_select_var.get() == 1:
@@ -316,7 +316,7 @@ def launchgui():
             NL_patient_dashboard_checkbox.select()
             coding_tool_checkbox.select()
             #denom_eligibility_checkbox.select()
-            NL_hcc_validation_checkbox.select()
+            NL_analytics_verification_checkbox.select()
         elif NL_select_var.get() == 0:
             all_navigation_checkbox.deselect()
             #LoB_Measure_checkbox.deselect()
@@ -335,7 +335,7 @@ def launchgui():
             NL_patient_dashboard_checkbox.deselect()
             coding_tool_checkbox.deselect()
             #denom_eligibility_checkbox.deselect()
-            NL_hcc_validation_checkbox.deselect()
+            NL_analytics_verification_checkbox.deselect()
 
     def cozeva_radio():
         Checkbox_cozeva.config(state="active")
@@ -437,7 +437,7 @@ def launchgui():
     time_capsule_var = IntVar()
     secure_messaging_var = IntVar()
     accordion_verification_var = IntVar()
-    hcc_validation_var = IntVar()
+    analytics_verification_var = IntVar()
     select_var = IntVar()
     select_checkbox = Checkbutton(input_frame_3, text="Select All", variable=select_var, command=select_all, font=("Nunito Sans", 10))
     support_sidemenu_checkbox = Checkbutton(input_frame_3, text="Support Sidemenu", variable=support_sidemenu_var, font=("Nunito Sans", 10))
@@ -453,7 +453,7 @@ def launchgui():
     secure_messaging_checkbox = Checkbutton(input_frame_3, text="Secure Messaging", variable=secure_messaging_var, font=("Nunito Sans", 10))
     accordion_verification_checkbox = Checkbutton(input_frame_3, text="Accordion and counts Verification", variable=accordion_verification_var,
                                             font=("Nunito Sans", 10))
-    hcc_validation_checkbox = Checkbutton(input_frame_3, text="HCC Validation", variable=hcc_validation_var, font=("Nunito Sans", 10))
+    analytics_verification_checkbox = Checkbutton(input_frame_3, text="Analytics Verification", variable= analytics_verification_var, font=("Nunito Sans", 10))
     nextbutton3 = Button(input_frame_3, text="Start Automated Test", command=frame3next, font=("Nunito Sans", 10))
     prevbutton3 = Button(input_frame_3, text="Go Back", command=frame3prev, font=("Nunito Sans", 10))
 
@@ -493,8 +493,8 @@ def launchgui():
     coding_tool_checkbox = Checkbutton(new_launch_frame, text="Validate Coding tool", variable=coding_tool_var, font=("Nunito Sans", 10))
     denom_eligibility_var = IntVar()
     denom_eligibility_checkbox = Checkbutton(new_launch_frame, text="Validate Denominator Eligibility for CBP/HbA1c Measures", variable=denom_eligibility_var, font=("Nunito Sans", 10))
-    NL_hcc_validation_var = IntVar()
-    NL_hcc_validation_checkbox = Checkbutton(new_launch_frame, text="HCC Validation", variable=NL_hcc_validation_var, font=("Nunito Sans", 10))
+    NL_analytics_verification_var = IntVar()
+    NL_analytics_verification_checkbox = Checkbutton(new_launch_frame, text="Analytics verification", variable=NL_analytics_verification_var, font=("Nunito Sans", 10))
     NL_select_var = IntVar()
     NL_select_checkbox = Checkbutton(new_launch_frame, text="Select All", variable=NL_select_var, command=NL_select_all, font=("Nunito Sans", 10))
     NL_next_button = Button(new_launch_frame, text="Begin Test", command=nlnext, font=("Nunito Sans", 10))
@@ -656,7 +656,7 @@ def launchgui():
     time_capsule.grid(row=11, column=0, columnspan=5, sticky="w")
     secure_messaging_checkbox.grid(row=12, column=0, columnspan=5, sticky="w")
     accordion_verification_checkbox.grid(row=13, column=0, columnspan=5, sticky="w")
-    hcc_validation_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
+    analytics_verification_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
     nextbutton3.grid(row=15, column=3)
     prevbutton3.grid(row=15, column=0)
 
@@ -684,7 +684,7 @@ def launchgui():
     #coding_tool_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
     denom_eligibility_checkbox.grid(row=17, column=0, columnspan=5, sticky="w")
     denom_eligibility_checkbox.config(state='disabled')
-    NL_hcc_validation_checkbox.grid(row=18, column=0, columnspan=5, sticky="w")
+    NL_analytics_verification_checkbox.grid(row=18, column=0, columnspan=5, sticky="w")
     NL_custID.grid(row=19, column=0, columnspan=5)
     NL_next_button.grid(row=20, column=0, columnspan=5)
 

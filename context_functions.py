@@ -160,6 +160,8 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                 links[link].click()
                 start_time = time.perf_counter()
                 sf.ajax_preloader_wait(driver)
+                if link_name == "AWV Chart List" or "Imported Charts":
+                    sf.ajax_preloader_wait2(driver)
                 total_time = time.perf_counter() - start_time
                 current_url = driver.current_url
                 access_message = sf.CheckAccessDenied(current_url)
@@ -208,8 +210,9 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                                 sf.captureScreenshot(driver, dashboard_links[i].text, report_folder)
                         if link_name == "Providers":
                             WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//*[@class='dataTables_info']")))
-                            if sf.check_exists_by_xpath(driver, "//*[@id='qt-mt-support-ls']"):
-                                driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']").find_elements(By.TAG_NAME, "li")[1].click()
+                            path = "//*[@id='qt-mt-support-ls']"
+                            if sf.check_exists_by_xpath(driver, path):
+                                driver.find_element(By.XPATH, "//*[@id='qt-mt-support-ls']//li[1]").click()
                                 sf.ajax_preloader_wait(driver)
                                 sf.captureScreenshot(driver, "Practice tab " + context, report_folder)
 
@@ -217,6 +220,9 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
                                 test_case_id += 1
                                 ws.append((test_case_id, context_name, 'Presence of Had ER Visit Tab', 'Passed'))
+                                driver.find_element(By.XPATH, "//*[@id='patient_panel']//li[2]").click()
+                                sf.ajax_preloader_wait(driver)
+                                sf.captureScreenshot(driver, "Had ER Visit tab " + context, report_folder)
             except Exception as e:
                 print(e)
                 traceback.print_exc()
