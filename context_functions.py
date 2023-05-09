@@ -3441,6 +3441,9 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                     time.sleep(2)
                     driver.find_element_by_xpath("//*[@id='qt-reg-nav-filters']/li[1]/label").click()
                     time.sleep(2)
+                    driver.execute_script("arguments[0].scrollIntoView();",
+                                          driver.find_element_by_id("qt-apply-search"))
+                    time.sleep(2)
                     driver.find_element_by_xpath("//*[@id='qt-apply-search']").click()
                     time.sleep(2)
                     # counting 0/0 measures
@@ -3582,6 +3585,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
 
                 except Exception as e:
                     print(e)
+                    traceback.print_exc()
 
             time.sleep(1)
             LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
