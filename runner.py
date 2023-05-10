@@ -123,8 +123,8 @@ def setup(val, downloaddefault):
         # # change for user
         # global driver
         # driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
-        driver.get("https://www.cozeva.com/user/logout")
-        title = driver.get("https://www.cozeva.com/user/login")
+        driver.get("https://stage.cozeva.com/user/logout")
+        title = driver.get("https://stage.cozeva.com/user/login")
         driver.maximize_window()
     return driver
 

@@ -247,7 +247,8 @@ def support_menubar(driver, workbook, ws, logger, run_from, report_folder, conte
         test_case_id += 1
         ws.append((test_case_id, "", 'Menubar Navigation', 'Failed', driver.current_url))
         sf.captureScreenshot(driver, "Menubar failed" + " " + context, report_folder)
-
+    driver.get(main_registry_url)
+    sf.ajax_preloader_wait(driver)
     rows = ws.max_row
     cols = ws.max_column
     for i in range(2, rows + 1):
@@ -535,7 +536,11 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
         if run_from == "Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Limited Cozeva Support":
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
-            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
+            tab_list = driver.find_element_by_class_name('tabs').find_elements(By.TAG_NAME, "li")
+            for tab in tab_list:
+                if "Patients" in tab.text:
+                    tab.click()
+                    break
             sf.ajax_preloader_wait(driver)
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
                 driver.find_element_by_class_name('dt_tag_close').click()
@@ -818,7 +823,7 @@ def patient_dashboard(driver, workbook, logger, run_from, report_folder):
             driver.switch_to.window(driver.window_handles[0])
 
     driver.get(main_registry_url)
-    #sf.ajax_preloader_wait(driver)
+    sf.ajax_preloader_wait(driver)
     rows = ws.max_row
     cols = ws.max_column
     for i in range(2, rows + 1):
@@ -859,6 +864,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         try:
             print("1")
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(0.5)
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -914,6 +920,7 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                 sf.ajax_preloader_wait(driver)
                 if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
                     driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+                time.sleep(0.5)
                 current_context = driver.find_element(By.XPATH, "//span[@class='specific_most']").text
                 sf.captureScreenshot(driver, name + " " + current_context, report_folder)
                 patient_count = driver.find_element(By.XPATH, "//div[contains(text(), 'Patients')]/../div[2]").text
@@ -978,7 +985,6 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
                    Comment,
                    driver.current_url])
     registry_url = driver.current_url
-    main_registry_url = driver.current_url
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
         sf.ajax_preloader_wait(driver)
@@ -1104,25 +1110,25 @@ def provider_registry(driver, workbook, logger, run_from, report_folder):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
         loop_counter = 0
-        selectedMetric = ""
-        while percent == '0.00' or percent == '0.00 %':
-            if loop_counter < 10:
-                if len(metrics) > 1:
-                    selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
-                    percent = selectedMetric.find_element_by_class_name('percent').text
-                elif len(metrics) == 1:
-                    selectedMetric = metrics[0]
-                    percent = selectedMetric.find_element_by_class_name('percent').text
-                else:
-                    ws.append(['No Metrics on this Provider Registry'])
-                    raise Exception("No Metrics on this Provider Registry")
-                loop_counter += 1
-
-            else:
-                ws.append(['Quit this section because there are no metrics with patients'])
-                raise Exception("No Metrics with Available Patients")
-        selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+            driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+        selected_metric_name = ""
+        driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
+        time.sleep(0.5)
+        option = driver.find_elements(By.XPATH, "//input[@class='select-dropdown dropdown-trigger']")[0]
+        option.click()
+        lists = driver.find_elements(By.XPATH, "//ul[@class='dropdown-content select-dropdown']")[0]
+        options = lists.find_elements(By.TAG_NAME, 'li')
+        for option in options:
+            if option.text == "Numerator":
+                option.click()
+        apply_btn = driver.find_element(By.XPATH, "//button[@id='qt-apply-search']")
+        driver.execute_script("arguments[0].scrollIntoView();", apply_btn)
+        apply_btn.click()
+        time.sleep(0.5)
+        selectedMetric = driver.find_element(By.XPATH, "//*[@id='registry_body']/ul").find_elements(By.TAG_NAME, "li")
+        selected_metric_name = selectedMetric[0].find_element(By.XPATH, "//*[@class='met-name']").text
+        selectedMetric[0].click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
@@ -1382,7 +1388,6 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
                    Comment,
                    driver.current_url])
     registry_url = driver.current_url
-    main_registry_url = driver.current_url
     # Nav check two : Navigation to patient context through patient toggle of practice Metric Specific List
 
     try:
@@ -1395,21 +1400,25 @@ def practice_registry(driver, workbook, logger, run_from, report_folder):
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         percent = '0.00'
         loop_count = 0
-        selectedMetric = ""
-        while percent == '0.00' or percent == '0.00%':
-            if loop_count < 10:
-                selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
-                percent = selectedMetric.find_element_by_class_name('percent').text
-                loop_count += 1
-            else:
-                ws.append([test_case_id, context_name, 'Skipped this because control was stuck in infinite loop'])
-                driver.get(main_registry_url)
-                sf.ajax_preloader_wait(driver)
-                WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
-                return
-        selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+            driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+        selected_metric_name = ""
+        driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
+        time.sleep(0.5)
+        option = driver.find_elements(By.XPATH, "//input[@class='select-dropdown dropdown-trigger']")[0]
+        option.click()
+        lists = driver.find_elements(By.XPATH, "//ul[@class='dropdown-content select-dropdown']")[0]
+        options = lists.find_elements(By.TAG_NAME, 'li')
+        for option in options:
+            if option.text == "Numerator":
+                option.click()
+        apply_btn = driver.find_element(By.XPATH, "//button[@id='qt-apply-search']")
+        driver.execute_script("arguments[0].scrollIntoView();", apply_btn)
+        apply_btn.click()
+        time.sleep(0.5)
+        selectedMetric = driver.find_element(By.XPATH, "//*[@id='registry_body']/ul").find_elements(By.TAG_NAME, "li")
+        selected_metric_name = selectedMetric[0].find_element(By.XPATH, "//*[@class='met-name']").text
+        selectedMetric[0].click()
         sf.ajax_preloader_wait(driver)
         try:
             WebDriverWait(driver, 30).until(
@@ -1644,8 +1653,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
         selectedMetric.click()
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
         sf.captureScreenshot(driver, "Provider list from " + driver.find_element(By.XPATH, "//span[@class='specific_most']").text, report_folder)
         metric_url = driver.current_url
         # nav 1 : Practice Tab
@@ -1722,8 +1730,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
         # Nav to provider registry
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             selectedProviderName = 'Couldn\'t Fetch'
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[1].click()
             sf.ajax_preloader_wait(driver)
@@ -1794,8 +1801,7 @@ def support_level(driver, workbook, logger, run_from, report_folder):
         # nav 3 : Patient context
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             patient_id = 'Couldn\'t Fetch'
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
             sf.ajax_preloader_wait(driver)
@@ -1860,7 +1866,11 @@ def support_level(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
-            driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[3].click()
+            tab_list = driver.find_element_by_class_name('tabs').find_elements(By.TAG_NAME, "li")
+            for tab in tab_list:
+                if "Performance Statistics" in tab.text:
+                    tab.click()
+                    break
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -1952,7 +1962,6 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             driver.find_element_by_id('search_practices_link').click()
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, 'search_practices')))
-            sf.captureScreenshot(driver, "Practice global search " + run_from, report_folder)
             driver.find_element_by_id('search_practices').find_elements_by_tag_name('a')[0].click()
             driver.switch_to.window(driver.window_handles[1])
             window_switched = 1
@@ -1960,11 +1969,13 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                sf.captureScreenshot(driver, "Practice global search- Passed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Passed', time_taken])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
+                sf.captureScreenshot(driver, "Practice global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -1974,12 +1985,14 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             print(e)
             traceback.print_exc()
             if window_switched == 1:
+                sf.captureScreenshot(driver, "Practice global search- Click failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', '',
                            'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
+                sf.captureScreenshot(driver, "Practice global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prac, 'Failed', '',
                            'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
@@ -1996,7 +2009,6 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             time_taken = round(time.perf_counter() - start_time)
             # driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
             driver.find_element_by_id('search_providers_link').click()
-            sf.captureScreenshot(driver, "Provider global search " + run_from, report_folder)
             driver.find_element_by_id('search_providers').find_elements_by_tag_name('a')[0].click()
             driver.switch_to.window(driver.window_handles[1])
             window_switched = 1
@@ -2004,11 +2016,13 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                sf.captureScreenshot(driver, "Provider global search- Passed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Provider', 'Context set to: ' + global_search_prov, 'Passed', time_taken])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
+                sf.captureScreenshot(driver, "Provider global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Practice', 'Context set to: ' + global_search_prov, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -2018,12 +2032,14 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             print(e)
             traceback.print_exc()
             if window_switched == 1:
+                sf.captureScreenshot(driver, "Provider global search- Click failed:" + run_from, report_folder)
                 ws.append([test_case_id, 'Provider', 'Context set to: ' + global_search_prov, 'Failed', '',
                            'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
+                sf.captureScreenshot(driver, "Provider global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Provider', 'Context set to: ' + global_search_prov, 'Failed', '',
                            'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
@@ -2039,7 +2055,6 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             sf.ajax_preloader_wait(driver)
             time_taken = round(time.perf_counter() - start_time)
             driver.find_element_by_id('search_patients_link').click()
-            sf.captureScreenshot(driver, "Patient global search " + run_from, report_folder)
             driver.find_element_by_id('search_patients').find_elements_by_tag_name('li')[
                 1].find_element_by_css_selector("a[href*='patient_detail']").click()
             driver.switch_to.window(driver.window_handles[1])
@@ -2048,11 +2063,13 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
             if len(driver.find_elements_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow)) != 0:
+                sf.captureScreenshot(driver, "Patient global search- Passed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Passed', time_taken])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             else:
+                sf.captureScreenshot(driver, "Patient global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', time_taken, driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -2062,12 +2079,14 @@ def global_search(driver, workbook, logger, run_from, report_folder):
             print(e)
             traceback.print_exc()
             if window_switched == 1:
+                sf.captureScreenshot(driver, "Patient global search- Click failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', '',
                            'Unable to click on practice name from global search', driver.current_url])
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(main_registry_url)
             elif window_switched == 0:
+                sf.captureScreenshot(driver, "Patient global search- Failed: " + run_from, report_folder)
                 ws.append([test_case_id, 'Patient', 'Context set to: ' + global_search_pat, 'Failed', '',
                            'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
@@ -2121,6 +2140,7 @@ def global_search(driver, workbook, logger, run_from, report_folder):
 def provider_mspl(driver, workbook, logger, run_from, report_folder):
     workbook.create_sheet('Provider\'s MSPL')
     ws = workbook['Provider\'s MSPL']
+    selected_metric_name = ""
 
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
     header_font = Font(color='FFFFFF', bold=False, size=12)
@@ -2136,12 +2156,13 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
     ws.name = "Arial"
     test_case_id = 1
     main_registry_url = driver.current_url
-    selected_provider = "Couldn\'t Fetch"
+    selected_provider = "Couldn't Fetch"
     # check for default page and navigate to a Provider's Registry
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
         # Switching to random Practice name from default set context, main page
         try:
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(0.5)
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -2180,32 +2201,25 @@ def provider_mspl(driver, workbook, logger, run_from, report_folder):
             metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
             percent = '0.00'
             loop_count = 0
-            while percent == '0.00' or percent == '0.00 %':
-                if loop_count < 10:
-                    if len(metrics) > 1:
-                        selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
-                        percent = selectedMetric.find_element_by_class_name('percent').text
-                        loop_count += 1
-                        print(loop_count)
-                    elif len(metrics) == 1:
-                        selectedMetric = metrics[0]
-                        percent = selectedMetric.find_element_by_class_name('percent').text
-                        loop_count += 1
-                    else:
-                        ws.append([
-                            'No measures in selected provider\'s List: ' + global_search_prov + ', Please run Provider MSPL again'])
-                        driver.get(main_registry_url)
-                        sf.ajax_preloader_wait(driver)
-                        return
-
-                else:
-                    ws.append([
-                        'Please Run provider MSPL again. Code was stuck in an infitite loop looking for a non 0/0 metric: ' + global_search_prov])
-                    driver.get(main_registry_url)
-                    sf.ajax_preloader_wait(driver)
-                    return
-            selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-            selectedMetric.click()
+            if driver.find_element(By.XPATH, "//*[@id='conti_enroll']").is_selected():
+                driver.find_element(By.XPATH, "//*[@class='cont_disc_toggle']").click()
+            selected_metric_name = ""
+            driver.find_element(By.XPATH, "//a[@data-target='qt-reg-nav-filters']").click()
+            time.sleep(0.5)
+            option = driver.find_elements(By.XPATH, "//input[@class='select-dropdown dropdown-trigger']")[0]
+            option.click()
+            lists = driver.find_elements(By.XPATH, "//ul[@class='dropdown-content select-dropdown']")[0]
+            options = lists.find_elements(By.TAG_NAME, 'li')
+            for option in options:
+                if option.text == "Numerator":
+                    option.click()
+            apply_btn = driver.find_element(By.XPATH, "//button[@id='qt-apply-search']")
+            driver.execute_script("arguments[0].scrollIntoView();", apply_btn)
+            apply_btn.click()
+            time.sleep(0.5)
+            selectedMetric = driver.find_element(By.XPATH, "//*[@id='registry_body']/ul").find_elements(By.TAG_NAME, "li")
+            selected_metric_name = selectedMetric[0].find_element(By.XPATH, "//*[@class='met-name']").text
+            selectedMetric[0].click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
@@ -3421,336 +3435,339 @@ def SupportpageAccordionValidationx(driver, workbook, logger, run_from):
 
 
 def SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder):
-    try:
-        workbook.create_sheet('Accordian Validation')
-        ws = workbook['Accordian Validation']
-
-        ws.append(['ID', 'LoB Name', 'Metric ID', 'Status', 'Comments'])
-        header_font = Font(color='FFFFFF', bold=False, size=12)
-        header_cell_color = PatternFill('solid', fgColor='030303')
-        ws['A1'].font = header_font
-        ws['A1'].fill = header_cell_color
-        ws['B1'].font = header_font
-        ws['B1'].fill = header_cell_color
-        ws['C1'].font = header_font
-        ws['C1'].fill = header_cell_color
-        ws['D1'].font = header_font
-        ws['D1'].fill = header_cell_color
-        ws['E1'].font = header_font
-        ws['E1'].fill = header_cell_color
-        ws.name = "Arial"
-        test_case_id = 1
-
-        workbook.create_sheet('Patients, Rating and Scores')
-        ws_counts = workbook['Patients, Rating and Scores']
-
-        ws_counts.append(['LoB Name', 'Context', 'Count/Rating', 'Status', 'Comments'])
-        header_font = Font(color='FFFFFF', bold=False, size=12)
-        header_cell_color = PatternFill('solid', fgColor='030303')
-        ws_counts['A1'].font = header_font
-        ws_counts['A1'].fill = header_cell_color
-        ws_counts['B1'].font = header_font
-        ws_counts['B1'].fill = header_cell_color
-        ws_counts['C1'].font = header_font
-        ws_counts['C1'].fill = header_cell_color
-        ws_counts['D1'].font = header_font
-        ws_counts['D1'].fill = header_cell_color
-        ws_counts['E1'].font = header_font
-        ws_counts['E1'].fill = header_cell_color
-        ws_counts.name = "Arial"
-        loader = WebDriverWait(driver, 300)
-        loader.until(EC.invisibility_of_element_located((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
-        LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
-        LOBdropdownelement.click()
-        default_quarter = driver.find_element_by_xpath(
-            "//*[@id='filter-quarter']//following-sibling::li[@class=' highlight ']/span/a")
-        print(default_quarter.text)
-        logger.info("Default Quarter selected as  : " + default_quarter.text)
-        logger.info("--------------------------------------------------------")
-        Flag = locator.select_measurement_year_flag_support
-        # Navigation with customize Measurement Year
-        # LOBquarterlist = []
-        print(Flag)
-        LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
-        if (Flag == "True"):
-            for i in range(0, len(LOBquarter)):
-                # LOBquarterlist.append(LOBquarter[i].text)
-                if LOBquarter[i].text == locator.MeasurementYear_Support or LOBquarter[i].text == locator.MeasurementYearQuarter_Support:
-                    logger.info("Current Quarter selected as  : " + LOBquarter[i].text)
-                    logger.info("--------------------------------------------------------")
-                    LOBquarter[i].click()
-                    break
-                LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
-
-        time.sleep(1)
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.XPATH, "//*[@id='filter-lob']")))
-        LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
-        LOBnamelist = LOBname.find_elements_by_tag_name("li")
-        print(*LOBnamelist)
-        Payername = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-payer']")
-        # LOBdropdownelement.click()
-        time.sleep(1)
-        for j in range(0, len(LOBnamelist)):
-            # LOBdropdownelement.click()
-            time.sleep(1)
-            print(LOBnamelist[j].text)
-            print("--------------------------------")
-            try:
-                LOBnamelist[j].click()
-            except ElementNotInteractableException as e:
-                continue
-            currentLOBName = LOBnamelist[j].text
-            logger.info("LOB Selected  :: " + currentLOBName)
-            logger.info("---------------------------------------")
-            time.sleep(4)
-            driver.find_element_by_xpath("//*[@id='reg-filter-apply']").click()
-            time.sleep(2)
-            loader = WebDriverWait(driver, 300)
-            loader.until(
-                EC.invisibility_of_element_located((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
-            # logger.captureScreenshot(driver, currentLOBName, screenshot_path)
-            # Checking Patient count in Lob. Raise error if it is 0
-            Lob_type = ["ALL", "Medicare", "Medicare ACO"]
-            #Patient count and performance count
-            sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
-            try:
-                summaryList = driver.find_element_by_class_name("registry_header_panel").find_elements_by_tag_name("div")
-                overall_rating = ""
-                patient_count = ""
-                for div, next_div in zip(summaryList, summaryList[1:] + [summaryList[0]]):
-                    if div.text == "Overall Rating":
-                        overall_rating = next_div.text.replace("%","").strip()
-                        if 'Stars' in overall_rating:
-                            overall_rating = overall_rating.replace("Stars","").strip()
-                    if div.text == "Patients":
-                        patient_count = next_div.text.replace(",","").strip()
-                print(overall_rating)
-                if float(overall_rating)<1:
-                    ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Failed", "Rating is 0", driver.current_url])
-                else:
-                    ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Passed"])
-                if float(patient_count)<1:
-                    ws_counts.append([currentLOBName, "Patient Count", patient_count, "Failed", "Patient count is 0", driver.current_url])
-                else:
-                    ws_counts.append([currentLOBName, "Patient Count", patient_count, "Passed"])
-
-
-            except Exception as e:
-                traceback.print_exc()
-                ws_counts.append([currentLOBName, "x", "x", "Couldn't fetch patient counts/rating"])
-
-            try:
-                if currentLOBName in Lob_type:
-                    lobpatientcount = driver.find_element_by_xpath(
-                        "//*[@id='quality_registry']/div/div[1]/div[4]/div[2]").text
-                    logger.info("--------------------------------------------------------")
-
-                else:
-                    lobpatientcount = driver.find_element_by_xpath(
-                        "//*[@id='quality_registry']/div/div[1]/div[3]/div[2]").text
-                    logger.info("--------------------------------------------------------")
-            except Exception as e:
-                lobpatientcount = driver.find_element_by_xpath(
-                    "//*[@id='quality_registry']/div/div[1]/div[3]/div[2]").text
-                logger.info("--------------------------------------------------------")
-
-            if (lobpatientcount == "0"):
-                logger.critical(
-                    "Registry  -> " + str(currentLOBName) + " Patient count is 0.Please check.")
-                logger.info(
-                    "Registry  -> " + str(currentLOBName) + " Patient count is 0.")
-                logger.info("--------------------------------------------------------")
-            else:
-                logger.info(
-                    "Registry  ->  " + str(
-                        currentLOBName) + " Patient count is : " + str(lobpatientcount))
-                logger.info("--------------------------------------------------------")
-                try:
-
-                    time.sleep(1)
-                    driver.find_element_by_xpath("//*[@id='metric_scorecard']/div/div[1]/div/span/a[3]").click()
-                    time.sleep(2)
-                    driver.find_element_by_xpath("//*[@id='qt-reg-nav-filters']/li[1]/label").click()
-                    time.sleep(2)
-                    driver.find_element_by_xpath("//*[@id='qt-apply-search']").click()
-                    time.sleep(2)
-                    # counting 0/0 measures
-                    try:
-                        zero_measures = 0
-                        measure_scores_elements = driver.find_elements_by_class_name("num-den")
-                        measure_scores = []
-                        for score in measure_scores_elements:
-                            measure_scores.append(score.text.strip())
-
-                        for score in measure_scores:
-                            if score == "(0/0)":
-                                zero_measures += 1
-
-                        if zero_measures > 10:
-                            ws_counts.append([currentLOBName, "0/0 measures", zero_measures, "Failed",
-                                              "More than 10 measures are 0/0", driver.current_url])
-                        else:
-                            ws_counts.append([currentLOBName, "0/0 Measures", zero_measures, "Passed"])
-
-                    except Exception as e:
-                        traceback.print_exc()
-                        ws_counts.append([currentLOBName, "0/0 Measures", "Null", "Failed",
-                                          "Couldn't count 0/0 measures in this lob"])
-
-                    total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
-                    print("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
-                    logger.info("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
-
-                    accordion_metric_list = []
-                    for i in range(0, len(total_accordion_metric)):
-
-                        print("Accordion Metric Id : " + total_accordion_metric[i].get_attribute('id'))
-                        logger.info("Accordion Metric Id : " + total_accordion_metric[i].get_attribute('id'))
-                        print(total_accordion_metric[i].get_attribute('id'))
-
-                        # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
-                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508"]:
-                            print("Accordion Metric id have been skipped")
-
-                        else:
-                            accordion_metric_list.append(total_accordion_metric[i].get_attribute('id'))
-                        # print(accordion_metric_list)
-                    print("----------------------------------------------------------------------------")
-                    logger.info("--------------------------------------------------------")
-                    print("----------------------------------------------------------------------------")
-                    logger.info("--------------------------------------------------------")
-
-                    for i in range(0, len(accordion_metric_list)):
-                        parent_num_den = driver.find_element_by_xpath("//*[@id='" + str(
-                            accordion_metric_list[i]) + "']/div[1]/div/a/div/div[1]/div[2]/div[2]/span[2]")
-                        print("Measure Num/Denom score of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_num_den.text)
-                        logger.info("Measure Num/Denom score of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_num_den.text, )
-                        parent_score = parent_num_den.text
-                        parent_num_den_extract = re.search('\(([^)]+)', parent_score).group(1)
-                        # print(parent_num_den_extract)
-                        parent_num_den_val = parent_num_den_extract.replace(",", "")
-                        parent_num_den_split = parent_num_den_val.split("/", 1)
-                        parent_num_value = parent_num_den_split[0]
-                        print("Numerator value of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_num_value)
-                        logger.info("Numerator value of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_num_value,
-                                    )
-                        parent_den_value = parent_num_den_split[1]
-                        print("Denominator value of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_den_value)
-                        logger.info("Denominator value of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + "  :  " + parent_den_value,
-                                    )
-
-                        child_metric = driver.find_elements_by_xpath("//*[@id='" + str(
-                            accordion_metric_list[i]) + "']/div[2]//ancestor::div[@class='qt-metric']")
-                        print("Total Child Measures of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + " :  " + str(len(child_metric)))
-                        logger.info("Total Child Measures of the Parent metric id  " + str(
-                            accordion_metric_list[i]) + " :  " + str(len(child_metric)),
-                                    )
-                        child_sum_num = 0
-                        child_sum_den = 0
-                        for j in range(0, len(child_metric)):
-                            j = j + 1
-                            child_num_den = driver.find_element_by_xpath(
-                                "//*[@id='" + str(accordion_metric_list[i]) + "']/div[2]/div[" + str(
-                                    j) + "]/a/div/div[1]/div[2]/div[2]/span[2]")
-                            # print("//*[@id='"+str(accordian_metric_list[i])+"']/div[2]/div["+str(j)+"]/a/div/div[1]/div[2]/div[2]/span[2]")
-                            print("Child [" + str(j) + "] Num/Den score : " + child_num_den.text)
-                            logger.info("Child [" + str(j) + "] Num/Den score : " + child_num_den.text,
-                                        )
-                            child_score = child_num_den.text
-                            child_num_den_extract = re.search('\(([^)]+)', child_score).group(1)
-                            child_num_den_val = child_num_den_extract.replace(",", "")
-                            child_num_den_val = child_num_den_extract.replace(",", "")
-                            child_num_den_split = child_num_den_val.split("/", 1)
-                            child_num_value = child_num_den_split[0]
-                            # print(child_num_value)
-                            # print(int(child_num_value))
-                            child_sum_num = int(child_num_value) + child_sum_num
-                            # print(child_sum_num)
-                            child_den_value = child_num_den_split[1]
-                            # print(child_den_value)
-                            child_sum_den = int(child_den_value) + child_sum_den
-                            # print(child_sum_den)
-                        print("Total Numerator score of the all child metric(s) :  " + str(child_sum_num))
-                        logger.info("Total Numerator score of the all child metric(s) :  " + str(child_sum_num),
-                                    )
-                        print("Total Denominator score of the all child metric(s) :  " + str(child_sum_den))
-                        logger.info("Total Denominator score of the all child metric(s) :  " + str(child_sum_den),
-                                    )
-                        if (int(parent_num_value) == child_sum_num and int(parent_den_value) == child_sum_den):
-                            print("Sum of child score is matching with parent score")
-                            logger.info("Sum of child score is matching with parent score", )
-                            ws.append([test_case_id, currentLOBName, accordion_metric_list[i], "Passed",
-                                       "Sum of child score is matching with parent score. Parent Score: " + parent_num_den.text + " ,Child score sum: (" + str(
-                                           child_sum_num) + "/" + str(child_sum_den) + ")"])
-                            test_case_id += 1
-                        else:
-                            print("Score didn't matched")
-                            logger.info("###### Score didn't matched ######")
-                            logger.critical("LOB Selected  :: " + currentLOBName)
-                            logger.critical("---------------------------------------")
-                            logger.critical("Parent metric id  :   " + str(accordion_metric_list[i]))
-                            logger.critical("Score didn't matched for the corresponding Parent metric id",
-                                            )
-                            logger.critical("--------------------------------------------------------",
-                                            )
-                            ws.append([test_case_id, currentLOBName, accordion_metric_list[i], "Failed",
-                                       "Sum of child score is not matching with parent score. Parent Score: " + parent_num_den.text + " ,Child score sum: (" + str(
-                                           child_sum_num) + "/" + str(child_sum_den) + ")", driver.current_url])
-                            test_case_id += 1
-
-                        print("----------------------------------------------------------------------------")
-                        logger.info("--------------------------------------------------------")
-
-
-
-
-                except Exception as e:
-                    print(e)
-
-            time.sleep(1)
-            LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
-            LOBdropdownelement.click()
-            time.sleep(3)
-            LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
-            LOBnamelist = LOBname.find_elements_by_tag_name("li")
-
-    except Exception as e:
-        traceback.print_exc()
-        logger.critical(
-            "Registry  -> Accordion Measure validation have been suspended due to error!!Please check.")
-
-    rows = ws.max_row
-    cols = ws.max_column
-    for i in range(2, rows + 1):
-        for j in range(3, cols + 1):
-            if ws.cell(i, j).value == 'Passed':
-                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
-            elif ws.cell(i, j).value == 'Failed':
-                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
-            elif ws.cell(i, j).value == 'Data table is empty':
-                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
-
-    rows = ws_counts.max_row
-    cols = ws_counts.max_column
-    for i in range(2, rows + 1):
-        for j in range(3, cols + 1):
-            if ws_counts.cell(i, j).value == 'Passed':
-                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
-            elif ws_counts.cell(i, j).value == 'Failed':
-                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
-            elif ws_counts.cell(i, j).value == 'Data table is empty':
-                ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
-
+    logger.info("--------------------------------------------------------")
+    logger.info("Skipping this validation since the environment is set to Stage")
+    workbook.create_sheet('Patients, Rating and Scores')
+    ws_counts = workbook['Patients, Rating and Scores']
+    ws_counts.append(['Skipping this validation since the environment is set to Stage'])
+    logger.info("--------------------------------------------------------")
+    # try:
+    #     workbook.create_sheet('Accordian Validation')
+    #     ws = workbook['Accordian Validation']
+    #
+    #     ws.append(['ID', 'LoB Name', 'Metric ID', 'Status', 'Comments'])
+    #     header_font = Font(color='FFFFFF', bold=False, size=12)
+    #     header_cell_color = PatternFill('solid', fgColor='030303')
+    #     ws['A1'].font = header_font
+    #     ws['A1'].fill = header_cell_color
+    #     ws['B1'].font = header_font
+    #     ws['B1'].fill = header_cell_color
+    #     ws['C1'].font = header_font
+    #     ws['C1'].fill = header_cell_color
+    #     ws['D1'].font = header_font
+    #     ws['D1'].fill = header_cell_color
+    #     ws['E1'].font = header_font
+    #     ws['E1'].fill = header_cell_color
+    #     ws.name = "Arial"
+    #     test_case_id = 1
+    #
+    #     workbook.create_sheet('Patients, Rating and Scores')
+    #     ws_counts = workbook['Patients, Rating and Scores']
+    #
+    #     ws_counts.append(['LoB Name', 'Context', 'Count/Rating', 'Status', 'Comments'])
+    #     header_font = Font(color='FFFFFF', bold=False, size=12)
+    #     header_cell_color = PatternFill('solid', fgColor='030303')
+    #     ws_counts['A1'].font = header_font
+    #     ws_counts['A1'].fill = header_cell_color
+    #     ws_counts['B1'].font = header_font
+    #     ws_counts['B1'].fill = header_cell_color
+    #     ws_counts['C1'].font = header_font
+    #     ws_counts['C1'].fill = header_cell_color
+    #     ws_counts['D1'].font = header_font
+    #     ws_counts['D1'].fill = header_cell_color
+    #     ws_counts['E1'].font = header_font
+    #     ws_counts['E1'].fill = header_cell_color
+    #     ws_counts.name = "Arial"
+    #     loader = WebDriverWait(driver, 300)
+    #     loader.until(EC.invisibility_of_element_located((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
+    #     LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
+    #     LOBdropdownelement.click()
+    #     default_quarter = driver.find_element_by_xpath(
+    #         "//*[@id='filter-quarter']//following-sibling::li[@class=' highlight ']/span/a")
+    #     print(default_quarter.text)
+    #     logger.info("Default Quarter selected as  : " + default_quarter.text)
+    #     logger.info("--------------------------------------------------------")
+    #     Flag = locator.select_measurement_year_flag_support
+    #     # Navigation with customize Measurement Year
+    #     # LOBquarterlist = []
+    #     print(Flag)
+    #     LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+    #     if (Flag == "True"):
+    #         for i in range(0, len(LOBquarter)):
+    #             # LOBquarterlist.append(LOBquarter[i].text)
+    #             if LOBquarter[i].text == locator.MeasurementYear_Support or LOBquarter[i].text == locator.MeasurementYearQuarter_Support:
+    #                 logger.info("Current Quarter selected as  : " + LOBquarter[i].text)
+    #                 logger.info("--------------------------------------------------------")
+    #                 LOBquarter[i].click()
+    #                 break
+    #             LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+    #
+    #     time.sleep(1)
+    #     WebDriverWait(driver, 30).until(
+    #         EC.presence_of_element_located((By.XPATH, "//*[@id='filter-lob']")))
+    #     LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
+    #     LOBnamelist = LOBname.find_elements_by_tag_name("li")
+    #     print(*LOBnamelist)
+    #     Payername = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-payer']")
+    #     # LOBdropdownelement.click()
+    #     time.sleep(1)
+    #     for j in range(0, len(LOBnamelist)):
+    #         # LOBdropdownelement.click()
+    #         time.sleep(1)
+    #         print(LOBnamelist[j].text)
+    #         print("--------------------------------")
+    #         try:
+    #             LOBnamelist[j].click()
+    #         except ElementNotInteractableException as e:
+    #             continue
+    #         currentLOBName = LOBnamelist[j].text
+    #         logger.info("LOB Selected  :: " + currentLOBName)
+    #         logger.info("---------------------------------------")
+    #         time.sleep(4)
+    #         driver.find_element_by_xpath("//*[@id='reg-filter-apply']").click()
+    #         time.sleep(2)
+    #         loader = WebDriverWait(driver, 300)
+    #         loader.until(
+    #             EC.invisibility_of_element_located((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
+    #         # logger.captureScreenshot(driver, currentLOBName, screenshot_path)
+    #         # Checking Patient count in Lob. Raise error if it is 0
+    #         Lob_type = ["ALL", "Medicare", "Medicare ACO"]
+    #         #Patient count and performance count
+    #         sf.ajax_preloader_wait(driver)
+    #         WebDriverWait(driver, 30).until(
+    #             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    #         try:
+    #             summaryList = driver.find_element_by_class_name("registry_header_panel").find_elements_by_tag_name("div")
+    #             overall_rating = "0"
+    #             patient_count = "0"
+    #             for div, next_div in zip(summaryList, summaryList[1:] + [summaryList[0]]):
+    #                 if div.text == "Overall Rating":
+    #                     overall_rating = next_div.text.replace("%","").strip()
+    #                     if 'Stars' in overall_rating:
+    #                         overall_rating = overall_rating.replace("Stars","").strip()
+    #                 if div.text == "Patients":
+    #                     patient_count = next_div.text.replace(",","").strip()
+    #             print(overall_rating)
+    #             if float(overall_rating)< 1:
+    #                 ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Failed", "Rating is 0", driver.current_url])
+    #             else:
+    #                 ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Passed"])
+    #             if float(patient_count)< 1:
+    #                 ws_counts.append([currentLOBName, "Patient Count", patient_count, "Failed", "Patient count is 0", driver.current_url])
+    #             else:
+    #                 ws_counts.append([currentLOBName, "Patient Count", patient_count, "Passed"])
+    #
+    #
+    #         except Exception as e:
+    #             traceback.print_exc()
+    #             ws_counts.append([currentLOBName, "x", "x", "Couldn't fetch patient counts/rating"])
+    #
+    #         try:
+    #             if currentLOBName in Lob_type:
+    #                 lobpatientcount = driver.find_element_by_xpath(
+    #                     "//*[@id='quality_registry']/div/div[1]/div[4]/div[2]").text
+    #                 logger.info("--------------------------------------------------------")
+    #
+    #             else:
+    #                 lobpatientcount = driver.find_element_by_xpath(
+    #                     "//*[@id='quality_registry']/div/div[1]/div[3]/div[2]").text
+    #                 logger.info("--------------------------------------------------------")
+    #         except Exception as e:
+    #             lobpatientcount = driver.find_element_by_xpath(
+    #                 "//*[@id='quality_registry']/div/div[1]/div[3]/div[2]").text
+    #             logger.info("--------------------------------------------------------")
+    #
+    #         if (lobpatientcount == "0"):
+    #             logger.critical(
+    #                 "Registry  -> " + str(currentLOBName) + " Patient count is 0.Please check.")
+    #             logger.info(
+    #                 "Registry  -> " + str(currentLOBName) + " Patient count is 0.")
+    #             logger.info("--------------------------------------------------------")
+    #         else:
+    #             logger.info(
+    #                 "Registry  ->  " + str(
+    #                     currentLOBName) + " Patient count is : " + str(lobpatientcount))
+    #             logger.info("--------------------------------------------------------")
+    #             try:
+    #
+    #                 time.sleep(1)
+    #                 driver.find_element_by_xpath("//*[@id='metric_scorecard']/div/div[1]/div/span/a[3]").click()
+    #                 time.sleep(2)
+    #                 driver.find_element_by_xpath("//*[@id='qt-reg-nav-filters']/li[1]/label").click()
+    #                 time.sleep(2)
+    #                 driver.find_element_by_xpath("//*[@id='qt-apply-search']").click()
+    #                 time.sleep(2)
+    #                 # counting 0/0 measures
+    #                 try:
+    #                     zero_measures = 0
+    #                     measure_scores_elements = driver.find_elements_by_class_name("num-den")
+    #                     measure_scores = []
+    #                     for score in measure_scores_elements:
+    #                         measure_scores.append(score.text.strip())
+    #
+    #                     for score in measure_scores:
+    #                         if score == "(0/0)":
+    #                             zero_measures += 1
+    #
+    #                     if zero_measures > 10:
+    #                         ws_counts.append([currentLOBName, "0/0 measures", zero_measures, "Failed",
+    #                                           "More than 10 measures are 0/0", driver.current_url])
+    #                     else:
+    #                         ws_counts.append([currentLOBName, "0/0 Measures", zero_measures, "Passed"])
+    #
+    #                 except Exception as e:
+    #                     traceback.print_exc()
+    #                     ws_counts.append([currentLOBName, "0/0 Measures", "Null", "Failed",
+    #                                       "Couldn't count 0/0 measures in this lob"])
+    #
+    #                 total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
+    #                 print("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
+    #                 logger.info("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
+    #
+    #                 accordion_metric_list = []
+    #                 for i in range(0, len(total_accordion_metric)):
+    #
+    #                     print("Accordion Metric Id : " + total_accordion_metric[i].get_attribute('id'))
+    #                     logger.info("Accordion Metric Id : " + total_accordion_metric[i].get_attribute('id'))
+    #                     print(total_accordion_metric[i].get_attribute('id'))
+    #
+    #                     # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
+    #                     if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508"]:
+    #                         print("Accordion Metric id have been skipped")
+    #
+    #                     else:
+    #                         accordion_metric_list.append(total_accordion_metric[i].get_attribute('id'))
+    #                     # print(accordion_metric_list)
+    #                 print("----------------------------------------------------------------------------")
+    #                 logger.info("--------------------------------------------------------")
+    #                 print("----------------------------------------------------------------------------")
+    #                 logger.info("--------------------------------------------------------")
+    #
+    #                 for i in range(0, len(accordion_metric_list)):
+    #                     parent_num_den = driver.find_element_by_xpath("//*[@id='" + str(
+    #                         accordion_metric_list[i]) + "']/div[1]/div/a/div/div[1]/div[2]/div[2]/span[2]")
+    #                     print("Measure Num/Denom score of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_num_den.text)
+    #                     logger.info("Measure Num/Denom score of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_num_den.text, )
+    #                     parent_score = parent_num_den.text
+    #                     parent_num_den_extract = re.search('\(([^)]+)', parent_score).group(1)
+    #                     # print(parent_num_den_extract)
+    #                     parent_num_den_val = parent_num_den_extract.replace(",", "")
+    #                     parent_num_den_split = parent_num_den_val.split("/", 1)
+    #                     parent_num_value = parent_num_den_split[0]
+    #                     print("Numerator value of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_num_value)
+    #                     logger.info("Numerator value of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_num_value,
+    #                                 )
+    #                     parent_den_value = parent_num_den_split[1]
+    #                     print("Denominator value of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_den_value)
+    #                     logger.info("Denominator value of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + "  :  " + parent_den_value,
+    #                                 )
+    #
+    #                     child_metric = driver.find_elements_by_xpath("//*[@id='" + str(
+    #                         accordion_metric_list[i]) + "']/div[2]//ancestor::div[@class='qt-metric']")
+    #                     print("Total Child Measures of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + " :  " + str(len(child_metric)))
+    #                     logger.info("Total Child Measures of the Parent metric id  " + str(
+    #                         accordion_metric_list[i]) + " :  " + str(len(child_metric)),
+    #                                 )
+    #                     child_sum_num = 0
+    #                     child_sum_den = 0
+    #                     for j in range(0, len(child_metric)):
+    #                         j = j + 1
+    #                         child_num_den = driver.find_element_by_xpath(
+    #                             "//*[@id='" + str(accordion_metric_list[i]) + "']/div[2]/div[" + str(
+    #                                 j) + "]/a/div/div[1]/div[2]/div[2]/span[2]")
+    #                         # print("//*[@id='"+str(accordian_metric_list[i])+"']/div[2]/div["+str(j)+"]/a/div/div[1]/div[2]/div[2]/span[2]")
+    #                         print("Child [" + str(j) + "] Num/Den score : " + child_num_den.text)
+    #                         logger.info("Child [" + str(j) + "] Num/Den score : " + child_num_den.text,
+    #                                     )
+    #                         child_score = child_num_den.text
+    #                         child_num_den_extract = re.search('\(([^)]+)', child_score).group(1)
+    #                         child_num_den_val = child_num_den_extract.replace(",", "")
+    #                         child_num_den_val = child_num_den_extract.replace(",", "")
+    #                         child_num_den_split = child_num_den_val.split("/", 1)
+    #                         child_num_value = child_num_den_split[0]
+    #                         # print(child_num_value)
+    #                         # print(int(child_num_value))
+    #                         child_sum_num = int(child_num_value) + child_sum_num
+    #                         # print(child_sum_num)
+    #                         child_den_value = child_num_den_split[1]
+    #                         # print(child_den_value)
+    #                         child_sum_den = int(child_den_value) + child_sum_den
+    #                         # print(child_sum_den)
+    #                     print("Total Numerator score of the all child metric(s) :  " + str(child_sum_num))
+    #                     logger.info("Total Numerator score of the all child metric(s) :  " + str(child_sum_num),
+    #                                 )
+    #                     print("Total Denominator score of the all child metric(s) :  " + str(child_sum_den))
+    #                     logger.info("Total Denominator score of the all child metric(s) :  " + str(child_sum_den),
+    #                                 )
+    #                     if (int(parent_num_value) == child_sum_num and int(parent_den_value) == child_sum_den):
+    #                         print("Sum of child score is matching with parent score")
+    #                         logger.info("Sum of child score is matching with parent score", )
+    #                         ws.append([test_case_id, currentLOBName, accordion_metric_list[i], "Passed",
+    #                                    "Sum of child score is matching with parent score. Parent Score: " + parent_num_den.text + " ,Child score sum: (" + str(
+    #                                        child_sum_num) + "/" + str(child_sum_den) + ")"])
+    #                         test_case_id += 1
+    #                     else:
+    #                         print("Score didn't matched")
+    #                         logger.info("###### Score didn't matched ######")
+    #                         logger.critical("LOB Selected  :: " + currentLOBName)
+    #                         logger.critical("---------------------------------------")
+    #                         logger.critical("Parent metric id  :   " + str(accordion_metric_list[i]))
+    #                         logger.critical("Score didn't matched for the corresponding Parent metric id",
+    #                                         )
+    #                         logger.critical("--------------------------------------------------------",
+    #                                         )
+    #                         ws.append([test_case_id, currentLOBName, accordion_metric_list[i], "Failed",
+    #                                    "Sum of child score is not matching with parent score. Parent Score: " + parent_num_den.text + " ,Child score sum: (" + str(
+    #                                        child_sum_num) + "/" + str(child_sum_den) + ")", driver.current_url])
+    #                         test_case_id += 1
+    #
+    #                     print("----------------------------------------------------------------------------")
+    #                     logger.info("--------------------------------------------------------")
+    #
+    #             except Exception as e:
+    #                 print(e)
+    #
+    #         time.sleep(2)
+    #         LOBdropdownelement = driver.find_element_by_xpath("//*[@id='qt-filter-label']")
+    #         LOBdropdownelement.click()
+    #         time.sleep(3)
+    #         LOBname = LOBdropdownelement.find_element_by_xpath("//*[@id='filter-lob']")
+    #         LOBnamelist = LOBname.find_elements_by_tag_name("li")
+    #
+    # except Exception as e:
+    #     traceback.print_exc()
+    #     logger.critical(
+    #         "Registry  -> Accordion Measure validation have been suspended due to error!!Please check.")
+    #
+    # rows = ws.max_row
+    # cols = ws.max_column
+    # for i in range(2, rows + 1):
+    #     for j in range(3, cols + 1):
+    #         if ws.cell(i, j).value == 'Passed':
+    #             ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+    #         elif ws.cell(i, j).value == 'Failed':
+    #             ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+    #         elif ws.cell(i, j).value == 'Data table is empty':
+    #             ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+    #
+    # rows = ws_counts.max_row
+    # cols = ws_counts.max_column
+    # for i in range(2, rows + 1):
+    #     for j in range(3, cols + 1):
+    #         if ws_counts.cell(i, j).value == 'Passed':
+    #             ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+    #         elif ws_counts.cell(i, j).value == 'Failed':
+    #             ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+    #         elif ws_counts.cell(i, j).value == 'Data table is empty':
+    #             ws_counts.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+    #
 
 def group_menubar(driver, workbook, logger, screenshot_path, run_from):
     workbook.create_sheet('Group Menubar')
