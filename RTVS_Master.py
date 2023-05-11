@@ -47,6 +47,7 @@ def master_gui():
     task_ingestion_image = ImageTk.PhotoImage(image_sizer("assets/images/task_ingestion.png"))
     analytics_image = ImageTk.PhotoImage(image_sizer("assets/images/analytics.png"))
     slow_log_image = ImageTk.PhotoImage(image_sizer("assets/images/slow_log_trends.png"))
+    pdf_printer_image = ImageTk.PhotoImage(image_sizer("assets/images/pdf_printer.png"))
     multi_role_image = ImageTk.PhotoImage(image_sizer("assets/images/Multi_role_access.png"))
     special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
     hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
@@ -122,6 +123,10 @@ def master_gui():
         root.destroy()
         import secret_menu
 
+    def on_pdf_print():
+        root.destroy()
+        import printcareops
+
     def on_help():
         #root.destroy()
         pdf_path = os.getcwd()
@@ -173,7 +178,7 @@ def master_gui():
         ttk.Button(root, text="Slow Log Trends", command=on_slow_trends, image=slow_log_image, compound="left",
                    style='My.TButton'))
     button_widgets.append(
-        ttk.Button(root, text="Multi-role Access Check", command=on_role_access, image=multi_role_image,
+        ttk.Button(root, text="PDF Print Validation (WIP)", command=on_pdf_print, image=pdf_printer_image,
                    compound="left", style='My.TButton'))
     button_widgets.append(
         ttk.Button(root, text="Special Columns", command=on_special_columns, image=special_column_image,
