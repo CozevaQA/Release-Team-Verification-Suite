@@ -3035,6 +3035,7 @@ def analytics(driver, workbook, logger, run_from, report_folder):
                             WebDriverWait(driver, 30).until(
                                 EC.presence_of_element_located((By.XPATH, "//a[@id='sm_back']")))
                             time_taken = time.perf_counter() - start_time
+                            sf.captureScreenshot(driver, workbook_name,report_folder)
                             if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
                                 print(workbook_name + "Passed")
                                 test_case_id += 1
@@ -3076,6 +3077,7 @@ def analytics(driver, workbook, logger, run_from, report_folder):
                                     WebDriverWait(driver, 100).until(
                                         EC.invisibility_of_element_located((By.CLASS_NAME, loader_element2)))
                                     Worksheet_name = link.text
+                                    sf.captureScreenshot(driver, workbook_name + Worksheet_name, report_folder)
                                     if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
                                         print(Worksheet_name + "Passed")
                                         test_case_id += 1

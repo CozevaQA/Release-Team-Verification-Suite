@@ -527,7 +527,7 @@ def cozeva_support(environment):
         context_functions.secure_messaging(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[11] == 1:
-        context_functions.analytics(driver, workbook, logger, run_from)
+        context_functions.analytics(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
