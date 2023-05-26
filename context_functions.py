@@ -6392,8 +6392,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
     #Push to HCc validation
 
     ws.append(
-        ['Customer ID', 'LOB', 'HCC Measure Name', 'Domain Name Check', 'Performance Statistics Check', 'Network Comparison Check',
-         'Risk Score Check','Clinical Score Check', 'Suspect score check', 'Comments','Provider Row URL'])
+        ['Customer Name', 'LOB', 'HCC Measure Name', 'Provider name', 'Provider URL'])
     # header = NamedStyle(name="header")
     # header.font = Font(bold=True)
     # header.border = Border(bottom=Side(border_style="thin"))
@@ -6465,6 +6464,7 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//*[@id='qt-filter-label']")))
     print("Selected page= " + driver.title)
+    customer_name = driver.find_element(By.XPATH, "//*[@class='specific_most']").text
     Registry_URL = driver.current_url
     sf.ajax_preloader_wait(driver)
     driver.find_element(By.XPATH, "//*[@id='qt-filter-label']").click()
@@ -6512,205 +6512,42 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                 if "No data available" in ListRow[0].text and len(ListRow) == 1:
                     Comments = "No provider data in HCC measure " + str(i)
                     print(Comments)
-                    ws.append([cus_id, LOB_Name, Measure, Domain_comment, 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined', 'Undetermined',Comments , driver.current_url])
+                    ws.append([customer_name, LOB_Name, Measure, 'No provider', '-'])
                 elif len(ListRow) == 1:
                     ListRow[0].find_elements(By.TAG_NAME, 'a')[1].click()
                     sf.ajax_preloader_wait(driver)
                     print(driver.current_url)
                 else:
-                    #k = random.randint(2, len(ListRow)-1)
-                    #k = int(input("Enter the number of providers you want to check for the Measure "+Measure+" among the number of providers "+str(len(ListRow))+":\n"))
                     k = provider_count
-                    Performance_num_UI = 0
-                    Performance_denum_UI = 0
-                    Performance_percentage_UI = 00.00
-                    Performance_percentage_calculated = 00.00
                     while k != 0:
                         Row = ListRow[random.randint(0, len(ListRow)-1)]
-                        #Row = ListRow[random.randint(0, len(ListRow)-k)]
-                        Row.find_elements(By.TAG_NAME, 'a')[1].click()
+                        driver.execute_script("arguments[0].scrollIntoView();", Row)
+                        provider_name = Row.find_elements(By.TAG_NAME, 'a')[2].text
+                        print(provider_name)
+                        provider_link = Row.find_elements(By.TAG_NAME, 'a')[1]
+                        driver.execute_script("arguments[0].click();", provider_link)
+                        provider_url = driver.current_url
                         sf.ajax_preloader_wait(driver)
-                        DataToBeValidated = driver.find_element(By.XPATH, "//*[@class='tab']").find_elements(By.TAG_NAME,
-                                                                                                             'span')
-                        Provider_Specific_url = driver.current_url
-                        print("Provider URL: " + Provider_Specific_url)
-                        DataToBeValidated_num = DataToBeValidated[0].text
-                        DataToBeValidated_num = DataToBeValidated_num.replace(',', '')
-                        print("MSPL Numerator: " + DataToBeValidated_num)
-                        DataToBeValidated_denum = DataToBeValidated[1].text
-                        DataToBeValidated_denum = DataToBeValidated_denum.replace(',', '')
-                        print("MSPL Denominator: " + DataToBeValidated_denum)
-
-                        #Patient Dashboard checks
-                        hcc_flag_list = ["Failed", "Failed", "Failed", "Failed"]
-                        '''
-                        0 = HCC count in care gap
-                        1 = Total count of HCCs
-                        2 = Clinical score present
-                        3 = suspect score present
-                        '''
-                        try:
-                            window_switched = 0
-                            pat_dashboard_flag = "No scores on dashboard"
-                            table = driver.find_element_by_id(
-                                "quality_registry_list").find_element_by_tag_name(
-                                "tbody").find_elements_by_tag_name('tr')
-                            if len(table) == 1:
-                                if "No data" in table[0].text:
-                                    pat_dashboard_flag = "No patients for this provider"
-                                else:
-                                    table[0].find_element_by_class_name("pat_name").click()
-                            else:
-                                table[sf.RandomNumberGenerator(len(table), 1)[0]].find_element_by_class_name("pat_name").click()
-                            time.sleep(1)
-                            driver.switch_to.window(driver.window_handles[1])
-                            sf.ajax_preloader_wait(driver)
-                            WebDriverWait(driver, 120).until(
-                                EC.presence_of_element_located((By.CLASS_NAME, "patient_header_wrapper")))
-                            window_switched = 1
-                            print("Patient Dashboard URL: "+driver.current_url)
-                            #switched to patient dashboard, Checking for HCCs and scores
-                            '''
-                            0 = HCC count in care gap
-                            1 = Total count of HCCs
-                            2 = Clinical score present
-                            3 = suspect score present
-                            '''
-                            hcc_element = driver.find_element_by_id("table_4")
-                            hcctable = hcc_element.find_element_by_tag_name('tbody').find_elements_by_class_name("row-group")
-                            # print("Dashboard Hcc Count = "+str(len(hcctable)))
-                            suspect_list = []
-                            clinical_score_list = []
-                            tag_count_list = [0,0,0]
-                            '''
-                            tag_count_list
-                            [0]= Recaptures
-                            [1]= Suspects
-                            [2]= New
-                            '''
-                            try:
-                                tag_count_list[0] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block magenta-color tiny-title']"))
-                                tag_count_list[1] = len(
-                                    hcc_element.find_elements(By.XPATH, "//span[@class='tag-block yellow-ochre-color tiny-title']"))
-                                tag_count_list[2] = len(hcc_element.find_elements(By.XPATH, "//span[@class='tag-block blue-color tiny-title']"))
-                            except Exception as e:
-                                traceback.print_exc()
-                                print(e)
-                                tag_count_list = ["NaN", "NaN", "NaN"]
-
-
-                            #Clinical score Check
-                            for hcc_measures in hcctable:
-
-                                try:
-                                    clinical_text = \
-                                    hcc_measures.find_element_by_class_name("hcc_details").find_elements_by_tag_name(
-                                        "span")[1].text
-                                    clinical_score_list.append(float(clinical_text.replace('Clinical Factor', '').strip()))
-                                except Exception as e:
-                                    hcc_flag_list[2] = "Failed"
-                                    break
-                            if len(clinical_score_list) > 0:
-                                hcc_flag_list[2] = "Passed"
-                            #Clinical Score check
-                            for hcc_measures in hcctable:
-                                try:
-                                    suspect_text = hcc_measures.find_element_by_xpath("//div[contains(text(),'Suspect')]").text
-                                except Exception as e:
-                                    print(e)
-                                    hcc_flag_list[3] = "Failed"
-                                    break
-                                try:
-                                    suspect_list.append(float(suspect_text.replace('Suspect', '').strip()))
-                                except Exception as e:
-                                    hcc_flag_list[3] = "Failed"
-                                    break
-                            if len(suspect_list) > 0:
-                                hcc_flag_list[3] = "Passed"
-                            driver.close()
-                            driver.switch_to.window(driver.window_handles[0])
-                            sf.ajax_preloader_wait(driver)
-                            window_switched = 0
-
-                        except Exception as e:
-                            if window_switched == 1:
-                                driver.close()
-                                driver.switch_to.window(driver.window_handles[0])
-                                sf.ajax_preloader_wait(driver)
-                                window_switched = 0
-                            print(e)
-                            traceback.print_exc()
+                        print("Provider URL: " + provider_url)
                         driver.find_element(By.XPATH,
                                             "//*[@data-target='datatable_bulk_filter_0_quality_registry_list']").click()
                         driver.find_element(By.XPATH, "//*[contains(text(),'Export all to CSV')]").click()
-                        sf.ajax_preloader_wait(driver)
-                        try:
-                            driver.find_element(By.XPATH, "//*[@class='tabs']").find_elements(By.TAG_NAME, 'li')[1].click()
-                            sf.ajax_preloader_wait(driver)
-                            Performance_percentage_UI = driver.find_element(By.XPATH, "//*[@class='performance_value']").text
-                            Performance_percentage_UI = Performance_percentage_UI.replace('%', '')
-                            Performance_num_UI = driver.find_element(By.XPATH, "//*[@class='numerator']").text
-                            Performance_num_UI = Performance_num_UI.replace('Numerator: ', '')
-                            Performance_denum_UI = driver.find_element(By.XPATH, "//*[@class='denominator']").text
-                            Performance_denum_UI = Performance_denum_UI.replace('Denominator: ', '')
-                            Performance_percentage_calculated = round((float(Performance_num_UI)/float(Performance_denum_UI))*100, 4)
-                            print("Performance Tab Numerator: " + Performance_num_UI)
-                            print("Performance Tab Denominator: " + Performance_denum_UI)
-                            print("Performance Tab Percentage: " + Performance_percentage_UI)
-                            print("Performance calculated: " + str(Performance_percentage_calculated))
-                            if (float(Performance_percentage_UI) - float(Performance_percentage_calculated))< 0.02:
-                                Performance_comment = "Passed"
-                            else:
-                                Performance_comment = "Failed"
-                        except ElementNotInteractableException:
-                            Performance_comment = "The Performance tab is not clickable"
-                        try:
-                            driver.find_element(By.XPATH, "//*[@class='tabs']").find_elements(By.TAG_NAME, 'li')[2].click()
-                            sf.ajax_preloader_wait(driver)
-                            if EC.presence_of_element_located((By.XPATH, "//*[@id='network_comparison_chart']")):
-                                Network_comment = "Passed"
-                            else:
-                                Network_comment = "Failed"
-                        except ElementNotInteractableException:
-                            Network_comment = "Failed"
-                        onlyfiles = [f for f in listdir(locator.download_dir) if
-                                     isfile(join(locator.download_dir, f))]
+                        time.sleep(5)
+                        onlyfiles = [f for f in listdir(locator.download_dir) if isfile(join(locator.download_dir, f))]
                         path = locator.download_dir + onlyfiles[0]
-                        result = csvAddition(path)
-                        print("Total Gap Count: " + str(result[0]))
-                        print("Total Condition Count: " + str(result[1]))
-                        print("Total Disconfirm Count: " + str(result[2]))
-                        print("Total Clinical RAF Score: " + str(result[3]))
-                        print("Total Potential Score: " + str(result[4]))
-                        print("Total Coded Score: " + str(result[5]))
-                        print("Total Patient Count: " + str(result[6]))
-                        os.remove(path)
-                        comments = "Recapture HCCs: %s, Suspects HCCs: %s, New HCCs: %s" % (str(tag_count_list[0]), str(tag_count_list[1]), str(tag_count_list[2]))
-                        if i == 553 or i == 556:
-                            DataToBeValidated_num = float(DataToBeValidated_denum) - float(DataToBeValidated_num)
-                            DataToBeValidated_num = round(DataToBeValidated_num, 3)
-                            DataToBeValidated_denum = round(DataToBeValidated_denum, 3)
-                            num = float(result[3] / result[6])
-                            num = round(num, 3)
-                            temp = float((result[5]-result[3])/result[6])
-                            denum = float(result[4] / result[6])
-                            denum = denum - temp
-                            denum = round(denum, 3)
-                            if abs(float(DataToBeValidated_num) - num) < 0.015 and abs(float(DataToBeValidated_denum) - denum) < 0.015:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
+                        try:
+                            customer_folder_path = screenshot_path + "\\" + customer_name
+                            if os.path.exists(customer_folder_path) == False:
+                                os.mkdir(customer_folder_path)
+                            LOB_folder_path = customer_folder_path + "\\" + LOB_Name
+                            if os.path.exists(LOB_folder_path) == False:
+                                os.mkdir(LOB_folder_path)
+                                os.rename(path, LOB_folder_path + "\\" + Measure + "_" + provider_name + ".csv")
                             else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
-                        elif i == 554 or i == 555:
-                            if int(DataToBeValidated_num) == int(DataToBeValidated_denum)-int(result[1])-int(result[2]):
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
-                            else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
-                        else:
-                            if int(DataToBeValidated_num) == int(result[0]) and int(DataToBeValidated_denum) == int(
-                                    result[0] + result[1] + result[2]):
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Passed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
-                            else:
-                                ws.append([cus_id,LOB_Name, Measure, Domain_comment, Performance_comment, Network_comment, 'Failed', hcc_flag_list[2], hcc_flag_list[3], comments, Provider_Specific_url])
+                                os.rename(path, LOB_folder_path + "\\" + Measure + "_" + provider_name + ".csv")
+                            ws.append([customer_name, LOB_Name, Measure, provider_name, provider_url])
+                        except Exception as e:
+                            os.remove(path)
                         k -= 1
                         driver.get(Measure_Specific_url)
                         sf.ajax_preloader_wait(driver)
@@ -6740,10 +6577,6 @@ def hccvalidation_multi(driver, cus_id, year, workbook, provider_count, screensh
                     Comments = "For LOB " + LOB_Name + ",the Risk Measure- ACA HCC Score(ID:" + str(
                         i) + ") is not present"
                     Measure = "ACA HCC Score"
-                ws.append([cus_id,LOB_Name, Measure, '-', '-', '-', 'Not Present','-','-', Comments,'-'])
-                # cellname = "N" + str(SheetRowName)
-                # ws[''+cellname+''].fill = gray_background
-                # # ws.conditional_formatting.add("J1:O100", rule3)
                 print(Comments)
                 workbook.save(screenshot_path + "\\" + workbook_title)
                 continue
