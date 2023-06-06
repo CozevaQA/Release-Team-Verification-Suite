@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'CERT'
+ENV = 'PROD'
 URL = ""
 client_list = []
 provider_count = 1
