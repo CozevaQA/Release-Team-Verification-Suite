@@ -14,7 +14,7 @@ import Schema_processor as sp
 checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
-#verification_specs = ["NC_1300", '1300', 'Onshore', roleset, checklist]
+#verification_specs = ['Optum Care Arizona', '5100', 'Onshore', {'Cozeva Support': '99999'}, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 env = "PROD"
 headlessmode = 0
 Window_location = 1 #1 = left, 0 = Right
@@ -81,6 +81,10 @@ def launchgui():
 
     #creating the root canvas
     root = Tk()
+    style = ttk.Style()
+    style.theme_use('alt')
+    style.configure('TCombobox', fieldbackground=('readonly', 'green'), background=('readonly', 'white'),
+                    foreground=('readonly', 'black'))
 
     #Creating Principle frames
     input_frame_1 = Frame(root)
@@ -367,7 +371,7 @@ def launchgui():
     selected_cust = StringVar()
     selected_cust.set("Customer")
     customer_list = db.getCustomerList() #vs.customer_list
-    customer_drop = OptionMenu(input_frame_1, selected_cust, *customer_list)
+    customer_drop = ttk.Combobox(input_frame_1, textvariable=selected_cust, values=customer_list, state='readonly', style='TCombobox', width=35, height=35)
     context_label = Label(input_frame_1, text="Context", font=("Nunito Sans", 10))
     config_label = Label(input_frame_1, text="Configuration", font=("Nunito Sans", 10))
     Checkbox_cozeva_var = IntVar()

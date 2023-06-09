@@ -9,7 +9,6 @@ import logging
 if __name__ == '__main__':
     x=0
 
-print("Hello World")
 guiwindow.launchgui()
 print(guiwindow.verification_specs)
 print("Enviromnent: "+guiwindow.env)

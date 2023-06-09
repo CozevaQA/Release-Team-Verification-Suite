@@ -143,7 +143,7 @@ def game_over():
 
 
 window = Tk()
-window.title("GFG Snake game ")
+window.title("SNEK GAME ")
 
 score = 0
 direction = 'down'

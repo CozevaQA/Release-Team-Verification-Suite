@@ -66,7 +66,7 @@ def fetch_free_chrome_profile():
     chrome_profiles_sheet = chrome_profiles.active
     chrome_profile_available = False
     #Look for a row with an Available Chromeprofile name, Change it to In use and return the name
-    for profile_index in range(1, 6):
+    for profile_index in range(1, 11):
         if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available":
             chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
             chrome_profile_available = True

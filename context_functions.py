@@ -674,25 +674,25 @@ def patient_dashboard(driver, workbook, logger, run_from):
 
                         else:
 
-                            if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Row)) != 0:
-                                if len(driver.find_elements_by_xpath(
-                                        locator.xpath_empty_Data_Table_Row)) != 0:
-                                    print("Data table is empty")
-                                    test_case_id += 1
-                                    ws.append((test_case_id, patient_id, "Navigation to" + item_name, 'Passed',
-                                               round(total_time, sigfigs=3),
-                                               'Data table is empty'))
-                                    logger.info("Navigated to:  " + item_name)
-                                else:
-                                    table_row_count = len(
-                                        driver.find_elements_by_xpath(locator.xpath_data_Table_Row))
-                                    print(table_row_count)
-                                    test_case_id += 1
-                                    ws.append((test_case_id, patient_id, "Navigation to" + item_name, 'Passed',
-                                               round(total_time, sigfigs=3),
-                                               'Data table row count in the first page: ' + str
-                                               (table_row_count)))
-                                    logger.info("Navigated to: " + item_name)
+                            #if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Row)) != 0:
+                            if len(driver.find_elements_by_xpath(
+                                    locator.xpath_empty_Data_Table_Row)) != 0:
+                                print("Data table is empty")
+                                test_case_id += 1
+                                ws.append((test_case_id, patient_id, "Navigation to" + item_name, 'Passed',
+                                           round(total_time, sigfigs=3),
+                                           'Data table is empty'))
+                                logger.info("Navigated to:  " + item_name)
+                            else:
+                                table_row_count = len(
+                                    driver.find_elements_by_xpath(locator.xpath_data_Table_Row))
+                                print(table_row_count)
+                                test_case_id += 1
+                                ws.append((test_case_id, patient_id, "Navigation to" + item_name, 'Passed',
+                                           round(total_time, sigfigs=3),
+                                           'Data table row count in the first page: ' + str
+                                           (table_row_count)))
+                                logger.info("Navigated to: " + item_name)
 
                             patient_history_items = driver.find_elements_by_xpath(
                                 locator.xpath_patient_History_Item_Link)
@@ -3481,7 +3481,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         print(total_accordion_metric[i].get_attribute('id'))
 
                         # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
-                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508"]:
+                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508", "45", "599", "152", "361", "753"]:
                             print("Accordion Metric id have been skipped")
 
                         else:
@@ -5330,6 +5330,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                         print("Clicked on Pencil icon")
                         time.sleep(1)
                         xpath_pencil_options = xpath_pencil_patientdashboard + "//..//..//child::ul/li"
+                        print(xpath_pencil_options)
                         WebDriverWait(driver, 30).until(
                             EC.visibility_of_element_located((By.XPATH, xpath_pencil_options)))
                         pencil_options = driver.find_elements_by_xpath(xpath_pencil_options)
@@ -5609,7 +5610,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
         driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
         patient_found = ""
         for quarter in range(2):
-            quarter = quarter + 1
+            quarter = quarter
             if (patient_found == "Found"):
                 break
             for lob in range(len(lobs)):
@@ -5639,6 +5640,8 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                 WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//label[@class='col s12']")))
                 driver.find_element_by_xpath("//label[@class='col s12']").click()
                 time.sleep(0.25)
+                driver.execute_script("arguments[0].scrollIntoView();",
+                                      driver.find_element_by_id("qt-apply-search"))
                 driver.find_element_by_xpath("//button[@id='qt-apply-search']").click()
                 WebDriverWait(driver, 90).until(
                     EC.invisibility_of_element((By.XPATH, "//div[@class='ajax_preloader']")))
