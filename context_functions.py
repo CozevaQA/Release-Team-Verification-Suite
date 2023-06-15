@@ -3975,6 +3975,27 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
 
 
 def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
+    workbook.create_sheet('Patient Medication')
+    ws = workbook['Patient Medication']
+
+    ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
+    header_font = Font(color='FFFFFF', bold=False, size=12)
+    header_cell_color = PatternFill('solid', fgColor='030303')
+    ws['A1'].font = header_font
+    ws['A1'].fill = header_cell_color
+    ws['B1'].font = header_font
+    ws['B1'].fill = header_cell_color
+    ws['C1'].font = header_font
+    ws['C1'].fill = header_cell_color
+    ws['D1'].font = header_font
+    ws['D1'].fill = header_cell_color
+    ws['E1'].font = header_font
+    ws['E1'].fill = header_cell_color
+    ws['F1'].font = header_font
+    ws['F1'].fill = header_cell_color
+    ws.name = "Arial"
+    test_case_id = 1
+
     #pick a compliant patient from a PDC metric.
     sf.ajax_preloader_wait(driver)
     main_registry = driver.current_url
@@ -3996,6 +4017,9 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         driver.find_element_by_id("qt-search-met").clear()
         driver.find_element_by_id("qt-search-met").send_keys('pdc')
         time.sleep(2)
+        driver.execute_script("arguments[0].scrollIntoView();",
+                              driver.find_element_by_id("qt-apply-search"))
+        time.sleep(1)
         driver.find_element_by_id("qt-apply-search").click()
         sf.ajax_preloader_wait(driver)
         driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")[0].click()
@@ -4023,24 +4047,133 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
+        patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
+
         chart_icon = driver.find_element_by_class_name("medical_adherence_chart_icon")
         driver.execute_script("arguments[0].scrollIntoView();", chart_icon)
         chart_icon.click()
         WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, "medication_chart_div_id")))
+        ws.append([test_case_id, str(patient_id), 'Checking medication chart in dashboard', 'Passed', 'x', '', driver.current_url])
         sf.captureScreenshot(driver, "Medications_"+driver.find_element_by_xpath(locator.xpath_cozeva_Id).text, screenshot_path)
         time.sleep(1)
+
+        #check if medicationstab is empty
+
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+        driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+        history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+        ActionChains(driver).move_to_element(history_link).perform()
+        patient_history_items = driver.find_elements_by_xpath(locator.xpath_patient_History_Item_Link)
+        driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located(
+                (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+        driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
+        history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
+        time.sleep(0.5)
+        ActionChains(driver).move_to_element(history_link).perform()
+        medication_index = 0
+        for item_counter in range(len(patient_history_items)):
+            if patient_history_items[item_counter].text == "Medications":
+                medication_index = item_counter
+                break
+
+        item_name = patient_history_items[medication_index].text
+        print(item_name)
+        time.sleep(0.5)
+        patient_history_items[medication_index].click()
+        start_time = time.perf_counter()
+        sf.ajax_preloader_wait(driver)
+        total_time = time.perf_counter() - start_time
+        current_url = driver.current_url
+        access_message = sf.CheckAccessDenied(current_url)
+
+        if access_message == 1:
+            print("Access Denied found!")
+            # logger.critical("Access Denied found!")
+            test_case_id += 1
+            ws.append((test_case_id,
+                       patient_id, 'Navigation to  ' + item_name,
+                       'Failed', 'x', 'Access Denied', driver.current_url))
+
+        else:
+            print("Access Check done!")
+            # logger.info("Access Check done!")
+            error_message = sf.CheckErrorMessage(driver)
+
+            if error_message == 1:
+                print("Error toast message is displayed")
+                # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
+                test_case_id += 1
+                ws.append((test_case_id,
+                           patient_id, 'Navigation to  ' + item_name,
+                           'Failed', 'x', 'Error toast message is displayed', driver.current_url))
+
+            else:
+
+                # if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Row)) != 0:
+                if len(driver.find_elements_by_xpath(
+                        locator.xpath_empty_Data_Table_Row)) != 0:
+                    print("Data table is empty")
+                    test_case_id += 1
+                    ws.append((test_case_id, patient_id, "Navigation to " + item_name, 'Failed',
+                               round(total_time, sigfigs=3),
+                               'Data table is empty'))
+                    logger.info("Navigated to:  " + item_name)
+                else:
+                    table_row_count = len(
+                        driver.find_elements_by_xpath(locator.xpath_data_Table_Row))
+                    print(table_row_count)
+                    test_case_id += 1
+                    ws.append((test_case_id, patient_id, "Navigation to " + item_name, 'Passed',
+                               round(total_time, sigfigs=3),
+                               'Data table row count in the first page: ' + str
+                               (table_row_count)))
+                    logger.info("Navigated to: " + item_name)
+
+                patient_history_items = driver.find_elements_by_xpath(
+                    locator.xpath_patient_History_Item_Link)
+
         driver.close()
         driver.switch_to.window(driver.window_handles[0])
+
+    except IndexError as e:
+        traceback.print_exc()
+        print(e)
+        #sf.captureScreenshot(driver, "Medication check failed", screenshot_path)
+        ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Failed', 'x', 'No PDC measures available',
+                   driver.current_url])
+        if window_switched == 1:
+            driver.switch_to.window(driver.window_handles[0])
 
     except Exception as e:
         traceback.print_exc()
         print(e)
-        sf.captureScreenshot(driver, "Medication check failed", screenshot_path)
+        #sf.captureScreenshot(driver, "Medication check failed", screenshot_path)
+        ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Failed', 'x',
+                   'Error occured',
+                   driver.current_url])
         if window_switched == 1:
             driver.switch_to.window(driver.window_handles[0])
     driver.get(main_registry)
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
 def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):

@@ -29,7 +29,7 @@ privacy_status = 'Onshore'
 roleset = db.getDefaultUserNames(db.fetchCustomerName(current_client_id))
 if len(roleset) > 1:
     privacy_status = 'Offshore'
-feature_checklist = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+feature_checklist = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # comment the next 3 lines out when you need to run default. DO NOT COMMIT THIS YOU WILL BREAK EVERYTHING
 #feature_checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

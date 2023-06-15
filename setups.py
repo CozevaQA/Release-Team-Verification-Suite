@@ -485,6 +485,9 @@ def cozeva_support(environment):
         print("Patient Dashboard")
         context_functions.patient_dashboard(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[17] == 1:
+        context_functions.patient_medication(driver,workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
         context_functions.provider_registry(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
@@ -543,6 +546,9 @@ def limited_cozeva_support(username):
     if checklist[3] == 1:
         context_functions.patient_dashboard(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[17] == 1:
+        context_functions.patient_medication(driver,workbook, logger, report_folder, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
         context_functions.provider_registry(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
@@ -599,6 +605,9 @@ def customer_support(username):
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[3] == 1:
         context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        workbook.save(report_folder + "\\Report.xlsx")
+    if checklist[17] == 1:
+        context_functions.patient_medication(driver,workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[4] == 1:
         context_functions.provider_registry(driver, workbook, logger, run_from)

@@ -129,6 +129,7 @@ def launchgui():
             for i in range(11):
                 checklist[i] = 1
             checklist[12]=1
+            checklist[17]=1
             verification_specs[4] = checklist
             root.destroy()
             return
@@ -249,6 +250,7 @@ def launchgui():
         checklist[10] = secure_messaging_var.get()
         checklist[12] = accordion_verification_var.get()
         checklist[29] = hcc_validation_var.get()
+        checklist[17] = patient_medication_regular_var.get()
 
     def create_NL_checklist():
         if all_navigation_var.get() == 1:
@@ -291,6 +293,7 @@ def launchgui():
             secure_messaging_checkbox.select()
             accordion_verification_checkbox.select()
             hcc_validation_checkbox.select()
+            patient_medication_checkbox_regular.select()
         elif select_var.get() == 0:
             support_sidemenu_checkbox.deselect()
             practice_sidemenu_checkbox.deselect()
@@ -305,6 +308,7 @@ def launchgui():
             secure_messaging_checkbox.deselect()
             accordion_verification_checkbox.deselect()
             hcc_validation_checkbox.select()
+            patient_medication_checkbox_regular.deselect()
 
     def NL_select_all():
         if NL_select_var.get() == 1:
@@ -447,6 +451,7 @@ def launchgui():
     secure_messaging_var = IntVar()
     accordion_verification_var = IntVar()
     hcc_validation_var = IntVar()
+    patient_medication_regular_var = IntVar()
     select_var = IntVar()
     select_checkbox = Checkbutton(input_frame_3, text="Select All", variable=select_var, command=select_all, font=("Nunito Sans", 10))
     support_sidemenu_checkbox = Checkbutton(input_frame_3, text="Support Sidemenu", variable=support_sidemenu_var, font=("Nunito Sans", 10))
@@ -463,6 +468,7 @@ def launchgui():
     accordion_verification_checkbox = Checkbutton(input_frame_3, text="Accordion and counts Verification", variable=accordion_verification_var,
                                             font=("Nunito Sans", 10))
     hcc_validation_checkbox = Checkbutton(input_frame_3, text="HCC Validation", variable=hcc_validation_var, font=("Nunito Sans", 10))
+    patient_medication_checkbox_regular = Checkbutton(input_frame_3, text="Patient Medications", variable=patient_medication_regular_var, font=("Nunito Sans", 10))
     nextbutton3 = Button(input_frame_3, text="Start Automated Test", command=frame3next, font=("Nunito Sans", 10))
     prevbutton3 = Button(input_frame_3, text="Go Back", command=frame3prev, font=("Nunito Sans", 10))
 
@@ -666,8 +672,9 @@ def launchgui():
     secure_messaging_checkbox.grid(row=12, column=0, columnspan=5, sticky="w")
     accordion_verification_checkbox.grid(row=13, column=0, columnspan=5, sticky="w")
     hcc_validation_checkbox.grid(row=14, column=0, columnspan=5, sticky="w")
-    nextbutton3.grid(row=15, column=3)
-    prevbutton3.grid(row=15, column=0)
+    patient_medication_checkbox_regular.grid(row=15, column=0, columnspan=5, sticky="w")
+    nextbutton3.grid(row=16, column=3)
+    prevbutton3.grid(row=16, column=0)
 
     # pack elements into new_launch_frame
     new_launch_frame_label.grid(row=0, column=0, columnspan=5)

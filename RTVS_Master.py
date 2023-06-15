@@ -11,6 +11,7 @@ from tkinter import ttk
 import webbrowser
 import os
 
+# Yes, this is a convoluted way to maintain login info but im lazy and this is necessary
 def check_and_create_file(file_path):
     if not os.path.exists(file_path):
         try:
@@ -24,6 +25,8 @@ def check_and_create_file(file_path):
 file_path = 'assets\loginInfo.txt'
 check_and_create_file(file_path)
 
+# This snippet will check if the logininfo file is empty. If it is, it will run first time setup
+# then it will import the locator library
 file = open(r"assets\loginInfo.txt", "r+")
 file_content = str(file.read())
 file.seek(0)
@@ -38,6 +41,7 @@ client_list = []
 
 
 def rtvsmaster():
+    # Store the directory the codebase is in for future calls
     code_directory = os.getcwd()
     try:
         root = Tk()
@@ -224,7 +228,7 @@ def rtvsmaster():
                                  compound="left", style='Configs.TButton')
         update_button = ttk.Button(root, text="Check for Updates", command=on_update, image=update_image,
                                    compound="left", style='Configs.TButton')
-
+        # widget counter to add the buttons in gridwise
         widget_counter = 0
         loopbreak = 0
         for i in range(2, 6):
@@ -240,6 +244,9 @@ def rtvsmaster():
 
         help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
         update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
+
+        # Chromeprofile multi threading
+
         chrome_profile_frame = Frame(root, background="white")
         Label(chrome_profile_frame, text="Chrome Profile Status", background="white",
               font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
