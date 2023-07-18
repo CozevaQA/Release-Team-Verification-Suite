@@ -44,7 +44,7 @@ from threading import Timer
 
 selected_month = ""
 
-
+# test comment
 config = configparser.RawConfigParser()
 config.read("locator-config.properties")
 
@@ -1256,7 +1256,7 @@ def fetch_tasks():
         file_path = source_directory + "\\assets\\Tasks.txt"
 
         with open(file_path, 'w') as f:
-            f.write(text_widget.get(1.0, tk.END).strip())
+            f.write(text_widget.get(1.0, tk.END).replace(',', '').strip())
 
         global selected_month
         selected_month = selected_month.get()

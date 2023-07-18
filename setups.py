@@ -308,6 +308,7 @@ def login_to_user(Username):
         time.sleep(1)
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//a[@data-tooltip='Actions']")))
         driver.find_element_by_xpath("//a[@data-tooltip='Actions']").click()
+        time.sleep(1)
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//a[@id='masquerade_user']")))
         driver.find_element_by_xpath("//a[@id='masquerade_user']").click()
         time.sleep(0.5)

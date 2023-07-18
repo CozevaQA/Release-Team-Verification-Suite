@@ -16,7 +16,8 @@ def summarize_report(sum_workbook, folder_path):
 
     ws_main = sum_workbook['Sheet']
     ws_main.title = 'Summary'
-    sum_workbook.save(folder_path + "\\Report.xlsx")
+    workbook_name = '\\Report.xlsx'
+    sum_workbook.save(folder_path + workbook_name)
     ws_main.append(['Validation Area'])
     sheet_names = sum_workbook.sheetnames
 
@@ -51,6 +52,7 @@ def summarize_report(sum_workbook, folder_path):
         for rows in currentSheet:
             if 'Failed' in rows:
                 ws_main.append([worksheet])
+                workbook_name = '\\Report_Failed_cases.xlsx'
                 break
 
         for rows in currentSheet:

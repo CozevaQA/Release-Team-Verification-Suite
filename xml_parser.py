@@ -149,7 +149,7 @@ def master_parser_gui():
     # parse_xml() function from inside here on button press
     root = Tk()
 
-    xml_parent_path = "C:\\Psuedo D Drive\\CCD_DAV Validation\\Parser\\Transcode"
+    xml_parent_path = "C:\\xmlfiles"
     xml_filename = ""
 
     def parse_button():

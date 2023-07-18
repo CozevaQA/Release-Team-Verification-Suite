@@ -259,15 +259,15 @@ def practice_menubar(driver, workbook, logger, run_from):
                         zero_prac[1] += 1
 
                 if zero_prac[2] > list_index / 2:
-                    print("More than half the praciders have 0 patient counts")
+                    print("More than half the practices have 0 patient counts")
                     prac_url = driver.current_url
                     zero_prac_flag[2] = 1
                 if zero_prac[0] > list_index / 2:
-                    print("More than half the praciders have 0 patient counts")
+                    print("More than half the practices have 0 patient counts")
                     prac_url = driver.current_url
                     zero_prac_flag[0] = 1
                 if zero_prac[1] > list_index / 2:
-                    print("More than half the praciders have 0 patient counts")
+                    print("More than half the practices have 0 patient counts")
                     prac_url = driver.current_url
                     zero_prac_flag[1] = 1
 
@@ -485,6 +485,9 @@ def patient_dashboard(driver, workbook, logger, run_from):
             EC.presence_of_element_located((By.ID, "registry_body")))
         metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
         print("Provider Registry metrics loaded into a variable")
+        if len(metrics) == 0:
+            raise Exception("No metrics in the default Lob of this User")
+
         percent = '0.00'
         while percent == '0.00' or percent == '0.00 %':
             if len(metrics) > 1:
@@ -1256,12 +1259,11 @@ def practice_registry(driver, workbook, logger, run_from):
         driver.get(registry_url)
         sf.ajax_preloader_wait(driver)
 
-
     # Nav check two : Navigation to patient context through patient toggle of practice Metric Specific List
 
     try:
         sf.ajax_preloader_wait(driver)
-        # selecting a random non zero metric from the registry
+        # selecting a random non-zero metric from the registry
         print(driver.current_url)
         context_name = driver.find_element_by_class_name("specific_most").text
         WebDriverWait(driver, 30).until(
@@ -2016,6 +2018,8 @@ def provider_mspl(driver, workbook, logger, run_from):
 
             global global_search_prov
             global_search_prov = selected_provider.text
+            if global_search_prov is None:
+                global_search_prov = r"Couldn't Fetch"
             selected_provider.click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -2451,6 +2455,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                 ws.append([test_case_id, global_search_prov, 'Careops comparision from mspl: ' + selected_metric_name,
                            'Failed', '', driver.current_url])
                 if window_switched == 1:
+                    driver.close()
                     driver.switch_to.window(driver.window_handles[0])
                     sf.ajax_preloader_wait(driver)
                     window_switched = 0
@@ -2464,6 +2469,7 @@ def provider_mspl(driver, workbook, logger, run_from):
                  'Failed', '', 'Unable to click on metric', driver.current_url])
             test_case_id += 1
             if window_switched == 1:
+                driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 sf.ajax_preloader_wait(driver)
                 window_switched = 0
@@ -2686,10 +2692,14 @@ def time_capsule(driver, workbook, logger, run_from):
                 (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
             traceback.print_exc()
         finally:
-            driver.close()
+
             time.sleep(1)
             if window_switched == 1:
+                driver.close()
                 driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+                window_switched = 0
+
 
     except Exception as e:
         print(e)
@@ -4149,7 +4159,10 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Failed', 'x', 'No PDC measures available',
                    driver.current_url])
         if window_switched == 1:
+            driver.close()
             driver.switch_to.window(driver.window_handles[0])
+            sf.ajax_preloader_wait(driver)
+            window_switched = 0
 
     except Exception as e:
         traceback.print_exc()
@@ -4159,7 +4172,10 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
                    'Error occured',
                    driver.current_url])
         if window_switched == 1:
+            driver.close()
             driver.switch_to.window(driver.window_handles[0])
+            sf.ajax_preloader_wait(driver)
+            window_switched = 0
     driver.get(main_registry)
     sf.ajax_preloader_wait(driver)
     WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
@@ -4248,7 +4264,10 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             driver.close()
             time.sleep(1)
             if window_switched == 1:
+                driver.close()
                 driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+                window_switched = 0
 
     except Exception as e:
         print(e)
@@ -4384,8 +4403,10 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             driver.close()
             time.sleep(1)
             if window_switched == 1:
+                driver.close()
                 driver.switch_to.window(driver.window_handles[0])
-                window_switched == 0
+                sf.ajax_preloader_wait(driver)
+                window_switched = 0
 
 
     except Exception as e:
@@ -4395,8 +4416,10 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
         ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', 'Exception occurred!', driver.current_url))
         sf.captureScreenshot(driver, 'Analytics Access Denied', screenshot_path)
         if window_switched == 1:
+            driver.close()
             driver.switch_to.window(driver.window_handles[0])
-            window_switched == 0
+            sf.ajax_preloader_wait(driver)
+            window_switched = 0
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(

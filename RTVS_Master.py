@@ -4,7 +4,6 @@ import os
 import traceback
 from tkinter import *
 import ExcelProcessor as db
-
 import openpyxl
 from PIL import ImageTk, Image
 from tkinter import ttk
@@ -139,7 +138,8 @@ def rtvsmaster():
         def on_supp_data():
             root.destroy()
             # import Supplemental_data_alternate
-            import secret_menu
+            #import secret_menu
+            import xml_parser
 
         def on_submitbutton():
             global multi
@@ -218,10 +218,10 @@ def rtvsmaster():
         button_widgets.append(ttk.Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity,
                                          image=hospital_activity_image, compound="left", style='My.TButton'))
         button_widgets.append(
-            ttk.Button(root, text="Supplemental Data Addition", command=on_supp_data, image=supp_data_image,
+            ttk.Button(root, text="XML Parser", command=on_supp_data, image=global_search_image,
                        compound="left", style='My.TButton'))
         button_widgets.append(
-            ttk.Button(root, text="Overwatch", command=lambda: root_overwatch.deiconify(), image=hcc_validation_image,
+            ttk.Button(root, text="Overwatch", command=lambda: root_overwatch.deiconify(), image=global_search_image,
                        compound="left", style='My.TButton'))
 
         help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,

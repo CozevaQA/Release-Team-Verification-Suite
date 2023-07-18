@@ -27,7 +27,7 @@ except IOError as e:
 
 privacy_status = 'Onshore'
 roleset = db.getDefaultUserNames(db.fetchCustomerName(current_client_id))
-if len(roleset) > 1:
+if "Customer Support" in roleset:
     privacy_status = 'Offshore'
 feature_checklist = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
