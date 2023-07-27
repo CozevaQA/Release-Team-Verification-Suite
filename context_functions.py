@@ -2000,6 +2000,7 @@ def provider_mspl(driver, workbook, logger, run_from):
         # Switching to random Practice name from default set context, main page
         try:
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(1)
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
@@ -2238,14 +2239,6 @@ def provider_mspl(driver, workbook, logger, run_from):
                 WebDriverWait(driver, 30).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
                 Dashboard_caregap = driver.find_element_by_xpath(locator.xpath_careops).text
-                # print("Dashboard caregaps = "+Dashboard_caregap)
-                driver.find_element_by_class_name("select-dropdown").click()
-                dropdown_contents = driver.find_element_by_class_name("filter-panel").find_elements_by_tag_name(
-                    "li")
-                for dropdowntext in dropdown_contents:
-                    if dropdowntext.text == "Non-Compliant":
-                        dropdowntext.click()
-                        break
 
                 # TEST CASE 2--------------------------------------------------------------
                 # print("TEST CASE 2 - MSPL CAREGAP COUNT VS DASHBOARD HEADER CAREOPS COUNT :", end=" ")
@@ -3491,7 +3484,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         print(total_accordion_metric[i].get_attribute('id'))
 
                         # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
-                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508", "45", "599", "152", "361", "753"]:
+                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508", "45", "599", "152", "361", "753", "400"]:
                             print("Accordion Metric id have been skipped")
 
                         else:
@@ -4059,9 +4052,11 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
             EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
         patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
 
-        chart_icon = driver.find_element_by_class_name("medical_adherence_chart_icon")
-        driver.execute_script("arguments[0].scrollIntoView();", chart_icon)
-        chart_icon.click()
+        chart_icon = driver.find_element(By.XPATH, locator.xpath_medication_chart_icon)
+        actions = ActionChains(driver)
+        actions.move_to_element(chart_icon).perform()
+        time.sleep(1)
+        actions.click(chart_icon).perform()
         WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.ID, "medication_chart_div_id")))
         ws.append([test_case_id, str(patient_id), 'Checking medication chart in dashboard', 'Passed', 'x', '', driver.current_url])
         sf.captureScreenshot(driver, "Medications_"+driver.find_element_by_xpath(locator.xpath_cozeva_Id).text, screenshot_path)

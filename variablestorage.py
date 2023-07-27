@@ -55,6 +55,7 @@ xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
 xpath_coding_tool_kebab = "//a[@class='action_list_dropdown not_disable']"
 xpath_audit_log_download = "//a[@onclick='return download_audit_log();']"
 xpath_annotation_tab = "//a[@class='chart_notes_tab tab_on_demand']"
+xpath_medication_chart_icon = "//div[@class='med_adherence_chart']"
 
 #css_selectors
 

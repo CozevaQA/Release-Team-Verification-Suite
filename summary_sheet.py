@@ -42,10 +42,12 @@ def summarize_report(sum_workbook, folder_path):
             # temp.append(str(current_row[4].value))
             # temp.append(str(current_row[5].value))
             # temp.append(str(current_row[6].value))
+            print(temp)
             currentSheet.append(temp)
             temp = []
             control = str(ws_sheets['A' + str(row_counter + 1)].value)
             row_counter += 1
+
 
         print(currentSheet)
 
