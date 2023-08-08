@@ -191,7 +191,7 @@ def rtvsmaster():
 
         button_widgets = []
         button_widgets.append(
-            ttk.Button(root, text="First time Setupwoooop", command=on_first_time_setup, image=first_time_setup_image,
+            ttk.Button(root, text="First time Setup", command=on_first_time_setup, image=first_time_setup_image,
                        compound="left", style='My.TButton'))
         button_widgets.append(
             ttk.Button(root, text="Verification Suite", command=on_verification_suite, image=verification_suite_image,
@@ -272,9 +272,11 @@ def rtvsmaster():
             row_counter += 1
 
             if profile_row[2] == "In Use":
-                profile_status_label.configure(image=red_dot_image)
+                profile_status_label.configure(image=red_dot_image, fg="Red")
+            if profile_row[2] == "Available":
+                profile_status_label.configure(fg="#408022")
             if profile_row[1] == locator.free_chrome_profile:
-                profile_status_label.configure(image=orange_dot_image, text=profile_row[2] + " (Current)")
+                profile_status_label.configure(image=orange_dot_image, fg="#fc9003", text="Current")
                 # test comment
 
         chrome_profile_frame.grid(row=1, rowspan=4, column=3, sticky="NE")
