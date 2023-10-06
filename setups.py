@@ -377,7 +377,8 @@ def switch_to_registries():
     sub_str1 = "/case_management?"
     sub_str2 = "/ehr"
     sub_str3 = "/cozeva_messages"
-    if context_url.find(sub_str1) > 0 or context_url.find(sub_str2) > 0 or context_url.find(sub_str3):
+    page_title = driver.title
+    if "Registries | Cozeva" not in page_title:
         try:
             print("Not in registries!")
             WebDriverWait(driver, 30).until(
@@ -509,31 +510,31 @@ def cozeva_support(environment):
         context_functions.provider_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[5] == 1:
-        context_functions.practice_registry(driver, workbook, logger, run_from)
+        context_functions.practice_registry(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[6] == 1:
-        context_functions.support_level(driver, workbook, logger, run_from)
+        context_functions.support_level(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[7] == 1:
-        context_functions.global_search(driver, workbook, logger, run_from)
+        context_functions.global_search(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[8] == 1:
-        context_functions.provider_mspl(driver, workbook, logger, run_from)
+        context_functions.provider_mspl(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[9] == 1:
-        context_functions.time_capsule(driver, workbook, logger, run_from)
+        context_functions.time_capsule(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[10] == 1:
-        context_functions.secure_messaging(driver, workbook, logger, run_from)
+        context_functions.secure_messaging(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[11] == 1:
         context_functions.analytics(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[12] == 1:
-        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
+        context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[29] == 1:
-        context_functions.analytics(driver, workbook, logger, report_folder, run_from)
+        context_functions.analytics(driver, workbook, logger, report_folder, run_from, report_folder)
         workbook.save(report_folder + "\\Report.xlsx")
 
     workbook.save(report_folder+"\\Report.xlsx")
