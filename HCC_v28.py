@@ -569,8 +569,15 @@ def MSPLScoreCheck(driver,ws, wb, LOB_Name, Measure):
             Network_comment = "Passed"
         else:
             Network_comment = "Failed"
-    except (NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, ElementNotVisibleException, TimeoutException, ElementNotSelectableException):
+    except (NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, ElementNotVisibleException, TimeoutException, ElementNotSelectableException) as e:
+        traceback.print_exc()
+        print(e)
+        print("Network Tab not Clickable!")
         Network_comment = "The Network tab is not clickable"
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        print("2nd Except Clause")
     onlyfiles = [f for f in listdir(locator.download_dir) if isfile(join(locator.download_dir, f))]
     path = locator.download_dir + onlyfiles[0]
     result = csvAddition(path)
@@ -656,7 +663,12 @@ def NameURLextractor(driver, LOB, checklist, URL_name_list, num_den_list):
                 URL_name_list.append(Measure)
                 URL_name_list.append(LOB)
         except NoSuchElementException as e:
-                print("No measure of id "+ str(i))
+            print("No measure of id "+ str(i))
+            # traceback.print_exc()
+        except Exception as e:
+            print("General Exception")
+            # traceback.print_exc()
+
     return URL_name_list, num_den_list
 
 
@@ -877,13 +889,24 @@ Customer_value = hcc_data_list[0]  # this is to select customer
 year = hcc_data_list[2]       #select MY
 provider_count = hcc_data_list[1]  #Number of providers [set as default value with current code format]
 patient_count = 2 #number of patients
-Global_checklist = [400, 551, 553, 554, 555, 556, 557]
+Global_checklist = [400, 551, 553, 554, 555, 556, 557, 516, 526]
 Selected_checklist = hcc_data_list[3]
+PatientDashboardFlag = hcc_data_list[4]
 print("Hello", Selected_checklist)
 Selected_LOB = ["Medicare", "ALL"]
 id_list = ["Review of Chronic Conditions (Blended)", "Review of Chronic Conditions (Risk Adjustment Version 24)", "One-Year Recapture Rate (Blended)", "One-Year Recapture Rate (Risk Adjustment Version 24)"]
-customer_list = ["U.S. Renal Care", "Healthnet", "L.A. Care"]
+customer_list = ["U.S. Renal Care", "Healthnet", "L.A. Care", "Molina Healthcare"]
 driver = setups.driver
+
+if len(Selected_checklist) == 0:
+    print("No HCC Measures are selected. Stopping the whole code!")
+    driver.close()
+    sys.exit()
+else:
+    if PatientDashboardFlag == "Yes":
+        patient_flag = 1
+    else:
+        patient_flag = 0
 
 # In[76]:
 
@@ -1073,7 +1096,7 @@ for i in range(0, len(URL_name_registry_list), 3):
     try:
         driver.get(practice_link)
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 120).until(EC.presence_of_element_located(((By.XPATH, "//*[@data-target='qt-reg-nav-filters']"))))
+        WebDriverWait(driver, 120).until(EC.presence_of_element_located(((By.XPATH, "//a[@data-target='qt-reg-nav-filters']"))))
         Expander(driver)
         print(measure)
         search_var = measure.split(' | ')[1]
@@ -1106,7 +1129,11 @@ for i in range(0, len(URL_name_registry_list), 3):
             SheetColorCoder(ws, wb, path1, filename)
             sf.ajax_preloader_wait(driver)
             ws = wb["Patient Dashboard"]
-            PatientDashboardScoreCheck(driver, patient_count, ws, wb, LOB, measure)
+            print("Patient flag: " + str(patient_flag))
+            if patient_flag != 0:
+                PatientDashboardScoreCheck(driver, patient_count, ws, wb, LOB, measure)
+            else:
+                print("Patient Dashboard Score check skipped")
             SheetColorCoder(ws, wb, path1, filename)
     except (NoSuchElementException, ElementNotInteractableException, ElementClickInterceptedException, ElementNotVisibleException, TimeoutException, ElementNotSelectableException) as e:
         ws.append([db.fetchCustomerName(Customer_value), LOB, measure, "Issue: Blank MSPL encountered","NA",driver.current_url])

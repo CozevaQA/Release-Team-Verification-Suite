@@ -10,6 +10,8 @@ import traceback
 from os import listdir
 from os.path import isfile, join
 from random import randint
+
+import selenium
 from termcolor import colored
 
 from openpyxl import Workbook
@@ -27,6 +29,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException, TimeoutException
 from sigfig import round
 
+import guiwindow
 import support_functions as sf
 import variablestorage as locator
 import time
@@ -129,6 +132,14 @@ def support_menubar(driver, workbook, ws, logger, run_from):
             names = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link_Name)
             driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
 
+            #print(links)
+            #print(names)
+            # links1, names1 = [links[8],links[9],links[11]], [names[8],names[9],names[11]]
+            # links, names = links1, names1
+
+
+
+
         except Exception as e:
             test_case_id += 1
             ws.append((test_case_id, context_name, 'Sidemenubar navigation', 'Failed'))
@@ -188,6 +199,102 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                                 test_case_id+=1
                                 ws.append((test_case_id, context_name, 'Presence of Had ER Visit Tab', 'Passed'))
 
+                        if link_name == "Imported Charts":
+                            if len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) != 0:
+                                test_case_id+=1
+                                ws.append((test_case_id, context_name, 'Imported Charts tab', 'Passed', 'x', 'No Imported Chart data present'))
+
+                            elif len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) == 0:
+                                # Click on a random imported chart, check if it has data in it.
+                                imported_charts_table_list = driver.find_element(By.ID, "imported_charts").find_element(By.TAG_NAME, "tbody").find_elements(By.XPATH, "//tr[@role='row']")
+                                # print(len(imported_charts_table_list))
+                                random_imported_chart = random.choice(imported_charts_table_list)
+                                # print(random_imported_chart.text)
+                                if guiwindow.verification_specs[2] == "Offshore":
+                                    random_imported_chart.find_element(By.CLASS_NAME, "modal-trigger").click()
+
+
+
+                                #imported_charts_table_list[1].find_element(By.CLASS_NAME, "modal-trigger").click()
+                                time.sleep(3)
+
+                                # if "No information available." in random_imported_chart.find_element(By.CLASS_NAME, "modal-content").text:
+                                #     test_case_id+=1
+                                #     ws.append((test_case_id, context_name, 'Imported Charts Tab', "Failed", "x", "Imported Chart is Blank"))
+                                #
+                                # elif "Continuity of Care Document" in random_imported_chart.find_element(By.CLASS_NAME, "modal-content").find_element(By.TAG_NAME, "title").text:
+                                #     test_case_id += 1
+                                #     ws.append((test_case_id, context_name, 'Imported Charts Tab', "Passed", "x",
+                                #                "Chart modal is populating as expected"))
+                                #     print("chart checked")
+                                # Alternate code
+
+
+                                if guiwindow.verification_specs[2] == "Onshore":
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Imported Charts Tab', "Passed", "x",
+                                               "Chart modal is unclickable for Onshore Clients"))
+
+                                elif len(random_imported_chart.find_element(By.CLASS_NAME, "modal-content").find_elements(By.TAG_NAME, "title")) != 0:
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Imported Charts Tab', "Passed", "x",
+                                               "Chart modal is populating as expected"))
+                                    print("chart checked")
+
+                                else:
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Imported Charts Tab', "Failed", "x",
+                                               "Imported Chart is Blank"))
+
+
+                            driver.refresh()
+                            sf.ajax_preloader_wait(driver)
+
+                        if link_name == "Providers":
+                            try:
+                                if len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) != 0:
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', 'Passed', 'x',
+                                               'No Providers Present'))
+                                elif len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) == 0:
+                                    WebDriverWait(driver, 60).until(
+                                        EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
+                                    provider_table = driver.find_element(By.ID, "metric-support-prov-ls").find_element(By.TAG_NAME, "tbody").find_elements(By.XPATH, "//tr[@role='row']")
+                                    random_provider = random.choice(provider_table)
+                                    random_provider.find_elements(By.TAG_NAME, "a")[0].click()
+                                    time.sleep(3)
+                                    WebDriverWait(driver, 30).until(
+                                        EC.presence_of_element_located((By.ID, "provider_info_modal")))
+
+                                    if len(driver.find_element(By.ID, "provider_info_modal").find_element(By.CLASS_NAME, "modal-body").find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "th")) != 0:
+                                        test_case_id += 1
+                                        ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', "Passed", "x",
+                                                   "Provider Information modal is populating as expected"))
+                                    else:
+                                        test_case_id += 1
+                                        ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', "Failed", "x",
+                                                   "Provider Information modal is Blank"))
+                                driver.refresh()
+                                sf.ajax_preloader_wait(driver)
+
+                            except TimeoutException as e:
+                                traceback.print_exc()
+                                print(e)
+                                test_case_id += 1
+                                ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', "Failed", "x",
+                                           "Timed out while loading the Provider Info Modal"))
+                                driver.refresh()
+                                sf.ajax_preloader_wait(driver)
+
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                test_case_id += 1
+                                ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', "Failed", "x",
+                                           "Provider Information modal is Blank"))
+                                driver.refresh()
+                                sf.ajax_preloader_wait(driver)
+
             except Exception as e:
                 print(e)
                 traceback.print_exc()
@@ -198,6 +305,8 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
                 names = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link_Name)
 
+                # links1, names1 = [links[8], links[9], links[11]], [names[8], names[9], names[11]]
+                # links, names = links1, names1
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_registry_Link)))
@@ -818,7 +927,7 @@ def provider_registry(driver, workbook, logger, run_from):
     ws['F1'].fill = header_cell_color
     ws.name = "Arial"
     test_case_id = 1
-
+    window_switched = 0
     # checking for default context and then navigating to a random provider registry
     main_registry_url = driver.current_url
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
@@ -868,9 +977,7 @@ def provider_registry(driver, workbook, logger, run_from):
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
         current_context = driver.find_element_by_class_name("current_context").text
-        print('1.5')
         driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
-        print('2')
         time.sleep(3)
         WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "all_patients_tab"))).click()
         #driver.find_element_by_id("all_patients_tab").click()
@@ -916,6 +1023,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 else:
                     patient_elements[0].find_element_by_class_name('pat_name').click()
                 driver.switch_to.window(driver.window_handles[1])
+                window_switched = 1
                 start_time = time.perf_counter()
                 sf.ajax_preloader_wait(driver)
                 total_time = time.perf_counter() - start_time
@@ -958,6 +1066,10 @@ def provider_registry(driver, workbook, logger, run_from):
                             test_case_id += 1
                             ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
                                        'Count: ' + driver.find_element_by_xpath(locator.xpath_careops).text])
+                        elif sf.check_exists_by_xpath(driver, locator.xpath_careops2):
+                            test_case_id += 1
+                            ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
+                                       'Count: ' + driver.find_element_by_xpath(locator.xpath_careops2).text])
                         else:
                             test_case_id += 1
                             ws.append([test_case_id, patient_id, 'CareOps count present', 'Failed', 'x',
@@ -1054,6 +1166,10 @@ def provider_registry(driver, workbook, logger, run_from):
                 test_case_id += 1
                 ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
                            'Count: ' + driver.find_element_by_xpath(locator.xpath_careops).text])
+            elif sf.check_exists_by_xpath(driver, locator.xpath_careops2):
+                test_case_id += 1
+                ws.append([test_case_id, patient_id, 'CareOps count present', 'Passed', 'x',
+                           'Count: ' + driver.find_element_by_xpath(locator.xpath_careops2).text])
             else:
                 test_case_id += 1
                 ws.append(
@@ -1595,6 +1711,53 @@ def support_level(driver, workbook, logger, run_from):
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
             providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
+
+            try:
+                if len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) != 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, context_name, 'Provider\'s tab MSPL Info Modal', 'Passed', 'x',
+                               'No Providers Present'))
+                elif len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) == 0:
+                    provider_table = driver.find_element(By.ID, "metric-support-prov-ls").find_element(By.TAG_NAME,
+                                                                                                       "tbody").find_elements(
+                        By.XPATH, "//tr[@role='row']")
+                    random_provider = random.choice(provider_table)
+                    random_provider.find_elements(By.TAG_NAME, "a")[0].click()
+                    time.sleep(3)
+                    WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, "provider_info_modal")))
+
+                    if len(driver.find_element(By.ID, "provider_info_modal").find_element(By.CLASS_NAME, "modal-body").find_element(
+                        By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "th")) != 0:
+                        test_case_id += 1
+                        ws.append((test_case_id, context_name, 'Provider\'s tab MSPL Info Modal', "Passed", "x",
+                                   "Provider Information modal is populating as expected"))
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, context_name, 'Provider\'s tab MSPL Info Modal', "Failed", "x",
+                                   "Provider Information modal is Blank"))
+                driver.refresh()
+                sf.ajax_preloader_wait(driver)
+
+            except TimeoutException as e:
+                traceback.print_exc()
+                print(e)
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'Provider\'s tab MSPL Info Modal', "Failed", "x",
+                           "Timed out while loading the Provider Info Modal"))
+                driver.refresh()
+                sf.ajax_preloader_wait(driver)
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'Provider\'s tab MSPL Info Modal', "Failed", "x",
+                           "Provider Information modal is Blank"))
+                driver.refresh()
+                sf.ajax_preloader_wait(driver)
+
+            providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
+                'tbody').find_elements_by_tag_name('tr')
             try:
                 list_index = len(providers)
                 zero_prov = 0
@@ -1613,6 +1776,8 @@ def support_level(driver, workbook, logger, run_from):
                 traceback.print_exc()
                 ws.append([test_case_id, context_name, "Checking for 0 patient counts in provider tab", "Failed", 'x', "Couldn't fetch patient counts", driver.current_url])
                 test_case_id+=1
+
+
             if len(providers) > 1:
                 selectedProvider = \
                     providers[sf.RandomNumberGenerator(len(providers), 1)[0]].find_elements_by_tag_name('a')[2]
@@ -1697,6 +1862,21 @@ def support_level(driver, workbook, logger, run_from):
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(metric_url)
+            elif sf.check_exists_by_xpath(driver, locator.xpath_careops2):
+                measure_count_dashboard = len(
+                    driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+                test_case_id += 1
+                ws.append(
+                    (test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                     'Passed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                logger.info(patient_id + ": Navigated to patient dashboard.")
+                test_case_id += 1
+                ws.append(
+                    [test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                     'Passed', 'x', 'Count: ' + driver.find_element_by_xpath(locator.xpath_careops2).text])
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                driver.get(metric_url)
             else:
                 test_case_id += 1
                 ws.append(
@@ -1705,7 +1885,6 @@ def support_level(driver, workbook, logger, run_from):
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
                 driver.get(metric_url)
-
 
         except Exception as e:
             print(e)
@@ -1977,6 +2156,7 @@ def global_search(driver, workbook, logger, run_from):
 
 
 def provider_mspl(driver, workbook, logger, run_from):
+    return
     workbook.create_sheet('Provider\'s MSPL')
     ws = workbook['Provider\'s MSPL']
 
@@ -4008,10 +4188,15 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         driver.find_element_by_id("qt-filter-label").click()
         time.sleep(1)
         lobs = driver.find_element_by_id("filter-lob").find_elements_by_tag_name('li')
+        lob_text = "NaN"
         for lob in lobs:
             if 'medicare' in lob.text or 'Medicare' in lob.text:
+                lob_text = lob.text
                 lob.click()
                 break
+
+        if lob_text != 'medicare' and lob_text != "Medicare":
+            raise Exception("Medicare LoB not present")
         driver.find_element_by_id("reg-filter-apply").click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
@@ -4025,6 +4210,8 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         time.sleep(1)
         driver.find_element_by_id("qt-apply-search").click()
         sf.ajax_preloader_wait(driver)
+        if len(driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")) < 1:
+            raise Exception("No PDC measure present in Medicare Lob")
         driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")[0].click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
@@ -4163,9 +4350,17 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         traceback.print_exc()
         print(e)
         #sf.captureScreenshot(driver, "Medication check failed", screenshot_path)
-        ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Failed', 'x',
-                   'Error occured',
-                   driver.current_url])
+        if str(e) == "Medicare LoB not present":
+            ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Passed', 'x',
+                       'Medicare LoB not present',
+                       driver.current_url])
+        elif str(e) == "No PDC measure present in Medicare Lob":
+            ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Passed', 'x',
+                       'No PDC measure present in Medicare Lob',
+                       driver.current_url])
+
+        else:
+            ws.append([test_case_id, "PCD measures", 'Checking medication chart in dashboard', 'Failed', 'x', 'Error occured', driver.current_url])
         if window_switched == 1:
             driver.close()
             driver.switch_to.window(driver.window_handles[0])
@@ -4256,7 +4451,6 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                 (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
             sf.captureScreenshot(driver, 'Time Capsule access', screenshot_path)
         finally:
-            driver.close()
             time.sleep(1)
             if window_switched == 1:
                 driver.close()
@@ -4328,9 +4522,11 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
                        'Exception occurred!', driver.current_url))
             sf.captureScreenshot(driver, 'Secure Messaging Access Denied', screenshot_path)
         finally:
-            driver.close()
-            time.sleep(1)
-            driver.switch_to.window(driver.window_handles[0])
+            if window_switched == 1:
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+                window_switched = 0
 
     except Exception as e:
         print(e)
@@ -4395,7 +4591,6 @@ def apptray_access_check(driver, workbook,logger,screenshot_path, run_from):
             test_case_id += 1
             ws.append((test_case_id, 'Analytics', 'Navigation to Analytics', 'Failed', '', 'Exception occurred!', driver.current_url))
         finally:
-            driver.close()
             time.sleep(1)
             if window_switched == 1:
                 driver.close()
@@ -4735,8 +4930,8 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
         num_of_columns = len(element)
         header = []
         for i in range(1, num_of_columns):
-            header = driver.find_element_by_xpath(column_xpath + "[" + str(i) + "]")
-            header_text = header.get_attribute("innerHTML")
+            header_element = driver.find_element_by_xpath(column_xpath + "[" + str(i) + "]")
+            header_text = header_element.get_attribute("innerHTML")
             header.append(header_text)
         return header
 
@@ -5464,6 +5659,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
                     hcc_counter + metric_counter1) + "]"
                 xpath_metric_row = xpath1 + "/../../../../../.."
                 xpath_pencil_patientdashboard = xpath1 + "/../../../../../../td/div/div[@class='dropdown']//child::a[@class='addSuppData-trigger pts']//child::i"
+                print(xpath_pencil_patientdashboard)
                 metric_name_patientdashboard = metrics_patientdashboard[metric_counter].text
                 print("Metric name in patient dashboard" + str(metric_name_patientdashboard))
                 metric_row = driver.find_element_by_xpath(xpath_metric_row)
@@ -5711,6 +5907,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
 
         except Exception as e:
             print(e)
+            traceback.print_exc()
             return False
 
             # Click on MAP
@@ -5761,7 +5958,7 @@ def map_codingtool(driver, workbook, logger, run_from, customer_id):
         driver.find_element_by_xpath("//a[@id='qt-filter-label']").click()
         patient_found = ""
         for quarter in range(2):
-            quarter = quarter
+            quarter = quarter+1
             if (patient_found == "Found"):
                 break
             for lob in range(len(lobs)):

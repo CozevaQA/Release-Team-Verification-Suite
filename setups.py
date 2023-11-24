@@ -427,7 +427,6 @@ def new_launch(environment):
         context_functions.group_menubar(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[15] == 1:
-        print("Practice tab ss section")
         context_functions.practice_tab_ss(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[17] == 1:

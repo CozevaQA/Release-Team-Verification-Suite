@@ -27,6 +27,7 @@ client_list = []
 Selected_checklist = []
 provider_count = 1
 measurement_year = "2022"
+PatientDashboardFlag = 0
 
 
 def get_ID_list():
@@ -99,13 +100,15 @@ def display_new_gui():
     global items_with_ids
     items_with_ids = {
         400: "Review of Chronic Conditions (Blended)",
-        551: "Review of Chronic Conditions (Risk Adjustment Version 24)",
-        552: "Review of Suspect conditions",
+        33: "Review of Chronic Conditions (Risk Adjustment Version 24)",
+        551: "Review of Suspect conditions",
         553: "HCC Score(Blended)",
         554: "Review of ACA Chronic Conditions",
         555: "Review of ACA Suspect Conditions",
         556: "ACA HCC Score",
-        557: "HCC Efficiency"
+        557: "HCC Efficiency",
+        516: "Review of Medicaid Chronic Conditions",
+        526: "Review of Medicaid Suspect Conditions"
     }
 
     def get_selected_items():
@@ -118,12 +121,21 @@ def display_new_gui():
         root.destroy()  # Close the GUI after getting selected items
 
     def select_all():
-        for checkbox in checkboxes.values():
-            checkbox.set(True)
+        for checkbox_func in checkboxes.values():
+            checkbox_func.set(True)
 
     def deselect_all():
-        for checkbox in checkboxes.values():
-            checkbox.set(False)
+        for checkbox_func in checkboxes.values():
+            checkbox_func.set(False)
+
+    def set_patient_dashboard_flag():
+        global PatientDashboardFlag
+        PatientDashboardFlag = patient_dashboard_var.get()
+
+    # Function to execute both set_patient_dashboard_flag and get_selected_items
+    def run_selected_measures():
+        set_patient_dashboard_flag()
+        get_selected_items()
 
     def display_information():
         information_text = "Please read through this information box before selecting measures:\n" \
@@ -133,6 +145,8 @@ def display_new_gui():
                            "- HCC Score(Blended) measure will be available as HCC Measure for USRC, Healthnet, and LA Care.\n" \
                            "\n" \
                            "- HCC Efficiency measure will only be available in HPMG.\n" \
+                           "\n" \
+                           "- Review of Medicaid Chronic Conditions and Review of Medicaid Suspect conditions will only be present for Molina Healthcare.\n" \
                            "\n" \
                            "- For some customers, the Clinical factor and Suspect score may not be present (as per design).\n" \
                            "\n" \
@@ -144,6 +158,7 @@ def display_new_gui():
                            "\n" \
                            "- Click 'Get Selected Items' to retrieve the selected items."
         messagebox.showinfo("Information", information_text)
+
 
     root = Tk()
     root.title("Please select the measures")
@@ -170,12 +185,34 @@ def display_new_gui():
     deselect_all_button = ttk.Button(button_frame, text="Deselect All", command=deselect_all)
     deselect_all_button.grid(row=0, column=1, padx=5, pady=5)
 
-    get_selected_button = ttk.Button(root, text="Run for selected measures", command=get_selected_items)
+    get_selected_button = ttk.Button(root, text="Run for selected measures", command=run_selected_measures)
     get_selected_button.pack(pady=10)
 
     # Create information button
     information_button = ttk.Button(root, text="Read Me !", command=display_information)
     information_button.pack(pady=5)
+
+    # Create a frame to hold the radio button
+    radio_frame = ttk.Frame(root)
+    radio_frame.pack(pady=10)
+
+    # Create a label for the radio button
+    radio_label = ttk.Label(radio_frame, text="Patient Dashboard:")
+    radio_label.grid(row=0, column=0, padx=5, pady=2, sticky='W')
+
+    # Create a variable to store the selected value (Yes or No)
+    patient_dashboard_var = StringVar(value="No")
+
+    # Create radio buttons for Yes and No
+    yes_radio = ttk.Radiobutton(radio_frame, text="Yes", variable=patient_dashboard_var, value="Yes")
+    no_radio = ttk.Radiobutton(radio_frame, text="No", variable=patient_dashboard_var, value="No")
+
+    yes_radio.grid(row=0, column=1, padx=5, pady=2, sticky='W')
+    no_radio.grid(row=0, column=2, padx=5, pady=2, sticky='W')
+
+    # Create a button to exit the application
+    # exit_button = ttk.Button(root, text="Exit", command=get_selected_items)
+    # exit_button.pack(pady=10)
 
     # Center the window on the screen
     root.update_idletasks()
@@ -227,8 +264,9 @@ for ID in client_list:
         wb.save(report_folder + "\\" + workbook_title)
         driver.quit()
     elif run_config == "New":
+        print("sdfgdfgdf = "+PatientDashboardFlag)
         with open("assets\\hcc_data.pkl", 'wb') as hcc_file:
-            pickle.dump([ID, provider_count, measurement_year, Selected_checklist], hcc_file)
+            pickle.dump([ID, provider_count, measurement_year, Selected_checklist, PatientDashboardFlag], hcc_file)
         with open("HCC_v28.py") as hcc_code:
             exec(hcc_code.read())
         #import HCC_v28

@@ -3,6 +3,7 @@
 
 #xpaths
 import openpyxl
+from datetime import date, datetime, time
 
 xpath_filter_measure_list = "//a[@data-target='qt-reg-nav-filters']"
 xpath_switch_back = '//*[@id="nav"]/div/ul/li[2]/a'
@@ -52,42 +53,45 @@ xpath_had_er_visit="//li[@id='had_er_visit_tab']"
 xpath_skip_button="//button[@value='Skip']"
 xpath_submit_button = "//*[@data-badge-caption='Submit' and contains(@style,'float: left !important; padding: 0 10px !important;')]"
 xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
+xpath_careops2 = "//*[@class='col right_border child firstelem tooltipped']//span[1]"
 xpath_coding_tool_kebab = "//a[@class='action_list_dropdown not_disable']"
 xpath_audit_log_download = "//a[@onclick='return download_audit_log();']"
 xpath_annotation_tab = "//a[@class='chart_notes_tab tab_on_demand']"
-xpath_medication_chart_icon = "//div[@class='med_adherence_chart']"
+xpath_medication_chart_icon = "//div[@class='med_adherence_chart medical_adherence_contain relative_elem']"
 
 #css_selectors
 
 #ids
 
 def fetch_free_chrome_profile():
-    file_location = "assets/profile_info.xlsx"
+    file_location = "assets/chrome_profile_info.xlsx"
     chrome_profiles = openpyxl.load_workbook(file_location)
     chrome_profiles_sheet = chrome_profiles.active
     chrome_profile_available = False
+    chrome_profile = None
     #Look for a row with an Available Chromeprofile name, Change it to In use and return the name
     for profile_index in range(1, 11):
-        if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available":
+        days_since = (date.today() - chrome_profiles_sheet.cell(row=profile_index,column=4).value.date()).days
+        #print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
+        if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available" and days_since <= 30:
             chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
             chrome_profile_available = True
             chrome_profile = str(chrome_profiles_sheet.cell(row=profile_index, column=2).value).strip()
-            chrome_profiles.save("assets/profile_info.xlsx")
+            chrome_profiles.save("assets/chrome_profile_info.xlsx")
             break
         else:
             chrome_profile_available = False
             chrome_profile = None
 
-    if chrome_profile_available:
-        return chrome_profile
-    else:
-        return chrome_profile
+
+    return chrome_profile
 
 #misc
 free_chrome_profile = fetch_free_chrome_profile()
 if free_chrome_profile is None:
-    print("All chromeprofiles in use.")
-    exit(4)
+    print("All ChromeProfiles in use.")
+    free_chrome_profile = str(free_chrome_profile)
+    #exit(4)
 file = open(r"assets\loginInfo.txt", "r+")
 chrome_profile_path = "user-data-dir=C:\\Users\\"+file.readlines()[2].strip()+"\\AppData\\Local\\Google\\Chrome\\User Data\\"+free_chrome_profile
 file.seek(0)

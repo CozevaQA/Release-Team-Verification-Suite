@@ -210,7 +210,7 @@ def master_gui():
     chrome_profile_frame = Frame(root, background="white")
     Label(chrome_profile_frame, text="Chrome Profile Status", background="white", font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
 
-    GUI_workbook = openpyxl.load_workbook('assets/profile_info.xlsx')
+    GUI_workbook = openpyxl.load_workbook('assets/chrome_profile_info.xlsx')
     GUI_sheet = GUI_workbook.active
 
     chrome_profile_info = []
@@ -253,7 +253,7 @@ except Exception as e:
     traceback.print_exc()
 finally:
     os.chdir(code_directory)
-    file_location = "assets/profile_info.xlsx"
+    file_location = "assets/chrome_profile_info.xlsx"
     chrome_profiles = openpyxl.load_workbook(file_location)
     chrome_profiles_sheet = chrome_profiles.active
     chrome_profile_available = False
@@ -263,7 +263,7 @@ finally:
             chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'Available'
             break
 
-    chrome_profiles.save("assets/profile_info.xlsx")
+    chrome_profiles.save("assets/chrome_profile_info.xlsx")
 
 
 

@@ -51,6 +51,13 @@ def ajax_preloader_wait(driver):
 
     time.sleep(1)
 
+    if check_exists_by_xpath(driver, "//*[@id='announcement_list']"):
+        time.sleep(1)
+        try:
+            driver.find_element(By.XPATH, "//a[@OnClick='closeAnnouncements();']").click()
+        except Exception as e:
+            print("Announcement not present")
+
 
 def ajax_preloader_wait2(driver):
     wait_time = 300
