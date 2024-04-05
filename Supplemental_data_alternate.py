@@ -48,7 +48,7 @@ wait_time = 60
     1 = Multiple codes per entry (KED)
     2 = Multiple data entries needed (CIS)
     
-    measure_map = [Measure Abbr, parent measure ID, Child measure ID or NA, Value or None, measure_type)
+    measure_map = [Measure Abbr, parent measure ID, Child measure ID or NA, Value or None, measure_type]
     
 '''
 

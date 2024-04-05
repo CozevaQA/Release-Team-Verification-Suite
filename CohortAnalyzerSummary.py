@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException, UnexpectedAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -97,6 +97,7 @@ class CohortAnalyzerSummary:
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
         wait_to_load(self.driver)
+        runner.remove_chat_dashboard()
         #self.driver.find_element_by_xpath(self.insert_chart_xpath).click()
         lob_outer_elements = self.driver.find_elements_by_xpath(self.lob_outer_elements_xpath)
         count_outer = len(lob_outer_elements)

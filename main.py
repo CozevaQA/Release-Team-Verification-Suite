@@ -1,5 +1,6 @@
 try:
     import variablestorage
+    print("imported VS")
 except IndexError as e:
     import FirstTimeSetup
 
@@ -13,6 +14,7 @@ guiwindow.launchgui()
 print(guiwindow.verification_specs)
 print("Enviromnent: "+guiwindow.env)
 print("Headless Mode: "+str(guiwindow.headlessmode))
+print("MY selected: "+str(guiwindow.verification_specs[5]))
 environment = guiwindow.env
 
 launchstyle= "Def"
@@ -31,7 +33,13 @@ if environment == "PROD":
     setups.login_to_cozeva(guiwindow.verification_specs[1])
 elif environment == "CERT":
     setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
+
+
 if guiwindow.verification_specs[2] == "Onshore":
+    if guiwindow.verification_specs[5].isnumeric():
+        print("Non Default MY selected, Attempting to change MY")
+        setups.change_my(guiwindow.verification_specs[5])
+
     if launchstyle == "Def":
         setups.cozeva_support(environment)
     elif launchstyle == "NC":

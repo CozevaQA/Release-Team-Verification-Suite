@@ -199,10 +199,15 @@ def master_parser_result_gui():
         Label(root, text=title).grid(row=row_counter, column=0, sticky='w')
         Label(root, text=entry).grid(row=row_counter, column=1, sticky='w')
         if query != "-":
-            query_string += query + "\n"
+            query_string += query
             query_counter += 1
+            if entry == 0:
+                query_string += " #No entries found for this section"
+            query_string += "\n"
         else:
             query_string += ""
+
+
         row_counter += 1
     querybox.insert(INSERT, query_string)
     querybox.config(height=row_counter - 1 - (row_counter - 1 - query_counter))

@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -92,6 +92,7 @@ class InpatientCost:
         wait_to_load(self.driver)
         for i in year:
             wait_to_load(self.driver)
+            runner.remove_chat_dashboard()
             selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
             if int(selected_value) != i:
 

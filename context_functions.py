@@ -53,9 +53,11 @@ def init_global_search():
 
 
 def support_menubar(driver, workbook, ws, logger, run_from):
+    current_function = "any"
     if ws is None:
         workbook.create_sheet('Support Menubar')
         ws = workbook['Support Menubar']
+        current_function = "support_menubar"
 
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
     logger.info("MenubarNavigation function started.")
@@ -74,6 +76,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
     ws.name = "Arial"
     test_case_id = 1
     main_registry_url = driver.current_url
+
 
     try:
         logger.info("Menubar navigation block started.")
@@ -112,6 +115,85 @@ def support_menubar(driver, workbook, ws, logger, run_from):
             test_case_id += 1
             ws.append((test_case_id, '', 'Default context without error message', 'Failed'))
             logger.info("elif#2 block ended.")
+
+        main_registry_url = driver.current_url
+
+        # Checking Analytics deep link
+        if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" and current_function == "support_menubar":
+            window_switched = 0
+            try:
+                driver.find_element(By.ID, "reg-qwb-trigger").click()
+                time.sleep(1)
+                #switch to the new tab
+                driver.switch_to.window(driver.window_handles[1])
+                window_switched = 1
+                time.sleep(1)
+                if len(driver.find_elements(By.CLASS_NAME, "sm_chart_filter_wrapper")) != 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, context_name, 'Analytics Deep Link', 'Passed', 'x', 'Link is clickable'))
+
+                    WebDriverWait(driver, 100).until(EC.invisibility_of_element_located(
+                        (By.XPATH, "// div[@class ='sm_download_cssload_loader']")))
+                    WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.XPATH, "//a[@id='sm_back']")))
+                    if len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
+                        test_case_id += 1
+                        ws.append((test_case_id, 'context_name', 'Analytics Deep Link', 'Failed', 'x', 'No data for the selected filters', driver.current_url))
+
+
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+
+                driver.get(main_registry_url)
+                sf.ajax_preloader_wait(driver)
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+                # WebDriverWait(driver, 30).until(
+                #    EC.presence_of_element_located((By.ID, "rel_chart")))
+                # WebDriverWait(driver, 30).until(
+                #     EC.element_to_be_clickable((By.ID, "rel_chart")))
+
+
+
+            except (ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException) as e:
+                print(e)
+                traceback.print_exc()
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'Analytics Deep Link', 'Failed', 'x', 'Link not clickable'))
+                if window_switched == 1:
+                    driver.close()
+                    driver.switch_to.window(driver.window_handles[0])
+                driver.get(main_registry_url)
+                window_switched = 0
+
+
+        # Checking Rel chart
+        try:
+            #sf.action_click(driver.find_element(By.ID, 'rel_chart'), driver)
+            #driver.find_element(By.ID, 'rel_chart').click()
+            driver.find_element(By.XPATH, '//*[@id="rel-chart"]').click()
+            time.sleep(1)
+        except (ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException) as e:
+            print(e)
+            traceback.print_exc()
+            test_case_id += 1
+            ws.append((test_case_id, context_name, 'REL Chart', 'Failed', 'x', 'Chart not clickable'))
+
+        if len(driver.find_elements(By.XPATH, locator.xpath_rel_chart)) > 0:
+            if "No data found" in driver.find_element(By.XPATH, locator.xpath_rel_chart).text:
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'REL Chart', 'Failed', 'x', 'No data found'))
+            else:
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'REL Chart', 'Passed', 'x', 'Chart is Clickable'))
+
+            driver.find_element(By.CLASS_NAME, "rel-chart-close").click()
+        else:
+            test_case_id += 1
+            ws.append((test_case_id, context_name, 'REL Chart', 'Failed', 'x', 'Chart not clickable'))
+
+        driver.get(main_registry_url)
 
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
@@ -319,6 +401,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         traceback.print_exc()
         test_case_id += 1
         ws.append((test_case_id, "", 'Menubar Navigation', 'Failed', driver.current_url))
+
 
     rows = ws.max_row
     cols = ws.max_column
@@ -704,12 +787,20 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Failed', 'x', "PCP Name is NA", driver.current_url))
+                    elif Pcp_Name == "NO PCP":
+                        test_case_id += 1
+                        ws.append((test_case_id, patient_id, 'PCP Name',
+                                   'Passed', 'x', "PCP Name is No PCP", driver.current_url))
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Passed', 'x', Pcp_Name))
 
-                    if Pcp_hover == "N/A, N/A, No Practice":
+                    if Pcp_hover == "N/A, N/A, No Practice" or Pcp_hover == "N/A, N/A, N/A" and Pcp_Name == "NO PCP":
+                        test_case_id += 1
+                        ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
+                                   'Passed', 'x', "No region panel attribution since its no PCP", driver.current_url))
+                    elif Pcp_hover == "N/A, N/A, No Practice" or Pcp_hover == "N/A, N/A, No PRACTICE":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Failed', 'x', "PCP does not have Region/Panel Attribution", driver.current_url))
@@ -973,6 +1064,218 @@ def provider_registry(driver, workbook, logger, run_from):
 
     # Store registry url for back navigation
     registry_url = driver.current_url
+
+    try:
+        current_url = driver.current_url
+        driver.find_element_by_xpath(locator.xpath_resources_link).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "help_menu_options")))
+        time.sleep(1)
+
+        help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+        for list_index in range(len(help_menu_elements)):
+            if list_index > 0:
+                driver.find_element_by_xpath(locator.xpath_resources_link).click()
+                print("Clicked on Resources Dropdown")
+                time.sleep(1)
+                help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+
+            print("List Index = "+str(list_index))
+            element = help_menu_elements[list_index]
+            time.sleep(0.5)
+            print("Menu item = "+element.find_element(By.TAG_NAME, "dt").text)
+
+
+            if element.find_element(By.TAG_NAME, "dt").text == "Resources":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+                # Clicking on this link will redirect the user to another page. Write validation for this.
+                if len(driver.find_elements(By.XPATH, locator.xpath_resources_page_prac_sup)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Passed', driver.current_url))
+                    print("Resources page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Failed', driver.current_url))
+                    print("Resources page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Projects":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if "https://projects.cozeva.com/" in driver.current_url:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Passed', driver.current_url))
+                    print("Projects page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Failed', driver.current_url))
+                    print("Projects page failed to open")
+
+                #validate the following element is also present and matching
+                '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
+                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
+                    print("Phone number found")
+                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
+                    print("Phone number not found")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Help Center":
+                # check if an element with this ID exists and output on console, _elev_io
+                element.click()
+                time.sleep(1)
+                try:
+                    driver.find_element(By.CLASS_NAME, "_elevio_articlelink").click()
+                    print("Article clicked")
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Passed', driver.current_url))
+                    time.sleep(1)
+                    driver.find_element(By.CLASS_NAME, "_elevio_close").click()
+                    time.sleep(1)
+                except NoSuchElementException as e:
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Failed', driver.current_url))
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Video Library":
+                element.click()
+                time.sleep(1)
+                if "cozevavideolibrary" in driver.current_url:
+                    print("URL valid")
+                    # WebDriverWait(driver, 30).until(
+                    #    EC.presence_of_element_located((By.XPATH, "//html[@lang='en']")))
+                    video_elements = driver.find_elements(By.TAG_NAME, "tr")
+                    print("Number of videos = " + str(len(video_elements)))
+                    # for video_element in video_elements:
+                    #     print(video_element.get_attribute("outerHTML"))
+                    #     #add a new line
+                    #     print("-------------------------------------------------------")
+                    if len(video_elements) > 1:
+                        test_case_id += 1
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Passed', driver.current_url))
+                        print("Video Library page opened successfully")
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+                        print("No videos present on Video Library page")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+                    print("Video Library page failed to open")
+
+                #works the same way as Projects. Check if the page is opened and the phone number is present
+            elif element.find_element(By.TAG_NAME, "dt").text == "Live Training":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//span[@aria-label='Share Event Link']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Passed', driver.current_url))
+                    print("Live Training page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Failed', driver.current_url))
+                    print("Live Training page failed to open")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Support Tickets":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info))>0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Passed', driver.current_url))
+                    print("Support Tickets page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Failed', driver.current_url))
+                    print("Support Tickets page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
+                element.click()
+                time.sleep(1)
+
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
+                    print("Support Activity Modal opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Failed', driver.current_url))
+                    print("Support Activity Modal failed to open")
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "View Feedback Submission":
+                element.click()
+                time.sleep(1)
+
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Passed', driver.current_url))
+                    print("User Feedback page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Failed', driver.current_url))
+                    print("User Feedback page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "CozevaConnect (EHR Integration)":
+                element.click()
+                time.sleep(1)
+
+                #opens a new tab
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//div[@class='case_management materialize_enabled']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Passed', driver.current_url))
+                    print("CozevaConnect page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Failed', driver.current_url))
+                    print("CozevaConnect page failed to open")
+
+                #switch back to old tab
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+            driver.get(current_url)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+
+        test_case_id += 1
+        ws.append((test_case_id, "", 'Help Menu Dropdown', 'Failed', driver.current_url))
+        driver.get(current_url)
+        sf.ajax_preloader_wait(driver)
 
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
@@ -1293,6 +1596,250 @@ def practice_registry(driver, workbook, logger, run_from):
         return
     context_name = "Couldn't Fetch"
     registry_url = driver.current_url
+
+    try:
+        current_url = driver.current_url
+        driver.find_element_by_xpath(locator.xpath_resources_link).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "help_menu_options")))
+        time.sleep(1)
+
+        help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+        for list_index in range(len(help_menu_elements)):
+            if list_index > 0:
+                driver.find_element_by_xpath(locator.xpath_resources_link).click()
+                print("Clicked on Resources Dropdown")
+                time.sleep(1)
+                help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+
+            print("List Index = "+str(list_index))
+            element = help_menu_elements[list_index]
+            time.sleep(0.5)
+            print("Menu item = "+element.find_element(By.TAG_NAME, "dt").text)
+
+
+            if element.find_element(By.TAG_NAME, "dt").text == "Resources":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+                # Clicking on this link will redirect the user to another page. Write validation for this.
+                if len(driver.find_elements(By.XPATH, locator.xpath_resources_page_prac_sup)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Passed', driver.current_url))
+                    print("Resources page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Failed', driver.current_url))
+                    print("Resources page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Projects":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if "https://projects.cozeva.com/" in driver.current_url:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Passed', driver.current_url))
+                    print("Projects page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Failed', driver.current_url))
+                    print("Projects page failed to open")
+
+                #validate the following element is also present and matching
+                '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
+                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
+                    print("Phone number found")
+                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
+                    print("Phone number not found")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Help Center":
+                # check if an element with this ID exists and output on console, _elev_io
+                element.click()
+                time.sleep(1)
+                try:
+                    driver.find_element(By.CLASS_NAME, "_elevio_articlelink").click()
+                    print("Article clicked")
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Passed', driver.current_url))
+                    time.sleep(1)
+                    driver.find_element(By.CLASS_NAME, "_elevio_close").click()
+                    time.sleep(1)
+                except NoSuchElementException as e:
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Failed', driver.current_url))
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+
+
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Video Library":
+
+                element.click()
+
+                time.sleep(1)
+
+                if "cozevavideolibrary" in driver.current_url:
+
+                    print("URL valid")
+
+                    # WebDriverWait(driver, 30).until(
+
+                    #    EC.presence_of_element_located((By.XPATH, "//html[@lang='en']")))
+
+                    video_elements = driver.find_elements(By.TAG_NAME, "tr")
+
+                    print("Number of videos = " + str(len(video_elements)))
+
+                    # for video_element in video_elements:
+
+                    #     print(video_element.get_attribute("outerHTML"))
+
+                    #     #add a new line
+
+                    #     print("-------------------------------------------------------")
+
+                    if len(video_elements) > 1:
+
+                        test_case_id += 1
+
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Passed', driver.current_url))
+
+                        print("Video Library page opened successfully")
+
+                    else:
+
+                        test_case_id += 1
+
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+
+                        print("No videos present on Video Library page")
+
+                else:
+
+                    test_case_id += 1
+
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+
+                    print("Video Library page failed to open")
+
+
+
+
+                #works the same way as Projects. Check if the page is opened and the phone number is present
+            elif element.find_element(By.TAG_NAME, "dt").text == "Live Training":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//span[@aria-label='Share Event Link']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Passed', driver.current_url))
+                    print("Live Training page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Failed', driver.current_url))
+                    print("Live Training page failed to open")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Support Tickets":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info))>0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Passed', driver.current_url))
+                    print("Support Tickets page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Failed', driver.current_url))
+                    print("Support Tickets page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
+                element.click()
+                time.sleep(1)
+
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
+                    print("Support Activity Modal opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Failed', driver.current_url))
+                    print("Support Activity Modal failed to open")
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "View Feedback Submission":
+                element.click()
+                time.sleep(1)
+
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Passed', driver.current_url))
+                    print("User Feedback page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Failed', driver.current_url))
+                    print("User Feedback page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "CozevaConnect (EHR Integration)":
+                element.click()
+                time.sleep(1)
+
+                #opens a new tab
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//div[@class='case_management materialize_enabled']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Passed', driver.current_url))
+                    print("CozevaConnect page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Failed', driver.current_url))
+                    print("CozevaConnect page failed to open")
+
+                #switch back to old tab
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+            driver.get(current_url)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+
+        test_case_id += 1
+        ws.append((test_case_id, "", 'Help Menu Dropdown', 'Failed', driver.current_url))
+        driver.get(current_url)
+        sf.ajax_preloader_wait(driver)
+
     # Nav check one : Navigation to provider registry through MSPL of a practice
     try:
         # selecting a random non zero metric from the registry
@@ -1605,6 +2152,228 @@ def support_level(driver, workbook, logger, run_from):
     test_case_id = 1
 
     registry_url = driver.current_url
+
+    try:
+        current_url = driver.current_url
+        driver.find_element_by_xpath(locator.xpath_resources_link).click()
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, "help_menu_options")))
+        time.sleep(1)
+
+        help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+        for list_index in range(len(help_menu_elements)):
+            if list_index > 0:
+                driver.find_element_by_xpath(locator.xpath_resources_link).click()
+                print("Clicked on Resources Dropdown")
+                time.sleep(1)
+                help_menu_elements = driver.find_element_by_id("help_menu_options").find_elements_by_tag_name("li")
+
+            print("List Index = "+str(list_index))
+            element = help_menu_elements[list_index]
+            time.sleep(0.5)
+            print("Menu item = "+element.find_element(By.TAG_NAME, "dt").text)
+
+
+            if element.find_element(By.TAG_NAME, "dt").text == "Resources":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+                # Clicking on this link will redirect the user to another page. Write validation for this.
+                if len(driver.find_elements(By.XPATH, locator.xpath_resources_page_prac_sup)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Passed', driver.current_url))
+                    print("Resources page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Resources Page', 'Failed', driver.current_url))
+                    print("Resources page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Projects":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if "https://projects.cozeva.com/" in driver.current_url:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Passed', driver.current_url))
+                    print("Projects page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Projects page', 'Failed', driver.current_url))
+                    print("Projects page failed to open")
+
+                #validate the following element is also present and matching
+                '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
+                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
+                    print("Phone number found")
+                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
+                    print("Phone number not found")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Help Center":
+                # check if an element with this ID exists and output on console, _elev_io
+                element.click()
+                time.sleep(1)
+                try:
+                    driver.find_element(By.CLASS_NAME, "_elevio_articlelink").click()
+                    print("Article clicked")
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Passed', driver.current_url))
+                    time.sleep(1)
+                    driver.find_element(By.CLASS_NAME, "_elevio_close").click()
+                    time.sleep(1)
+                except NoSuchElementException as e:
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Help Center', 'Failed', driver.current_url))
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Video Library":
+                element.click()
+                time.sleep(1)
+
+                if "cozevavideolibrary" in driver.current_url:
+                    print("URL valid")
+                    # WebDriverWait(driver, 30).until(
+                    #    EC.presence_of_element_located((By.XPATH, "//html[@lang='en']")))
+                    video_elements = driver.find_elements(By.TAG_NAME, "tr")
+                    print("Number of videos = "+str(len(video_elements)))
+                    # for video_element in video_elements:
+                    #     print(video_element.get_attribute("outerHTML"))
+                    #     #add a new line
+                    #     print("-------------------------------------------------------")
+
+                    if len(video_elements) > 1:
+                        test_case_id += 1
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Passed', driver.current_url))
+                        print("Video Library page opened successfully")
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+                        print("No videos present on Video Library page")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Video Library', 'Failed', driver.current_url))
+                    print("Video Library page failed to open")
+
+
+
+
+                #works the same way as Projects. Check if the page is opened and the phone number is present
+            elif element.find_element(By.TAG_NAME, "dt").text == "Live Training":
+                element.click()
+                time.sleep(1)
+                # this page opens a new tab. Switch to it and validate the link is https://projects.cozeva.com
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//span[@aria-label='Share Event Link']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Passed', driver.current_url))
+                    print("Live Training page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Live Training page', 'Failed', driver.current_url))
+                    print("Live Training page failed to open")
+
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Support Tickets":
+                element.click()
+                time.sleep(1)
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info))>0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Passed', driver.current_url))
+                    print("Support Tickets page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Support Tickets', 'Failed', driver.current_url))
+                    print("Support Tickets page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
+                element.click()
+                time.sleep(1)
+
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
+                    print("Support Activity Modal opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Failed', driver.current_url))
+                    print("Support Activity Modal failed to open")
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "View Feedback Submission":
+                element.click()
+                time.sleep(1)
+
+                sf.ajax_preloader_wait(driver)
+
+                if len(driver.find_elements(By.XPATH, locator.xpath_data_Table_Info)) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Passed', driver.current_url))
+                    print("User Feedback page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'User Feedback', 'Failed', driver.current_url))
+                    print("User Feedback page failed to open")
+
+
+            elif element.find_element(By.TAG_NAME, "dt").text == "CozevaConnect (EHR Integration)":
+                element.click()
+                time.sleep(1)
+
+                #opens a new tab
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(1)
+                if len(driver.find_elements(By.XPATH, "//div[@class='case_management materialize_enabled']")) > 0:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Passed', driver.current_url))
+                    print("CozevaConnect page opened successfully")
+                else:
+                    test_case_id += 1
+                    ws.append((test_case_id, 'Help Menu Dropdown', 'CozevaConnect', 'Failed', driver.current_url))
+                    print("CozevaConnect page failed to open")
+
+                #switch back to old tab
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                sf.ajax_preloader_wait(driver)
+
+
+
+            driver.get(current_url)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+
+        test_case_id += 1
+        ws.append((test_case_id, "", 'Help Menu Dropdown', 'Failed', driver.current_url))
+        driver.get(current_url)
+        sf.ajax_preloader_wait(driver)
+
+
     # Selecting tabs from Support MSPL
     context_name = "Couldn't Fetch"
     try:
@@ -3574,9 +4343,10 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                             overall_rating = overall_rating.replace("Stars","").strip()
                         if 'stars' in overall_rating:
                             overall_rating = overall_rating.replace("stars","").strip()
-                    if div.text == "Patients":
+                    if "Patients" in div.text:
                         patient_count = next_div.text.replace(",","").strip()
                 print(overall_rating)
+                print(patient_count)
                 if float(overall_rating)<1:
                     ws_counts.append([currentLOBName, "Overall Rating", overall_rating, "Failed", "Rating is 0", driver.current_url])
                 else:
@@ -3620,7 +4390,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                 try:
 
                     time.sleep(1)
-                    driver.find_element_by_xpath("//*[@id='metric_scorecard']/div/div[1]/div/span/a[3]").click()
+                    driver.find_element_by_xpath(locator.xpath_filter_measure_list).click()
                     time.sleep(2)
                     driver.find_element_by_xpath("//*[@id='qt-reg-nav-filters']/li[1]/label").click()
                     time.sleep(2)

@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException, StaleElementReferenceException, UnexpectedAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -100,9 +100,14 @@ class QualityOverview:
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
         wait_to_load(self.driver)
+        #remove banner announcement
+
         for i in year:
             wait_to_load(self.driver)
+            runner.remove_chat_dashboard()
             selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
+            #print selected value
+
             if int(selected_value) != i:
 
                 service_year = self.driver.find_element_by_xpath(self.service_year_xpath)
@@ -157,8 +162,8 @@ class QualityOverview:
                 # print(st)
                 lob_selector_b=self.driver.find_element_by_xpath(lob_selector)
                 self.driver.execute_script("arguments[0].click();", lob_selector_b)
-                #self.driver.find_element_by_xpath(lob_selector).click()
                 apply_filter=self.driver.find_element_by_xpath(self.apply_filter_xpath)
+                self.action_click(apply_filter)
                 self.action_click(apply_filter)
                 # essential wait for loading page
                 wait_to_load(self.driver)

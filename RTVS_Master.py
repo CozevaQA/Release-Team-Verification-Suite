@@ -1,3 +1,6 @@
+
+# add other versioning info as print statements. This will help in debugging and version control.
+# This is the main file for the RTVS application. This file will be the main file to be run for the application to start.
 from datetime import date, datetime, time, timedelta
 import multiprocessing
 import time
@@ -5,12 +8,14 @@ import os
 import traceback
 from tkinter import *
 from threading import Timer
+import pickle
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from openpyxl import Workbook
+from msedge.selenium_tools import Edge, EdgeOptions
 
 import ExcelProcessor as db
 import openpyxl
@@ -18,6 +23,7 @@ from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
 import os
+
 
 # Yes, this is a convoluted way to maintain login info but im lazy and this is necessary
 def check_and_create_login_file(file_path):
@@ -28,6 +34,7 @@ def check_and_create_login_file(file_path):
                 file.write(' ')
         except IOError:
             print("Login file exists")
+
 
 def check_and_create_profile_info_file(file_path):
     if not os.path.exists(file_path):
@@ -50,10 +57,47 @@ def check_and_create_profile_info_file(file_path):
         # Save the workbook to the specified path
         profile_info_workbook.save(file_path)
 
+
+def check_and_create_edge_profile_info_file(file_path):
+    if not os.path.exists(file_path):
+        profile_info_workbook = Workbook()
+        # Create a default sheet
+        profile_info_sheet = profile_info_workbook.active
+        profile_info_sheet.title = "Profile Info"
+        profile_info_sheet_content = [["1", "UserTestProfile1", "Available", datetime(2020, 1, 1)],
+                                      ["2", "UserTestProfile2", "Available", datetime(2020, 1, 1)],
+                                      ["3", "UserTestProfile3", "Available", datetime(2020, 1, 1)],
+                                      ["4", "UserTestProfile4", "Available", datetime(2020, 1, 1)],
+                                      ["5", "UserTestProfile5", "Available", datetime(2020, 1, 1)],
+                                      ["6", "UserTestProfile6", "Available", datetime(2020, 1, 1)],
+                                      ["7", "UserTestProfile7", "Available", datetime(2020, 1, 1)],
+                                      ["8", "UserTestProfile8", "Available", datetime(2020, 1, 1)],
+                                      ["9", "UserTestProfile9", "Available", datetime(2020, 1, 1)],
+                                      ["10", "UserTestProfile10", "Available", datetime(2020, 1, 1)]]
+        for profile_row_data in profile_info_sheet_content:
+            profile_info_sheet.append(profile_row_data)
+        # Save the workbook to the specified path
+        profile_info_workbook.save(file_path)
+
+def check_and_create_driver_choice_pkl(file_path):
+    if not os.path.exists(file_path):
+        # with open("assets/driver_choice.pkl", "wb") as driver_choice_file:
+        #     pickle.dump("CHROME", driver_choice_file)
+        with open("assets/driver_choice.txt", 'a') as driver_choice_file:
+            driver_choice_file.seek(0)
+            driver_choice_file.truncate()
+            driver_choice_file.write("CHROME")
+        print("Changed to Chrome 1")
+        driver_choice_file.close()
+
+
+
+
 # Usage
 check_and_create_login_file('assets\loginInfo.txt')
 check_and_create_profile_info_file('assets/chrome_profile_info.xlsx')
-
+check_and_create_edge_profile_info_file('assets/edge_profile_info.xlsx')
+check_and_create_driver_choice_pkl('assets/driver_choice.txt')
 # This snippet will check if the logininfo file is empty. If it is, it will run first time setup
 # then it will import the locator library
 file = open(r"assets\loginInfo.txt", "r+")
@@ -71,6 +115,14 @@ client_list = []
 
 def rtvsmaster():
     # Store the directory the codebase is in for future calls
+    # with open("assets/driver_choice.pkl", "wb") as driver_choice_file:
+    #     pickle.dump("CHROME", driver_choice_file)
+    with open("assets/driver_choice.txt", 'a') as driver_choice_file:
+        driver_choice_file.seek(0)
+        driver_choice_file.truncate()
+        driver_choice_file.write("CHROME")
+    print("Changed to Chrome 2")
+    driver_choice_file.close()
     code_directory = os.getcwd()
     try:
         root = Tk()
@@ -81,7 +133,8 @@ def rtvsmaster():
                         padding=15, highlightthickness=0, height=1, width=25)
         style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32',
                         highlightthickness=0)
-        style.configure('ChromeProfiles.TButton', font=('Helvetica', 8, 'bold'), foreground='Black', background='#b33d25',
+        style.configure('ChromeProfiles.TButton', font=('Helvetica', 8, 'bold'), foreground='Black',
+                        background='#b33d25',
                         highlightthickness=0)
 
         # style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
@@ -97,6 +150,7 @@ def rtvsmaster():
         verification_suite_image = ImageTk.PhotoImage(image_sizer("assets/images/verification_suite.png"))
         hcc_validation_image = ImageTk.PhotoImage(image_sizer("assets/images/hcc_validation.png"))
         global_search_image = ImageTk.PhotoImage(image_sizer("assets/images/global_search.png"))
+        filter_validation_image = ImageTk.PhotoImage(image_sizer("assets/images/filter_validation_icon.png"))
         task_ingestion_image = ImageTk.PhotoImage(image_sizer("assets/images/task_ingestion.png"))
         analytics_image = ImageTk.PhotoImage(image_sizer("assets/images/analytics.png"))
         slow_log_image = ImageTk.PhotoImage(image_sizer("assets/images/slow_log_trends.png"))
@@ -111,6 +165,8 @@ def rtvsmaster():
         green_dot_image = ImageTk.PhotoImage(Image.open("assets/images/GreenDot.png").resize((10, 10)))
         red_dot_image = ImageTk.PhotoImage(Image.open("assets/images/RedDot.png").resize((10, 10)))
         orange_dot_image = ImageTk.PhotoImage(Image.open("assets/images/OrangeDot.png").resize((10, 10)))
+        chrome_logo_image = ImageTk.PhotoImage(Image.open("assets/images/chrome_logo.png").resize((15, 15)))
+        edge_logo_image = ImageTk.PhotoImage(Image.open("assets/images/edge_logo.png").resize((15, 15)))
 
         # Widgets+
 
@@ -133,10 +189,12 @@ def rtvsmaster():
             import FirstTimeSetup
 
         def on_verification_suite():
+            flush_unused_driver()
             root.destroy()
             import main
 
         def on_hcc_validation():
+            flush_unused_driver()
             root.destroy()
             import HCC_Validation_multi
 
@@ -144,11 +202,18 @@ def rtvsmaster():
             root.destroy()
             import global_search
 
+        def on_filter_validaton():
+            flush_unused_driver()
+            root.destroy()
+            import filter_handler_cozeva
+
         def on_task_ingestion():
+            flush_unused_driver()
             root.destroy()
             import ProspectInjestHCC
 
         def on_analytics():
+            flush_unused_driver()
             root.destroy()
             import runner
 
@@ -160,32 +225,51 @@ def rtvsmaster():
             root.destroy()
 
         def on_special_columns():
+            flush_unused_driver()
             root.destroy()
             import special_columns
 
         def on_hospital_activity():
+            flush_unused_driver()
             root.destroy()
             import Hospital_Activity
 
         def on_supp_data():
             root.destroy()
             # import Supplemental_data_alternate
-            #import secret_menu
+            # import secret_menu
             import xml_parser
 
         def on_submitbutton():
+            flush_unused_driver()
             global multi
             multi = 1
             for checkbox_index in range(0, len(customer_list)):
                 if Checkbox_variables[checkbox_index].get() == 1:
                     client_list.append(db.fetchCustomerID(customer_list[checkbox_index]))
 
+            override_choice = offshore_override_var.get()
             print(client_list)
+            with open("assets/offshore_override.pkl", "wb") as override_file:
+                pickle.dump(override_choice, override_file)
+            if override_choice == 1:
+                print("Validating Offshore clients with CS2 only")
+            else:
+                print("Validating Offshore clients as usual")
+
+            my_choice = overwatch_my_var.get()
+            with open("assets/overwatch_my.pkl", "wb") as my_file:
+                pickle.dump(my_choice, my_file)
+
+            analytics_choice = overwatch_analytics_choice_var.get()
+            with open("assets/overwatch_analytics_choice.pkl", "wb") as analytics_file:
+                pickle.dump(analytics_choice, analytics_file)
+
+
 
             root_overwatch.destroy()
             root.destroy()
             # import secret_menu
-
 
         def on_pdf_print():
             root.destroy()
@@ -232,7 +316,8 @@ def rtvsmaster():
         button_widgets.append(ttk.Button(root, text="HCC Validation Multi-Client", command=on_hcc_validation,
                                          image=hcc_validation_image, compound="left", style='My.TButton'))
         button_widgets.append(
-            ttk.Button(root, text="Global Search", command=on_global_search, image=global_search_image, compound="left",
+            ttk.Button(root, text="Filter Validation", command=on_filter_validaton, image=filter_validation_image,
+                       compound="left",
                        style='My.TButton'))
         button_widgets.append(ttk.Button(root, text="Task Ingestion(AWV)", command=on_task_ingestion,
                                          image=task_ingestion_image, compound="left", style='My.TButton'))
@@ -278,183 +363,441 @@ def rtvsmaster():
         help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
         update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
 
-        # Chromeprofile multi threading
+        def chrome_profile_thread_info(state):
+            chrome_profile_frame = Frame(root, background="white")
+            if state == "SET":
+                # Chromeprofile multi threading
 
-        chrome_profile_frame = Frame(root, background="white")
-        Label(chrome_profile_frame, text="Chrome Profile Status", background="white",
-              font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
+                Label(chrome_profile_frame, text="Chrome Profile Status", background="white",
+                      font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
 
-        GUI_workbook = openpyxl.load_workbook('assets/chrome_profile_info.xlsx')
-        GUI_sheet = GUI_workbook.active
+                GUI_workbook = openpyxl.load_workbook('assets/chrome_profile_info.xlsx')
+                GUI_sheet = GUI_workbook.active
 
-        chrome_profile_info = []
+                chrome_profile_info = []
 
-        for row in GUI_sheet.iter_rows():
-            row_data = []
-            for cell in row:
-                row_data.append(cell.value)
-            chrome_profile_info.append(row_data)
-        row_counter = 1
-        profile_name_button_list = []
-        for profile_row in chrome_profile_info:
-            expired_profile_for_command = profile_row[1]
-            profile_name_button_list.append(ttk.Button(chrome_profile_frame, text=expired_profile_for_command,
-                                                       command=lambda
-                                                           profile=expired_profile_for_command: on_expired_profile(
-                                                           profile),
-                                                       style='ChromeProfiles.TButton'))
-        for profile_row in chrome_profile_info:
+                for row in GUI_sheet.iter_rows():
+                    row_data = []
+                    for cell in row:
+                        row_data.append(cell.value)
+                    chrome_profile_info.append(row_data)
+                row_counter = 1
+                profile_name_button_list = []
+                for profile_row in chrome_profile_info:
+                    expired_profile_for_command = profile_row[1]
+                    profile_name_button_list.append(ttk.Button(chrome_profile_frame, text=expired_profile_for_command,
+                                                               command=lambda
+                                                                   profile=expired_profile_for_command: on_expired_profile(
+                                                                   profile),
+                                                               style='ChromeProfiles.TButton'))
+                for profile_row in chrome_profile_info:
 
-            otp_date = profile_row[3]
-            date_diff = (date.today() - otp_date.date()).days
+                    otp_date = profile_row[3]
+                    date_diff = (date.today() - otp_date.date()).days
 
-            profile_name_label = Label(chrome_profile_frame, text=profile_row[1], background="white",
-                                       font=("Times New Roman", 10))
-            if date_diff > 30:
-                profile_name_button_list[row_counter-1].grid(row=row_counter, column=0)
-            else:
-                profile_name_label.grid(row=row_counter, column=0)
-            profile_status_label = Label(chrome_profile_frame, text=profile_row[2], background="white",
-                                         image=green_dot_image, compound="left", font=("Times New Roman", 10))
-            profile_status_label.grid(row=row_counter, column=1, sticky="w", padx=10)
-            row_counter += 1
+                    profile_name_label = Label(chrome_profile_frame, text=profile_row[1], background="white",
+                                               font=("Times New Roman", 10))
+                    if date_diff > 29:
+                        profile_name_button_list[row_counter - 1].grid(row=row_counter, column=0)
+                    else:
+                        profile_name_label.grid(row=row_counter, column=0)
+                    profile_status_label = Label(chrome_profile_frame, text=profile_row[2], background="white",
+                                                 image=green_dot_image, compound="left", font=("Times New Roman", 10))
+                    profile_status_label.grid(row=row_counter, column=1, sticky="w", padx=10)
+                    row_counter += 1
+
+                    if profile_row[2] == "In Use":
+                        profile_status_label.configure(image=red_dot_image, fg="Red")
+                    if profile_row[2] == "Available":
+                        profile_status_label.configure(fg="#408022")
+                    if profile_row[1] == locator.free_chrome_profile:
+                        profile_status_label.configure(image=orange_dot_image, fg="#fc9003", text="Current")
+                    if date_diff > 29:
+                        profile_status_label.configure(image=red_dot_image, fg="Red", text="Expired!")
+                    # print(profile_row[1], date_diff)
+
+                def on_expired_profile(expired_profile):
+                    # here, take input of the profile and launch chrome with those parameters
+                    print(len(profile_name_button_list))
+                    print(profile_name_button_list[2])
+                    print(expired_profile)
+                    login_info_file = open(r"assets\loginInfo.txt", "r+")
+                    expired_chrome_profile_path = "user-data-dir=C:\\Users\\" + login_info_file.readlines()[
+                        2].strip() + "\\AppData\\Local\\Google\\Chrome\\User Data\\" + expired_profile
+                    login_info_file.seek(0)
+                    login_info_file.close()
+
+                    options = webdriver.ChromeOptions()
+                    options.add_argument("--disable-notifications")
+                    options.add_argument("--start-maximized")
+                    options.add_argument(expired_chrome_profile_path)  # Path to your chrome profile
+                    options.add_argument('--disable-gpu')
+                    # options.add_argument("--window-size=1920,1080")
+                    # options.add_argument("--start-maximized")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--dns-prefetch-disable")
+                    driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
+                    print("Chrome Driver for OTP setup with: " + expired_chrome_profile_path)
+                    driver.get(locator.logout_link)
+                    driver.get(locator.login_link)
+                    driver.maximize_window()
+                    login_info_file = open(r"assets\loginInfo.txt", "r+")
+                    details = login_info_file.readlines()
+                    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+                    # Clear and input username
+                    username_field = driver.find_element_by_id("edit-name")
+                    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+                    # Clear and input password
+                    password_field = driver.find_element_by_id("edit-pass")
+                    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
+                    login_info_file.seek(0)
+                    login_info_file.close()
+                    driver.find_element(By.ID, "edit-submit").click()
+                    time.sleep(4)
+
+                    # If OTP box appears, wait for OTP, then kill the chrome session. No changes needed.
+
+                    otpurl = driver.current_url
+                    sub_str = "/twostepAuthSettings"
+                    if otpurl.find(sub_str) != -1:
+                        # print("Need to enter OTP for login. Please paste the OTP here")
+                        # wait_time = 60
+                        # start_time = time.perf_counter()
+                        # otp = ""
+                        # while (time.perf_counter() - start_time) < wait_time:
+                        #     otp = input()
+                        #     if len(otp) > 0:
+                        #         print("OTP Recieved")
+                        # if len(otp) == 0:
+                        #     print("You did not enter an OTP!!")
+                        #     exit(999)
+
+                        timeout = 60
+                        t = Timer(timeout, print, ['You did not enter the OTP'])
+                        t.start()
+                        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+                        otp = input(prompt)
+                        t.cancel()
+
+                        driver.find_element(By.ID, "edit-twostep-code").send_keys(otp)
+                        time.sleep(1)
+
+                        driver.find_element(By.ID, "edit-twostep").click()
+
+                        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+                        driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
+                        time.sleep(0.5)
+
+                        chrome_profiles_file_location = "assets/chrome_profile_info.xlsx"
+                        chrome_profile_workbook = openpyxl.load_workbook(chrome_profiles_file_location)
+                        chrome_profiles_current_sheet = chrome_profile_workbook.active
+                        for profile_index in range(1, 11):
+                            if str(chrome_profiles_current_sheet.cell(row=profile_index,
+                                                                      column=2).value).strip() == expired_profile:
+                                chrome_profiles_current_sheet.cell(row=profile_index, column=4).value = date.today()
+                                break
+
+                        chrome_profile_workbook.save("assets/chrome_profile_info.xlsx")
+                    else:
+                        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+                        driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
+                        time.sleep(0.5)
+                        chrome_profiles_file_location = "assets/chrome_profile_info.xlsx"
+                        chrome_profile_workbook = openpyxl.load_workbook(chrome_profiles_file_location)
+                        chrome_profiles_current_sheet = chrome_profile_workbook.active
+
+                        for profile_index in range(1, 11):
+                            if str(chrome_profiles_current_sheet.cell(row=profile_index,
+                                                                      column=2).value).strip() == expired_profile:
+                                chrome_profiles_current_sheet.cell(row=profile_index,
+                                                                   column=4).value = date.today() - timedelta(days=29)
+                                break
+
+                        chrome_profile_workbook.save("assets/chrome_profile_info.xlsx")
+
+                    driver.quit()
+
+                def on_reset_chrome_profile():
+                    import clean_chrome_profiles
+
+                    reset_chrome_profile_button.configure(text="DONE!! Please Relaunch")
+                    root.update_idletasks()
+                    time.sleep(1)
+
+                def on_kill_chromedriver():
+                    import killchromedriver
+
+                    kill_chromedriver_button.configure(text="DONE!! Please Relaunch")
+                    time.sleep(1)
+
+                reset_chrome_profile_button = ttk.Button(chrome_profile_frame, text="Reset Chromeprofile Availability",
+                                                         command=on_reset_chrome_profile, style='Configs.TButton')
+                kill_chromedriver_button = ttk.Button(chrome_profile_frame, text="Kill Chromedriver Tasks",
+                                                      command=on_kill_chromedriver, style='Configs.TButton')
+
+                reset_chrome_profile_button.grid(row=11, column=0, columnspan=2)
+                kill_chromedriver_button.grid(row=12, column=0, columnspan=2)
+                chrome_profile_frame.grid(row=2, rowspan=4, column=3, sticky="NE")
+            elif state == "REMOVE":
+                #chrome_profile_frame.grid_forget()
+                chrome_profile_frame.grid_remove()
+                print("Forget Chrome")
+
+        def edge_profile_thread_info(state):
+            edge_profile_frame = Frame(root, background="white")
+            if state == "SET":
+                # edgeprofile multi threading
+
+                Label(edge_profile_frame, text="Edge Profile Status", background="white",
+                      font=("Times New Roman", 15)).grid(row=0, column=0, columnspan=2)
+
+                GUI_workbook = openpyxl.load_workbook('assets/edge_profile_info.xlsx')
+                GUI_sheet = GUI_workbook.active
+
+                edge_profile_info = []
+
+                for row in GUI_sheet.iter_rows():
+                    row_data = []
+                    for cell in row:
+                        row_data.append(cell.value)
+                    edge_profile_info.append(row_data)
+                row_counter = 1
+                profile_name_button_list = []
+                for profile_row in edge_profile_info:
+                    expired_profile_for_command = profile_row[1]
+                    profile_name_button_list.append(ttk.Button(edge_profile_frame, text=expired_profile_for_command,
+                                                               command=lambda
+                                                                   profile=expired_profile_for_command: on_expired_profile(
+                                                                   profile),
+                                                               style='ChromeProfiles.TButton'))
+                for profile_row in edge_profile_info:
+
+                    otp_date = profile_row[3]
+                    date_diff = (date.today() - otp_date.date()).days
+
+                    profile_name_label = Label(edge_profile_frame, text=profile_row[1], background="white",
+                                               font=("Times New Roman", 10))
+                    if date_diff > 29:
+                        profile_name_button_list[row_counter - 1].grid(row=row_counter, column=0)
+                    else:
+                        profile_name_label.grid(row=row_counter, column=0)
+                    profile_status_label = Label(edge_profile_frame, text=profile_row[2], background="white",
+                                                 image=green_dot_image, compound="left", font=("Times New Roman", 10))
+                    profile_status_label.grid(row=row_counter, column=1, sticky="w", padx=10)
+                    row_counter += 1
+
+                    if profile_row[2] == "In Use":
+                        profile_status_label.configure(image=red_dot_image, fg="Red")
+                    if profile_row[2] == "Available":
+                        profile_status_label.configure(fg="#408022")
+                    if profile_row[1] == locator.free_chrome_profile:
+                        profile_status_label.configure(image=orange_dot_image, fg="#fc9003", text="Current")
+                    if date_diff > 29:
+                        profile_status_label.configure(image=red_dot_image, fg="Red", text="Expired!")
+                    # print(profile_row[1], date_diff)
+
+                def on_expired_profile(expired_profile):
+                    # here, take input of the profile and launch chrome with those parameters
+                    print(len(profile_name_button_list))
+                    print(profile_name_button_list[2])
+                    print(expired_profile)
+                    login_info_file = open(r"assets\loginInfo.txt", "r+")
+                    expired_edge_profile_path = "user-data-dir=C:\\Users\\" + login_info_file.readlines()[
+                        2].strip() + "\\AppData\\Local\\Microsoft\\Edge\\User Data\\" + expired_profile
+                    login_info_file.seek(0)
+                    login_info_file.close()
+                    print("is this even working???? helloooooooooo?")
+                    print(expired_edge_profile_path)
+
+                    options = EdgeOptions()
+                    options.use_chromium = True  # Ensure we're using the Chromium-based version of Edge
+                    options.add_argument("--disable-notifications")
+                    options.add_argument("--start-maximized")
+                    options.add_argument("--"+expired_edge_profile_path)  # Path to your edge profile
+                    options.add_argument('--disable-gpu')
+                    # options.add_argument("--window-size=1920,1080")
+                    # options.add_argument("--start-maximized")
+                    options.add_argument("--no-sandbox")
+                    options.add_argument("--disable-extensions")  # Disabling extensions in Edge
+                    options.add_argument("--dns-prefetch-disable")
+                    preferences = {
+                        "download.default_directory": locator.download_dir}
+                    options.add_experimental_option("prefs", preferences)
+                    driver = Edge(executable_path=locator.edge_driver_path, options=options)
+                    print("Edge Driver for OTP setup with: "+expired_edge_profile_path)
+                    driver.get(locator.logout_link)
+                    driver.get(locator.login_link)
+                    driver.maximize_window()
+                    login_info_file = open(r"assets\loginInfo.txt", "r+")
+                    details = login_info_file.readlines()
+                    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+                    # Clear and input username
+                    username_field = driver.find_element_by_id("edit-name")
+                    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+                    # Clear and input password
+                    password_field = driver.find_element_by_id("edit-pass")
+                    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
+                    login_info_file.seek(0)
+                    login_info_file.close()
+                    driver.find_element(By.ID, "edit-submit").click()
+                    time.sleep(4)
+
+                    # If OTP box appears, wait for OTP, then kill the chrome session. No changes needed.
+
+                    otpurl = driver.current_url
+                    sub_str = "/twostepAuthSettings"
+                    if otpurl.find(sub_str) != -1:
+                        # print("Need to enter OTP for login. Please paste the OTP here")
+                        # wait_time = 60
+                        # start_time = time.perf_counter()
+                        # otp = ""
+                        # while (time.perf_counter() - start_time) < wait_time:
+                        #     otp = input()
+                        #     if len(otp) > 0:
+                        #         print("OTP Recieved")
+                        # if len(otp) == 0:
+                        #     print("You did not enter an OTP!!")
+                        #     exit(999)
+
+                        timeout = 60
+                        t = Timer(timeout, print, ['You did not enter the OTP'])
+                        t.start()
+                        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+                        otp = input(prompt)
+                        t.cancel()
+
+                        driver.find_element(By.ID, "edit-twostep-code").send_keys(otp)
+                        time.sleep(1)
+
+                        driver.find_element(By.ID, "edit-twostep").click()
+
+                        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+                        driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
+                        time.sleep(0.5)
+
+                        edge_profiles_file_location = "assets/edge_profile_info.xlsx"
+                        edge_profile_workbook = openpyxl.load_workbook(edge_profiles_file_location)
+                        edge_profiles_current_sheet = edge_profile_workbook.active
+                        for profile_index in range(1, 11):
+                            if str(edge_profiles_current_sheet.cell(row=profile_index,
+                                                                    column=2).value).strip() == expired_profile:
+                                edge_profiles_current_sheet.cell(row=profile_index, column=4).value = date.today()
+                                break
+
+                        edge_profile_workbook.save("assets/edge_profile_info.xlsx")
+                    else:
+                        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+                        driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
+                        time.sleep(0.5)
+                        edge_profiles_file_location = "assets/edge_profile_info.xlsx"
+                        edge_profile_workbook = openpyxl.load_workbook(edge_profiles_file_location)
+                        edge_profiles_current_sheet = edge_profile_workbook.active
+
+                        for profile_index in range(1, 11):
+                            if str(edge_profiles_current_sheet.cell(row=profile_index,
+                                                                    column=2).value).strip() == expired_profile:
+                                edge_profiles_current_sheet.cell(row=profile_index,
+                                                                 column=4).value = date.today() - timedelta(days=29)
+                                break
+
+                        edge_profile_workbook.save("assets/edge_profile_info.xlsx")
+
+                    driver.quit()
+
+                def on_reset_edge_profile():
+                    import clean_chrome_profiles
+
+                    reset_edge_profile_button.configure(text="DONE!! Please Relaunch")
+                    root.update_idletasks()
+                    time.sleep(1)
+
+                def on_kill_edgedriver():
+                    import killchromedriver
+
+                    kill_edgedriver_button.configure(text="DONE!! Please Relaunch")
+                    time.sleep(1)
+
+                reset_edge_profile_button = ttk.Button(edge_profile_frame, text="Reset Edgeprofile Availability",
+                                                       command=on_reset_edge_profile, style='Configs.TButton')
+                kill_edgedriver_button = ttk.Button(edge_profile_frame, text="Kill Edgedriver Tasks",
+                                                    command=on_kill_edgedriver, style='Configs.TButton')
+
+                reset_edge_profile_button.grid(row=11, column=0, columnspan=2)
+                kill_edgedriver_button.grid(row=12, column=0, columnspan=2)
+                edge_profile_frame.grid(row=2, rowspan=4, column=3, sticky="NE")
+            elif state == "REMOVE":
+                edge_profile_frame.destroy()
+                print("Forget Edge")
+
+        def on_driver_choice(choice):
+            # Get the current value of the driver choice from the radio button
+            driver_choice = choice
+
+            # Remove old frame
+            edge_profile_thread_info("REMOVE")
+            chrome_profile_thread_info("REMOVE")
+
+            # Apply new frame based on the driver choice
+            if driver_choice == "EDGE":
+                edge_profile_thread_info("SET")
+            elif driver_choice == "CHROME":
+                chrome_profile_thread_info("SET")
+
+            # Update pkl file with the current driver choice
+            # with open("assets/driver_choice.pkl", "wb") as driver_choice_file:
+            #     pickle.dump(driver_choice, driver_choice_file)
+            #     print("Set to :"+driver_choice)
+            #     driver_choice_file.close()
+
+            with open("assets/driver_choice.txt", 'a') as driver_choice_file:
+                driver_choice_file.seek(0)
+                driver_choice_file.truncate()
+                driver_choice_file.write(driver_choice)
+            driver_choice_file.close()
+            print("Set to :" + driver_choice)
 
 
 
 
-            if profile_row[2] == "In Use":
-                profile_status_label.configure(image=red_dot_image, fg="Red")
-            if profile_row[2] == "Available":
-                profile_status_label.configure(fg="#408022")
-            if profile_row[1] == locator.free_chrome_profile:
-                profile_status_label.configure(image=orange_dot_image, fg="#fc9003", text="Current")
-            if date_diff > 30:
+        # Define a style for Checkbuttons
+        style.configure('My.TCheckbutton', font=('Helvetica', 10, 'bold'), foreground='Black',
+                        background='#5a9c32', focuscolor='none', padding=5, highlightthickness=0, height=1, width=20)
 
-                profile_status_label.configure(image=red_dot_image, fg="Red", text="Expired!")
-            #print(profile_row[1], date_diff)
+        # Adjust padding and indicator size
+        style.configure('My.TCheckbutton')
+        style.map('My.TCheckbutton',
+                  foreground=[('selected', 'Black'), ('active', 'black')],
+                  background=[('active', '#497f29'), ('selected', '#497f29')],
+                  )
 
-        def on_expired_profile(expired_profile):
-            # here, take input of the profile and launch chrome with those parameters
-            print(len(profile_name_button_list))
-            print(profile_name_button_list[2])
-            print(expired_profile)
-            login_info_file = open(r"assets\loginInfo.txt", "r+")
-            expired_chrome_profile_path = "user-data-dir=C:\\Users\\" + login_info_file.readlines()[
-                2].strip() + "\\AppData\\Local\\Google\\Chrome\\User Data\\" + expired_profile
-            login_info_file.seek(0)
-            login_info_file.close()
+        style.configure('DriverChoice.TButton', font=('Helvetica', 10, 'bold'), foreground='Black',
+                        background='#5a9c32',
+                        highlightthickness=0)
 
-            options = webdriver.ChromeOptions()
-            options.add_argument("--disable-notifications")
-            options.add_argument("--start-maximized")
-            options.add_argument(expired_chrome_profile_path)  # Path to your chrome profile
-            options.add_argument('--disable-gpu')
-            # options.add_argument("--window-size=1920,1080")
-            # options.add_argument("--start-maximized")
-            options.add_argument("--no-sandbox")
-            options.add_argument("--dns-prefetch-disable")
-            driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
-            driver.get(locator.logout_link)
-            driver.get(locator.login_link)
-            driver.maximize_window()
-            login_info_file = open(r"assets\loginInfo.txt", "r+")
-            details = login_info_file.readlines()
-            driver.find_element(By.ID, "edit-name").send_keys(details[0].strip())
-            driver.find_element(By.ID, "edit-pass").send_keys(details[1].strip())
-            login_info_file.seek(0)
-            login_info_file.close()
-            driver.find_element(By.ID, "edit-submit").click()
-            time.sleep(4)
+        # Create a StringVar to hold the value of the selected driver
+        driver_var = StringVar(value="CHROME")  # Default value
+        driver_choice_frame = Frame(root, background='white')
 
-            #If OTP box appears, wait for OTP, then kill the chrome session. No changes needed.
+        # Create checkbuttons for driver selection
+        edge_check = ttk.Button(driver_choice_frame, text="Microsoft Edge",
+                                command=lambda: on_driver_choice("EDGE"), image=edge_logo_image,
+                                compound="left", style='DriverChoice.TButton')
+        chrome_check = ttk.Button(driver_choice_frame, text="Google Chrome",
+                                  command=lambda: on_driver_choice("CHROME"), image=chrome_logo_image,
+                                  compound="left", style='DriverChoice.TButton')
 
-            otpurl = driver.current_url
-            sub_str = "/twostepAuthSettings"
-            if otpurl.find(sub_str) != -1:
-                # print("Need to enter OTP for login. Please paste the OTP here")
-                # wait_time = 60
-                # start_time = time.perf_counter()
-                # otp = ""
-                # while (time.perf_counter() - start_time) < wait_time:
-                #     otp = input()
-                #     if len(otp) > 0:
-                #         print("OTP Recieved")
-                # if len(otp) == 0:
-                #     print("You did not enter an OTP!!")
-                #     exit(999)
+        # Place the checkbuttons in the window
+        Label(driver_choice_frame, text="Browser Selection", background="white",
+              font=("Times New Roman", 15)).grid(row=0, column=0, padx=1, pady=2)
+        edge_check.grid(row=1, column=0, padx=2, pady=1)
+        chrome_check.grid(row=2, column=0, padx=2, pady=1)
+        driver_choice_frame.grid(row=0, column=3)
 
-                timeout = 60
-                t = Timer(timeout, print, ['You did not enter the OTP'])
-                t.start()
-                prompt = "You have %d seconds to enter the OTP here\n" % timeout
-                otp = input(prompt)
-                t.cancel()
-
-                driver.find_element(By.ID, "edit-twostep-code").send_keys(otp)
-                time.sleep(1)
-
-                driver.find_element(By.ID, "edit-twostep").click()
-
-                WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
-                driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
-                time.sleep(0.5)
-
-                chrome_profiles_file_location = "assets/chrome_profile_info.xlsx"
-                chrome_profile_workbook = openpyxl.load_workbook(chrome_profiles_file_location)
-                chrome_profiles_current_sheet = chrome_profile_workbook.active
-                for profile_index in range(1, 11):
-                    if str(chrome_profiles_current_sheet.cell(row=profile_index,
-                                                      column=2).value).strip() == expired_profile:
-                        chrome_profiles_current_sheet.cell(row=profile_index, column=4).value = date.today()
-                        break
-
-                chrome_profile_workbook.save("assets/chrome_profile_info.xlsx")
-            else:
-                WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
-                driver.find_element(By.ID, "reason_textbox").send_keys(details[4].strip())
-                time.sleep(0.5)
-                chrome_profiles_file_location = "assets/chrome_profile_info.xlsx"
-                chrome_profile_workbook = openpyxl.load_workbook(chrome_profiles_file_location)
-                chrome_profiles_current_sheet = chrome_profile_workbook.active
-
-                for profile_index in range(1, 11):
-                    if str(chrome_profiles_current_sheet.cell(row=profile_index,
-                                                      column=2).value).strip() == expired_profile:
-                        chrome_profiles_current_sheet.cell(row=profile_index, column=4).value = date.today() - timedelta(days=30)
-                        break
-
-                chrome_profile_workbook.save("assets/chrome_profile_info.xlsx")
-
-
-            driver.quit()
-
-
-
-
-
-
-
-
-
-        def on_reset_chrome_profile():
-            import clean_chrome_profiles
-
-            reset_chrome_profile_button.configure(text="DONE!! Please Relaunch")
-            time.sleep(1)
-
-
-        def on_kill_chromedriver():
-            import killchromedriver
-
-            kill_chromedriver_button.configure(text="DONE!! Please Relaunch")
-            time.sleep(1)
-
-        reset_chrome_profile_button = ttk.Button(chrome_profile_frame, text="Reset Chromeprofile Availability", command=on_reset_chrome_profile, style='Configs.TButton')
-        kill_chromedriver_button = ttk.Button(chrome_profile_frame, text="Kill Chromedriver Tasks", command=on_kill_chromedriver, style='Configs.TButton')
-
-        reset_chrome_profile_button.grid(row=11, column=0, columnspan=2)
-        kill_chromedriver_button.grid(row=12, column=0, columnspan=2)
-        chrome_profile_frame.grid(row=2, rowspan=4, column=3, sticky="NE")
+        on_driver_choice("CHROME")
 
         root_overwatch = Toplevel(root)
         root_overwatch.title("Cozeva Overwatch")
@@ -484,7 +827,26 @@ def rtvsmaster():
                 Checkbox_widgets[i].grid(row=i - 40, column=2, sticky="w")
             elif 60 < i <= 80:
                 Checkbox_widgets[i].grid(row=i - 60, column=3, sticky="w")
-            submit_button.grid(row=0, column=3, sticky="e")
+        submit_button.grid(row=0, column=3, sticky="e")
+        offshore_override_var = IntVar()
+        offshore_override_checkbutton = Checkbutton(root_overwatch, text="Validate Offshore clients through CS2", variable=offshore_override_var, font=("Nunito Sans", 11))
+        offshore_override_checkbutton.grid(row=0, column=0, sticky='w')
+        offshore_override_checkbutton.select()
+        overwatch_my_var = StringVar()
+        overwatch_my_var.set("Default")
+        overwatch_selected_my_list = ["2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027", "2028"]
+        overwatch_selected_my_list = overwatch_selected_my_list[::-1]
+        overwatch_my_drop = ttk.Combobox(root_overwatch, textvariable=overwatch_my_var, values=overwatch_selected_my_list, state='readonly',
+                               style='TCombobox', width=10, height=35)
+        Label(root_overwatch, text=" || Select MY ||", font=("Nunito Sans", 12)).grid(row=0, column=1, sticky='w')
+        overwatch_my_drop.grid(row=0, column=1, sticky='e')
+
+        #make a checkbox that checks if analytics is yes or no
+        overwatch_analytics_choice_var = IntVar()
+        overwatch_analytics_choice_checkbutton = Checkbutton(root_overwatch, text="Analytics Choice", variable=overwatch_analytics_choice_var, font=("Nunito Sans", 11))
+        overwatch_analytics_choice_checkbutton.grid(row=0, column=2, sticky='w')
+        overwatch_analytics_choice_checkbutton.select()
+
 
         root.title("Release Team Master Suite")
         root.iconbitmap("assets/icon.ico")
@@ -496,11 +858,9 @@ def rtvsmaster():
         traceback.print_exc()
     finally:
         os.chdir(code_directory)
-        file_location = "assets/chrome_profile_info.xlsx"
-        chrome_profiles = openpyxl.load_workbook(file_location)
+        chrome_profiles = openpyxl.load_workbook("assets/chrome_profile_info.xlsx")
         chrome_profiles_sheet = chrome_profiles.active
         chrome_profile_available = False
-        # Look for a row with an Available Chromeprofile name, Change it to In use and return the name
         for profile_index in range(1, 11):
             if str(chrome_profiles_sheet.cell(row=profile_index,
                                               column=2).value).strip() == locator.free_chrome_profile:
@@ -508,6 +868,55 @@ def rtvsmaster():
                 break
 
         chrome_profiles.save("assets/chrome_profile_info.xlsx")
+        edge_profiles = openpyxl.load_workbook("assets/edge_profile_info.xlsx")
+        edge_profiles_sheet = edge_profiles.active
+        edge_profile_available = False
+        # Look for a row with an Available edgeprofile name, Change it to In use and return the name
+        for profile_index in range(1, 11):
+            if str(edge_profiles_sheet.cell(row=profile_index,
+                                            column=2).value).strip() == locator.free_edge_profile:
+                edge_profiles_sheet.cell(row=profile_index, column=3).value = 'Available'
+                break
+
+        edge_profiles.save("assets/edge_profile_info.xlsx")
+
+
+        # with open("assets/driver_choice.txt", 'a') as driver_choice_file:
+        #     driver_choice_file.seek(0)
+        #     driver_choice_file.truncate()
+        #     driver_choice_file.write("CHROME")
+        # print("Changed to Chrome 3")
+        # driver_choice_file.close()
+
+        # with open("assets/driver_choice.pkl", "wb") as driver_choice_file:
+        #     pickle.dump("CHROME", driver_choice_file)
+def flush_unused_driver():
+    with open("assets/driver_choice.txt", 'r+') as driver_flush_file:
+        driver_flush_choice = driver_flush_file.read().strip()
+    if driver_flush_choice == "EDGE":
+        chrome_profiles = openpyxl.load_workbook("assets/chrome_profile_info.xlsx")
+        chrome_profiles_sheet = chrome_profiles.active
+        chrome_profile_available = False
+        for profile_index in range(1, 11):
+            if str(chrome_profiles_sheet.cell(row=profile_index,
+                                              column=2).value).strip() == locator.free_chrome_profile:
+                chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'Available'
+                break
+
+        chrome_profiles.save("assets/chrome_profile_info.xlsx")
+    elif driver_flush_choice == "CHROME":
+        edge_profiles = openpyxl.load_workbook("assets/edge_profile_info.xlsx")
+        edge_profiles_sheet = edge_profiles.active
+        edge_profile_available = False
+        # Look for a row with an Available edgeprofile name, Change it to In use and return the name
+        for profile_index in range(1, 11):
+            if str(edge_profiles_sheet.cell(row=profile_index,
+                                            column=2).value).strip() == locator.free_edge_profile:
+                edge_profiles_sheet.cell(row=profile_index, column=3).value = 'Available'
+                break
+
+        edge_profiles.save("assets/edge_profile_info.xlsx")
+
 
 def run_script(argument):
     def add_number_to_file(file_path, number):
@@ -520,13 +929,23 @@ def run_script(argument):
     file_path = 'assets\\overwatch_cache.txt'
     number = argument
     add_number_to_file(file_path, number)
+    flush_unused_driver()
 
     import multimain
+    time.sleep(2)
 
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     multi = 0
+    #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
+    print("Release Team Verification Suite(RTVS) Version: 1.4.2, Latest Update: Selectable MY, Help Icon dropdown, REL Graph, Analytics Deep link")
+    print("Requires : Chrome Version 123, Edge Version 122, Python 3.9+, Git(for live updates), Windows 10, 11")
+    print("Developed by: Writtwik Dey for the Cozeva Release Team")
+    print("Current Client Count: " + str(len(db.getCustomerList()) - 2))
+
+    print("-------------------------Logs-------------------------")
+
     rtvsmaster()
     num_processes = len(client_list)
 
@@ -545,9 +964,3 @@ if __name__ == '__main__':
         import clean_chrome_profiles
     else:
         print(multi)
-
-
-
-
-
-

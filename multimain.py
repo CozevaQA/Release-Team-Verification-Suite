@@ -1,3 +1,5 @@
+import pickle
+
 try:
     import variablestorage
 except IndexError as e:
@@ -29,13 +31,31 @@ privacy_status = 'Onshore'
 roleset = db.getDefaultUserNames(db.fetchCustomerName(current_client_id))
 if "Customer Support" in roleset:
     privacy_status = 'Offshore'
-feature_checklist = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+with open('assets/offshore_override.pkl', "rb") as file:
+    override_choice = pickle.load(file)
+if override_choice == 1:
+    privacy_status = 'Onshore'
+    roleset = {'Cozeva Support': '99999'}
+feature_checklist = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+with open('assets/overwatch_my.pkl', "rb") as file:
+    measurement_year = pickle.load(file)
+
+with open("assets/overwatch_analytics_choice.pkl", "rb") as analytics_file:
+    analytics_choice = pickle.load(analytics_file)
+
+if analytics_choice == 1:
+    feature_checklist[11] = 1
+
+
+
+
+
 
 # comment the next 3 lines out when you need to run default. DO NOT COMMIT THIS YOU WILL BREAK EVERYTHING
 #feature_checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 #roleset = {'Cozeva Support': '99999'}
 #privacy_status = 'Onshore'
-guiwindow.verification_specs = [db.fetchCustomerName(current_client_id), current_client_id, privacy_status, roleset, feature_checklist]
+guiwindow.verification_specs = [db.fetchCustomerName(current_client_id), current_client_id, privacy_status, roleset, feature_checklist, measurement_year]
 
 
 print(guiwindow.verification_specs)
@@ -60,6 +80,9 @@ if environment == "PROD":
 elif environment == "CERT":
     setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
 if guiwindow.verification_specs[2] == "Onshore":
+    if guiwindow.verification_specs[5].isnumeric():
+        print("Non Default MY selected, Attempting to change MY")
+        setups.change_my(guiwindow.verification_specs[5])
     if launchstyle == "Def":
         setups.cozeva_support(environment)
     elif launchstyle == "NC":

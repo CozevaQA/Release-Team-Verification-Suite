@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException, UnexpectedAlertPresentException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -96,14 +96,21 @@ class UsageMonthlyActivity:
 
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
+        #wait for page to load
         wait_to_load(self.driver)
+        runner.remove_chat_dashboard()
+        #identify the outer lob elements i.e. MEDCR , COMMR , etc
+
         lob_outer_elements = self.driver.find_elements_by_xpath(self.lob_outer_elements_xpath)
         count_outer = len(lob_outer_elements)
         #print(count_outer)
         loop_list = []
         count = 1
         loop_list.append(count_outer)
+
+        #find the lob from the outer value
         lob_values = []
+        lob_name_real=[]
         for j in range(1, count_outer + 1):
             lob_inner_elements_xpath = self.lob_outer_elements_xpath + "[" + str(j) + "]//option"
             lob_inner_elements = self.driver.find_elements_by_xpath(lob_inner_elements_xpath)
@@ -111,14 +118,16 @@ class UsageMonthlyActivity:
                 lob_inner_element_xpath = lob_inner_elements_xpath + "[" + str(k) + "]"
                 #print(lob_inner_element_xpath)
                 lob_value = self.driver.find_element_by_xpath(lob_inner_element_xpath).get_attribute("value")
+                lob_name_real_element=self.driver.find_element_by_xpath(lob_inner_element_xpath).get_attribute('innerHTML')
                 lob_values.append(lob_value)
+                lob_name_real.append(lob_name_real_element)
 
             first_time = 1
             num_of_child = len(lob_inner_elements)
             loop_list.append(num_of_child)
 
-        #print(loop_list)
-        # print(lob_values)
+        print(loop_list)
+        print(lob_values)
         # 1. Click on Activity type
         # 2. From drop down extract list of elements
         # 3. For each element : select the element from the drop down and do the operations
@@ -183,14 +192,14 @@ class UsageMonthlyActivity:
                             val = value_in_input + activity
                             lobtobeclicked_xpath = "//input[@type=\"checkbox\" and @value=\"%s\"]//following-sibling::span" % (
                                 value_in_input)
-                            # print(lobtobeclicked_xpath)
+                            print(lobtobeclicked_xpath)
                             lobtobeclicked = self.driver.find_element_by_xpath(lobtobeclicked_xpath)
                             self.action_click(lobtobeclicked)
                             first_entry = 0
 
                         value_in_input = str(lob_values[j])
                         print(value_in_input)
-                        val = activity + value_in_input[0:4]
+                        val = activity + lob_name_real[j]
                         lobtobeclicked_xpath = "//input[@type=\"checkbox\" and @value=\"%s\"]//following-sibling::span" % (
                             value_in_input)
                         # print(lobtobeclicked_xpath)
@@ -234,7 +243,7 @@ class UsageMonthlyActivity:
                                          str(val),))
                                     # print 'Data saved from exception'
                                     ss_name = str(wbpath) + "/" + str(service_year_for_filter) + str(
-                                        activity+value_in_input[0:4]) + ".png"  # naming convention is year-lob-drill.png
+                                        val) + ".png"  # naming convention is year-lob-drill.png
                                     print(ss_name)
                                     self.driver.save_screenshot(ss_name)
                             except sqlite3.IntegrityError:
@@ -243,7 +252,7 @@ class UsageMonthlyActivity:
 
                         else:
                             ss_name = str(wbpath) + "/" + str(service_year_for_filter) + str(
-                                activity + value_in_input[0:4]) + ".png"  # naming convention is year-lob-drill.png
+                                val) + ".png"  # naming convention is year-lob-drill.png
                             print(ss_name)
                             self.driver.save_screenshot(ss_name)
                             self.driver.find_element_by_xpath(self.insert_chart_xpath).click()

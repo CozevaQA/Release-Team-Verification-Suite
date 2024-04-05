@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementClickInter
 from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -91,6 +91,7 @@ class EDCost:
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
         wait_to_load(self.driver)
+        runner.remove_chat_dashboard()
         for i in year:
             wait_to_load(self.driver)
             selected_value = self.driver.find_element_by_xpath(self.selected_value_year_xpath).text
@@ -128,7 +129,7 @@ class EDCost:
                 lob_selector = "//label[@class=\"radio\"]//input[@value=\"%s\"]/following-sibling::span "% (val)
                 # print(st)
                 try:
-                    self.driver.find_element_by_xpath(lob_selector).click()
+                    self.action_click(self.driver.find_element_by_xpath(lob_selector))
                 except ElementNotInteractableException:
                     b = self.driver.find_element_by_xpath(lob_selector)
                     self.driver.execute_script("arguments[0].click();", b)

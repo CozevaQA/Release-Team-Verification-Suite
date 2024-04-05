@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -97,6 +97,7 @@ class TotalCostTrends:
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
         WebDriverWait(self.driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
+        runner.remove_chat_dashboard()
         lob = self.driver.find_element_by_xpath(self.lob_xpath)
         self.action_click(lob)
         lob_elements = self.driver.find_elements_by_xpath(self.lob_elements_xpath)

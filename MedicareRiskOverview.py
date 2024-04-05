@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
     ElementClickInterceptedException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -99,6 +99,7 @@ class MedicareRiskOverview:
     def iterate_filter(self, year, customer):
         wbpath = self.makedir(customer)
         WebDriverWait(self.driver, 300).until(EC.invisibility_of_element_located((By.CLASS_NAME, self.loader_element)))
+        runner.remove_chat_dashboard()
         if self.hasXpath(self.lob_xpath):
             for i in year:
                 x=int(i)

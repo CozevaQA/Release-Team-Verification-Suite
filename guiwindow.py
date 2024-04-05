@@ -13,8 +13,8 @@ import Schema_processor as sp
 
 checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
-verification_specs = ["Name", 9999, "Onshore", roleset, checklist]
-#verification_specs = ['Optum Care Arizona', '5100', 'Onshore', {'Cozeva Support': '99999'}, [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+verification_specs = ["Name", 9999, "Onshore", roleset, checklist, "Default"]
+#verification_specs = ['Optum Care Arizona', '5100', 'Onshore', {'Cozeva Support': '99999'}, [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Default']
 env = "PROD"
 headlessmode = 0
 Window_location = 1 #1 = left, 0 = Right
@@ -112,6 +112,7 @@ def launchgui():
         headlessmode = headless_selector_var.get()
         verification_specs[0] = selected_cust.get()
         verification_specs[1] = db.fetchCustomerID(verification_specs[0])
+        verification_specs[5] = selected_my.get()
         print(window_location_var.get())
         Window_location = window_location_var.get()
         print(Window_location)
@@ -405,6 +406,19 @@ def launchgui():
     radiobutton_headless_label = Label(input_frame_1, text="Select Headless mode Yes/No", font=("Nunito Sans", 10))
     radiobutton_headless_yes = Radiobutton(input_frame_1, text="Yes", variable=headless_selector_var, value=1, font=("Nunito Sans", 10))
     radiobutton_headless_no = Radiobutton(input_frame_1, text="No", variable=headless_selector_var, value=0, font=("Nunito Sans", 10))
+
+    MY_label = Label(input_frame_1, text="Select MY or Default", font=("Nunito Sans", 10))
+    global selected_my
+    selected_my = StringVar()
+    selected_my.set("Default")
+    selected_my_list = ["2020", "2021", "2022", "2023", "2024", "2025", "2026", "2027", "2028"]
+    # reverse the above list
+    selected_my_list = selected_my_list[::-1]
+
+    my_drop = ttk.Combobox(input_frame_1, textvariable=selected_my, values=selected_my_list, state='readonly',
+                                 style='TCombobox', width=10, height=35)
+
+
     #widgets for frame 2
     frame2_info_label = Label(input_frame_2, text="Select roles and enter username(Leave blank for default)", font=("Nunito Sans", 10))
     cozeva_support_var = IntVar()
@@ -631,9 +645,12 @@ def launchgui():
     radiobutton_env_label.grid(row=9, column=2)
     radiobutton_env_prod.grid(row=10, column=2, sticky="w")
     radiobutton_env_cert.grid(row=11, column=2, sticky="w")
-    radiobutton_headless_label.grid(row=9, column=4)
-    radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
-    radiobutton_headless_no.grid(row=11, column=4, sticky="w")
+    MY_label.grid(row=9, column=4)
+    my_drop.grid(row=10, column=4)
+
+    # radiobutton_headless_label.grid(row=9, column=4)
+    # radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
+    # radiobutton_headless_no.grid(row=11, column=4, sticky="w")
     nextbutton1.grid(row=12, column=0, columnspan=5, pady=45)
     Checkbox_cozeva.select()
 

@@ -4,7 +4,7 @@ from selenium.common.exceptions import NoSuchElementException, ElementNotInterac
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
-
+import runner
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import os
@@ -101,6 +101,7 @@ class CohortAnalyzer:
         wbpath = self.makedir(customer)
         #report_directory=os.path.join(report_directory,wbpath)
         wait_to_load(self.driver)
+        runner.remove_chat_dashboard()
         self.action_click(self.driver.find_element_by_xpath(self.insert_chart_xpath))
         lob_outer_elements = self.driver.find_elements_by_xpath(self.lob_outer_elements_xpath)
         count_outer = len(lob_outer_elements)

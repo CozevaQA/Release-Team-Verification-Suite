@@ -117,7 +117,8 @@ def setup(val, downloaddefault):
         print("helloo")
         print(os.getcwd())
         global driver
-        driver = webdriver.Chrome(executable_path=source_directory + "\\" + vs.chrome_driver_path, options=options)
+        #changes made
+        driver = webdriver.Chrome(executable_path=source_directory + "\\" +  vs.chrome_driver_path, options=options)
         # preferences = {
         #     "download.default_directory":downloaddefault}
         # options.add_experimental_option("prefs", preferences)
@@ -129,17 +130,36 @@ def setup(val, downloaddefault):
         driver.maximize_window()
     return driver
 
-def remove_element_if_present(element_xpath):
-    logger.info("0 debug")
-    element=driver.find_element_by_xpath(element_xpath)
-    logger.info(element.is_displayed())
-    WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH,element_xpath)))
-    try:
-        driver.execute_script("""var l = document.getElementById("cozeva_support_chat_dasboard");
-    l.parentNode.removeChild(l);""")
-    except Exception as e:
-        print(e)
-        logger.info(e)
+def remove_announcement():
+    hide_announcement_xpath="//div[@class='banner_footer']//child::a[text()='Hide']"
+    try :
+        hide_announcement = driver.find_element(By.XPATH, hide_announcement_xpath)
+        print("Hide announcement present ")
+        action_click(hide_announcement)
+    except NoSuchElementException:
+        print("hide announcement not present")
+
+
+
+
+def remove_chat_dashboard():
+    #logger.info("0 debug")
+    try :
+        element = driver.find_element(By.ID, "cozeva_support_chat_dasboard")
+        print("Chat Dashboard present ")
+        try:
+            driver.execute_script("""var l = document.getElementById("cozeva_support_chat_dasboard");
+            l.parentNode.removeChild(l);""")
+        except Exception as e:
+            print(e)
+            logger.info(e)
+    except NoSuchElementException:
+        print("Chat Dashboard not present")
+
+    #logger.info(element.is_displayed())
+    # if(element.is_displayed()):
+    #     WebDriverWait(driver, 50).until(EC.element_to_be_clickable((By.XPATH, "cozeva_support_chat_dasboard")))
+
 
 
 def makedir(foldername):
@@ -348,6 +368,10 @@ def verify_Usage(year, customer_id):
 #     loader_element = 'sm_download_cssload_loader_wrap'
 #     WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
 #     nav_back()
+
+
+
+
 
 def verify_Cohort(service_year,customer_id):
     str2 = '//td[@class="sm_tab_link" and text()="Cohort Analyzer"]'
@@ -720,32 +744,32 @@ def verify_utilization(year, customer_id):
                 nav_back()
                 pass
 
-        #elif worksheet.get_attribute("worksheet_title") == "Inpatient Cost":
-        #    print(worksheet.get_attribute("worksheet_title"))
-        #    worksheet.click()
-        #    f = InpatientCost(driver)
-        #    try:
-        #        f.iterate_filter(year, customer_id)
-        #        loader_element = 'sm_download_cssload_loader_wrap'
-        #        WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
-        #        nav_back()
-        #    except TimeoutException as e2:
-        #        close_button_when_loading = driver.find_element_by_xpath(
-        #            config.get("runner", "close_button_when_loading_xpath"))
-        #        print("Time out exception for ", customer_id, worksheet.get_attribute("worksheet_title"))
-        #        logger.error(str(e2) + str(customer_id) + " Timeout Exception occurred in" + worksheet.get_attribute(
-        #            "worksheet_title") + "\n")
-        #        action_click(close_button_when_loading)
-        #        nav_back()
-        #        pass
-        #    except (
-        #            WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
-        #            StaleElementReferenceException) as e:
-        #        print(e)
-        #        print("Exception occurred in Utilization  " + worksheet.get_attribute("worksheet_title"))
-        #        logger.error(str(e) + str(customer_id) + worksheet.get_attribute("worksheet_title") + "\n")
-        #        nav_back()
-        #        pass
+        elif worksheet.get_attribute("worksheet_title") == "Inpatient Cost":
+           print(worksheet.get_attribute("worksheet_title"))
+           worksheet.click()
+           f = InpatientCost(driver)
+           try:
+               f.iterate_filter(year, customer_id)
+               loader_element = 'sm_download_cssload_loader_wrap'
+               WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
+               nav_back()
+           except TimeoutException as e2:
+               close_button_when_loading = driver.find_element_by_xpath(
+                   config.get("runner", "close_button_when_loading_xpath"))
+               print("Time out exception for ", customer_id, worksheet.get_attribute("worksheet_title"))
+               logger.error(str(e2) + str(customer_id) + " Timeout Exception occurred in" + worksheet.get_attribute(
+                   "worksheet_title") + "\n")
+               action_click(close_button_when_loading)
+               nav_back()
+               pass
+           except (
+                   WebDriverException, ElementNotInteractableException, ElementClickInterceptedException,
+                   StaleElementReferenceException) as e:
+               print(e)
+               print("Exception occurred in Utilization  " + worksheet.get_attribute("worksheet_title"))
+               logger.error(str(e) + str(customer_id) + worksheet.get_attribute("worksheet_title") + "\n")
+               nav_back()
+               pass
         elif worksheet.get_attribute("worksheet_title") == "Inpatient Cost By Dx":
             print(worksheet.get_attribute("worksheet_title"))
             worksheet.click()
@@ -1073,11 +1097,18 @@ for i in range(2, num_of_rows + 1):
     utilization = str(parameter_list[5].value).replace(" ", "")
     usage = str(parameter_list[6].value).replace(" ", "")
     open_analytics_page(customer_id)
+    try:
+        remove_announcement()
+        remove_chat_dashboard()
+    except Exception as e:
+        print(str(e))
     logger.info("Opened Analytics Page")
     make_directory(customer_id)
     logger.info("Made Directory of Customer ")
     make_directory(customer_id)
     verify_quality(service_year, customer_id)
+
+
     if (medicare == 'Y'):
         verify_medicare_risk(service_year, customer_id)
     if (commercial == 'Y'):
@@ -1093,7 +1124,7 @@ os.chdir("C://")
 driver.quit()
 notification_title = "Analytics Execution Complete "
 
-notification_message = "Please check report here" + "C:\\VerificationReports\\ExportReport\\"
+notification_message = "Please check report here" + "C:\\VerificationReports\\"
 
 notification.notify(
             title=notification_title,

@@ -1,5 +1,4 @@
-
-
+import pickle
 
 #xpaths
 import openpyxl
@@ -50,7 +49,7 @@ xpath_provider_Toggle_Provider_Links="//table[@id='metric-support-prov-ls']/tbod
 xpath_resources_link="//a[@data-target='help_menu_dropdown']"
 xpath_resources_page_prac_sup="//span[@data-badge-caption='Practice Support Page']"
 xpath_had_er_visit="//li[@id='had_er_visit_tab']"
-xpath_skip_button="//button[@value='Skip']"
+xpath_skip_button=".//div[@id='agreement-buttons']//button[@value='Skip']"
 xpath_submit_button = "//*[@data-badge-caption='Submit' and contains(@style,'float: left !important; padding: 0 10px !important;')]"
 xpath_careops = "//*[@class='col right_border child firstelem']//span[1]"
 xpath_careops2 = "//*[@class='col right_border child firstelem tooltipped']//span[1]"
@@ -58,10 +57,89 @@ xpath_coding_tool_kebab = "//a[@class='action_list_dropdown not_disable']"
 xpath_audit_log_download = "//a[@onclick='return download_audit_log();']"
 xpath_annotation_tab = "//a[@class='chart_notes_tab tab_on_demand']"
 xpath_medication_chart_icon = "//div[@class='med_adherence_chart medical_adherence_contain relative_elem']"
+xpath_rel_chart = "//div[@class='modal-content rel-chart-modal-modal-content']"
 
 #css_selectors
 
 #ids
+
+def fetch_free_profile():
+    # with open('assets/driver_choice.pkl', "rb") as file:
+    #     driver_choice = pickle.load(file)
+    #     file.close()
+    # print("driver choice in variable storage: "+driver_choice)
+    with open("assets/driver_choice.txt", 'r+') as driver_choice_file:
+        driver_choice = driver_choice_file.read().strip()
+    driver_choice_file.close()
+    print("In Variable Storage with :" + driver_choice)
+    if driver_choice == "CHROME":
+        file_location = "assets/chrome_profile_info.xlsx"
+        chrome_profiles = openpyxl.load_workbook(file_location)
+        chrome_profiles_sheet = chrome_profiles.active
+        chrome_profile_available = False
+        chrome_profile = None
+        #Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+        for profile_index in range(1, 11):
+            days_since = (date.today() - chrome_profiles_sheet.cell(row=profile_index,column=4).value.date()).days
+            #print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
+            if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available" and days_since <= 29:
+                chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
+                chrome_profile_available = True
+                chrome_profile = str(chrome_profiles_sheet.cell(row=profile_index, column=2).value).strip()
+                chrome_profiles.save("assets/chrome_profile_info.xlsx")
+                break
+            else:
+                chrome_profile_available = False
+                chrome_profile = None
+        return chrome_profile
+    elif driver_choice == "EDGE":
+        file_location = "assets/edge_profile_info.xlsx"
+        edge_profiles = openpyxl.load_workbook(file_location)
+        edge_profiles_sheet = edge_profiles.active
+        edge_profile_available = False
+        edge_profile = None
+        # Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+        for profile_index in range(1, 11):
+            days_since = (date.today() - edge_profiles_sheet.cell(row=profile_index, column=4).value.date()).days
+            # print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
+            if str(edge_profiles_sheet.cell(row=profile_index,
+                                            column=3).value).strip() == "Available" and days_since <= 29:
+                edge_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
+                edge_profile_available = True
+                edge_profile = str(edge_profiles_sheet.cell(row=profile_index, column=2).value).strip()
+                edge_profiles.save("assets/edge_profile_info.xlsx")
+                break
+            else:
+                edge_profile_available = False
+                edge_profile = None
+
+
+        return edge_profile
+
+
+def fetch_free_edge_profile():
+    file_location = "assets/edge_profile_info.xlsx"
+    edge_profiles = openpyxl.load_workbook(file_location)
+    edge_profiles_sheet = edge_profiles.active
+    edge_profile_available = False
+    edge_profile = None
+    # Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+    for profile_index in range(1, 11):
+        days_since = (date.today() - edge_profiles_sheet.cell(row=profile_index, column=4).value.date()).days
+        # print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
+        if str(edge_profiles_sheet.cell(row=profile_index,
+                                        column=3).value).strip() == "Available" and days_since <= 29:
+            edge_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
+            edge_profile_available = True
+            edge_profile = str(edge_profiles_sheet.cell(row=profile_index, column=2).value).strip()
+            edge_profiles.save("assets/edge_profile_info.xlsx")
+            break
+        else:
+            edge_profile_available = False
+            edge_profile = None
+
+    return edge_profile
+
 
 def fetch_free_chrome_profile():
     file_location = "assets/chrome_profile_info.xlsx"
@@ -69,11 +147,12 @@ def fetch_free_chrome_profile():
     chrome_profiles_sheet = chrome_profiles.active
     chrome_profile_available = False
     chrome_profile = None
-    #Look for a row with an Available Chromeprofile name, Change it to In use and return the name
+    # Look for a row with an Available Chromeprofile name, Change it to In use and return the name
     for profile_index in range(1, 11):
-        days_since = (date.today() - chrome_profiles_sheet.cell(row=profile_index,column=4).value.date()).days
-        #print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
-        if str(chrome_profiles_sheet.cell(row=profile_index,column=3).value).strip() == "Available" and days_since <= 30:
+        days_since = (date.today() - chrome_profiles_sheet.cell(row=profile_index, column=4).value.date()).days
+        # print(chrome_profiles_sheet.cell(row=profile_index, column=2).value, days_since)
+        if str(chrome_profiles_sheet.cell(row=profile_index,
+                                          column=3).value).strip() == "Available" and days_since <= 29:
             chrome_profiles_sheet.cell(row=profile_index, column=3).value = 'In Use'
             chrome_profile_available = True
             chrome_profile = str(chrome_profiles_sheet.cell(row=profile_index, column=2).value).strip()
@@ -82,22 +161,32 @@ def fetch_free_chrome_profile():
         else:
             chrome_profile_available = False
             chrome_profile = None
-
-
     return chrome_profile
 
-#misc
+
 free_chrome_profile = fetch_free_chrome_profile()
 if free_chrome_profile is None:
-    print("All ChromeProfiles in use.")
+    #print("All ChromeProfiles in use.")
     free_chrome_profile = str(free_chrome_profile)
-    #exit(4)
+    # exit(4)
+
+free_edge_profile = fetch_free_edge_profile()
+if free_edge_profile is None:
+    #print("All EdgeProfiles in use.")
+    free_edge_profile = str(free_edge_profile)
+    # exit(4)
+
+
 file = open(r"assets\loginInfo.txt", "r+")
-chrome_profile_path = "user-data-dir=C:\\Users\\"+file.readlines()[2].strip()+"\\AppData\\Local\\Google\\Chrome\\User Data\\"+free_chrome_profile
+pc_username = file.readlines()[2].strip()
+chrome_profile_path = "user-data-dir=C:\\Users\\"+pc_username+"\\AppData\\Local\\Google\\Chrome\\User Data\\"+free_chrome_profile
+edge_profile_path = "user-data-dir=C:\\Users\\"+pc_username+"\\AppData\\Local\\Microsoft\\Edge\\User Data\\"+free_edge_profile
 file.seek(0)
 file.close()
-print(chrome_profile_path)
+#print(chrome_profile_path)
+#print(edge_profile_path)
 #chrome_driver_path = "C:\\cdriver\\chromedriver.exe"
+edge_driver_path = "assets\\msedgedriver.exe"
 chrome_driver_path = "assets\\chromedriver.exe"
 login_link = "https://www.cozeva.com/user/login"
 logout_link = "https://www.cozeva.com/user/logout"
@@ -112,7 +201,7 @@ download_dir = "C:\\VerificationReports\\DownloadDirectory\\"
 
 select_measurement_year_flag_support = "False"
 select_measurement_year_flag_provider = "False"
-MeasurementYear_Support = "2022"
-MeasurementYear_Provider = "2022"
-MeasurementYearQuarter_Support = "2022 Q4"
-MeasurementYearQuarter_Provider = "2022 Q4"
+MeasurementYear_Support = "2024"
+MeasurementYear_Provider = "2024"
+MeasurementYearQuarter_Support = "2024 Q4"
+MeasurementYearQuarter_Provider = "2024 Q4"

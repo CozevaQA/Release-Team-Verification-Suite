@@ -724,7 +724,7 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
                 if int(months.index(str(selected_month)))+1 == int(month_number):
                     month_match = "PASS"
                 else:
-                    month_match = "FAIL"
+                    month_match = months[int(month_number)-1]+" : FAIL"
                     break
 
 

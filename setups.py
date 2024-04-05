@@ -1,5 +1,6 @@
 import base64
 import os
+import pickle
 import traceback
 from datetime import date
 
@@ -17,6 +18,7 @@ import support_functions as sf
 import time
 import logging
 from threading import Timer
+from msedge.selenium_tools import Edge, EdgeOptions
 
 import summary_sheet as ss
 
@@ -26,31 +28,73 @@ details = ""
 
 
 def driver_setup():
-    options = webdriver.ChromeOptions()
-    options.add_argument("--disable-notifications")
-    options.add_argument("--start-maximized")
-    options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
-    if guiwindow.headlessmode == 1:
-        options.add_argument("--headless")
-
-    options.add_argument('--disable-gpu')
-    # options.add_argument("--window-size=1920,1080")
-    # options.add_argument("--start-maximized")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--dns-prefetch-disable")
-    preferences = {
-        "download.default_directory": locator.download_dir}
-    options.add_experimental_option("prefs", preferences)
     global driver
-    driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
-    print(guiwindow.Window_location)
-    if guiwindow.Window_location == 1:
-        driver.set_window_position(-1000, 0)
-    elif guiwindow.Window_location == 0:
-        driver.set_window_position(1000, 0)
-    driver.maximize_window()
-    driver.implicitly_wait(0.75)
-    return driver
+    # Loading the string value from the .pkl file
+    # with open('assets/driver_choice.pkl', "rb") as file:
+    #     driver_choice = pickle.load(file)
+    #     print("In Driver setup with :"+driver_choice)
+    #     file.close()
+    with open("assets/driver_choice.txt", 'r+') as driver_choice_file:
+        driver_choice = driver_choice_file.read().strip()
+        driver_choice_file.seek(0)
+    driver_choice_file.close()
+
+    print("In Driver setup with :" + driver_choice)
+    if driver_choice == "CHROME":
+        options = webdriver.ChromeOptions()
+        options.add_argument("--disable-notifications")
+        options.add_argument("--start-maximized")
+        options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
+        if guiwindow.headlessmode == 1:
+            options.add_argument("--headless")
+
+        options.add_argument('--disable-gpu')
+        # options.add_argument("--window-size=1920,1080")
+        # options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--dns-prefetch-disable")
+        preferences = {
+            "download.default_directory": locator.download_dir}
+        options.add_experimental_option("prefs", preferences)
+
+        driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
+        print("Chrome Driver setup with: " + locator.chrome_profile_path)
+        print(guiwindow.Window_location)
+        if guiwindow.Window_location == 1:
+            driver.set_window_position(-1000, 0)
+        elif guiwindow.Window_location == 0:
+            driver.set_window_position(1000, 0)
+        driver.maximize_window()
+        driver.implicitly_wait(0.75)
+        return driver
+    elif driver_choice == "EDGE":
+        options = EdgeOptions()
+        options.use_chromium = True  # Ensure we're using the Chromium-based version of Edge
+        options.add_argument("--disable-notifications")
+        options.add_argument("--start-maximized")
+        options.add_argument("--"+locator.edge_profile_path)  # Path to your edge profile
+        if guiwindow.headlessmode == 1:
+            options.add_argument("--headless")
+
+        options.add_argument('--disable-gpu')
+        # options.add_argument("--window-size=1920,1080")
+        # options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-extensions")  # Disabling extensions in Edge
+        options.add_argument("--dns-prefetch-disable")
+        preferences = {
+            "download.default_directory": locator.download_dir}
+        options.add_experimental_option("prefs", preferences)
+        driver = Edge(executable_path=locator.edge_driver_path, options=options)
+        print("Edge Driver setup with: " + locator.edge_profile_path)
+        print(guiwindow.Window_location)
+        # if guiwindow.Window_location == 1:
+        #     driver.set_window_position(-1000, 0)
+        # elif guiwindow.Window_location == 0:
+        #     driver.set_window_position(1000, 0)
+        driver.maximize_window()
+        driver.implicitly_wait(0.75)
+        return driver
 
 
 def create_folders(role):
@@ -79,8 +123,16 @@ def login_to_cozeva(CusID):
     file = open(r"assets\loginInfo.txt", "r+")
     global details
     details = file.readlines()
-    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
-    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    # JavaScript to set value directly
+    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+    # Clear and input username
+    username_field = driver.find_element_by_id("edit-name")
+    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+    # Clear and input password
+    password_field = driver.find_element_by_id("edit-pass")
+    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
@@ -138,14 +190,22 @@ def login_to_cozeva(CusID):
 
 
 def login_to_cozeva_cert(CusID):
+    time.sleep(2)
     driver.get(locator.logout_link_cert)
     driver.get(locator.login_link_cert)
     driver.maximize_window()
     file = open(r"assets\loginInfo.txt", "r+")
     global details
     details = file.readlines()
-    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
-    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+    # Clear and input username
+    username_field = driver.find_element_by_id("edit-name")
+    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+    # Clear and input password
+    password_field = driver.find_element_by_id("edit-pass")
+    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
@@ -197,8 +257,15 @@ def login_to_cozeva_stage():
     file = open(r"assets\loginInfo.txt", "r+")
     global details
     details = file.readlines()
-    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
-    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+    # Clear and input username
+    username_field = driver.find_element_by_id("edit-name")
+    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+    # Clear and input password
+    password_field = driver.find_element_by_id("edit-pass")
+    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
     file.seek(0)
     file.close()
     driver.find_element_by_id("edit-submit").click()
@@ -329,6 +396,12 @@ def login_to_user(Username):
         print("Masqueraded to user's context")
         #logger.info("Masqueraded to user's context")
 
+        switch_to_registries()
+
+        if guiwindow.verification_specs[5].isnumeric():
+            print("Non Default MY selected, Attempting to change MY")
+            change_my(guiwindow.verification_specs[5])
+
     except Exception as e:
         print(e)
         #logger.exception("Exception occurred in Masquerade block!")
@@ -363,7 +436,7 @@ def switch_to_registries():
     sub_str1 = "/case_management?"
     sub_str2 = "/ehr"
     sub_str3 = "/cozeva_messages?"
-    if context_url.find(sub_str1) > 0 or context_url.find(sub_str2) > 0 or context_url.find(sub_str3):
+    if context_url.find(sub_str1) > 0 or context_url.find(sub_str2) > 0 or context_url.find(sub_str3) > 0:
         try:
             print("Not in registries!")
             WebDriverWait(driver, 30).until(
@@ -387,6 +460,24 @@ def switch_to_registries():
     else:
         print("in registries")
         return
+
+def change_my(Measurement_year):
+    LOBdropdownelement = driver.find_element(By.XPATH, "//*[@id='qt-filter-label']")
+    LOBdropdownelement.click()
+    default_quarter = driver.find_element(By.XPATH, "//*[@id='filter-quarter']//following-sibling::li[@class=' highlight ']/span/a")
+    print(default_quarter.text)
+    LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+    if (Measurement_year != "Default"):
+        for i in range(0, len(LOBquarter)):
+            if LOBquarter[i].text == Measurement_year or LOBquarter[i].text == Measurement_year + " Q4":
+                LOBquarter[i].click()
+                break
+            LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+
+    time.sleep(4)
+    driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
+    time.sleep(2)
+    time.sleep(1)
 
 def new_launch(environment):
     print("Entered New Launch")
@@ -529,7 +620,7 @@ def limited_cozeva_support(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Limited Cozeva Support"
     ws = None
     context_functions.init_global_search()
@@ -589,7 +680,7 @@ def customer_support(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Customer Support"
     ws = None
     context_functions.init_global_search()
@@ -648,7 +739,7 @@ def regional_suport(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Regional Support"
     ws = None
     context_functions.init_global_search()
@@ -698,7 +789,7 @@ def office_admin_Prac(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Office Admin Practice Delegate"
     ws = None
     context_functions.init_global_search()
@@ -739,7 +830,7 @@ def office_admin_prov(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Office Admin Provider Delegate"
     ws = None
     context_functions.init_global_search()
@@ -774,7 +865,7 @@ def prov(username):
     workbook = create_reporting_workbook(report_folder)
     logger = logger_setup(report_folder)
     login_to_user(username)
-    switch_to_registries()
+    #switch_to_registries()
     run_from = "Provider"
     ws = None
     context_functions.init_global_search()
