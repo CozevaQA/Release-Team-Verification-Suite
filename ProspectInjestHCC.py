@@ -689,6 +689,9 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
                         print("Claim link exists")
                         service_date_value = driver.find_element_by_xpath(check_claim_link_xpath)
                         service_date.append(service_date_value.get_attribute("innerHTML"))
+                    elif (len(service_date_data) == 1):
+                        print("Service date 1 found")
+                        service_date.append(service_date_data[0].get_attribute('innerHTML'))
                     else:
                         service_date_value_xpath = "(" + service_date_xpath + ")" + "[" + str(q + 1) + "]"
                         service_date_value = driver.find_element_by_xpath(service_date_value_xpath)

@@ -3762,7 +3762,7 @@ def secure_messaging(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
-def analytics(driver, workbook, logger, run_from):
+def analytics(driver, workbook, logger,screenshot_path, run_from):
     workbook.create_sheet('Analytics')
     ws = workbook['Analytics']
 
@@ -3845,6 +3845,9 @@ def analytics(driver, workbook, logger, run_from):
                                 test_case_id += 1
                                 ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', time_taken,
                                            'No data for the selected filters', driver.current_url))
+
+                            sf.captureScreenshot(driver, workbook_name, screenshot_path)
+
                             # ASPY EDIT -------------------------------------------------------------------------------------------------------------------------
                             # '''
                             loader_element = 'sm_download_cssload_loader_wrap'
@@ -3890,6 +3893,10 @@ def analytics(driver, workbook, logger, run_from):
                                                    workbook_name + "-" + Worksheet_name, 'Failed',
                                                    (str)(round(time_taken, 3)),
                                                    'No data for the selected filters', driver.current_url))
+                                    worksheet_filename = workbook_name + "-" + Worksheet_name
+                                    worksheet_filename.replace("⇛", "")
+                                    worksheet_filename.replace("⤋", "")
+                                    #sf.captureScreenshot(driver, worksheet_filename, screenshot_path)
                                     try:
                                         driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
                                         print("Found Select all")
@@ -3900,14 +3907,26 @@ def analytics(driver, workbook, logger, run_from):
                                         break
                                         # '''
                             # Aspyedit ends here ---------------------------------------------------------------------------------------------------------------------------------------
-                            driver.find_element_by_xpath("//a[@id='sm_back']").click()
+                            try:
+                                driver.find_element_by_xpath("//a[@id='sm_back']").click()
+                            except ElementClickInterceptedException as e:
+                                raise Exception("Back button not clickable")
+                        except TimeoutException as e:
+                            print(e)
+                            traceback.print_exc()
+                            print(workbook_name + "Failed!Exception occurred!")
+                            test_case_id += 1
+                            ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', 'Loading Timed out',
+                                       driver.current_url))
+                            driver.get(current_url)
 
                         except Exception as e:
                             print(e)
                             traceback.print_exc()
                             print(workbook_name + "Failed!Exception occurred!")
-                            test_case_id += 1
-                            ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', '', driver.current_url))
+                            if "Back button not clickable" not in e:
+                                test_case_id += 1
+                                ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', '', driver.current_url))
                             driver.get(current_url)
 
                         finally:

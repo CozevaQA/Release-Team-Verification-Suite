@@ -138,7 +138,15 @@ ws1.name = "Arial"
 test_case_id = 1
 
 for user, keywords, role in zip(users, keywords_list, roles):
-    setups.login_to_user(user)
+    try:
+        print(f"Logging in with user: {user}, keywords: {keywords}, role: {role}")
+        setups.login_to_user(user)
+    except Exception as e:
+        traceback.print_exc()
+        print("User does not exist")
+        ws1.append([test_case_id, role, user, "User does not exist"])
+        wb1.save(locator.parent_dir + file)
+        continue
     setups.switch_to_registries()
     performGlobalSearch(role, user, keywords, driver, test_case_id)
     wb1.save(locator.parent_dir+file)

@@ -131,6 +131,10 @@ def rtvsmaster():
         style.theme_use('alt')
         style.configure('My.TButton', font=('Helvetica', 13, 'bold'), foreground='Black', background='#5a9c32',
                         padding=15, highlightthickness=0, height=1, width=25)
+        style.configure('My_split.TButton', font=('Helvetica', 12, 'bold'), foreground='Black', background='#5a9c32',
+                        padding=15, highlightthickness=0, height=1, width=15)
+        style.configure('My_edit.TButton', font=('Helvetica', 12, 'bold'), foreground='Black', background='#5a9c32',
+                        padding=15, highlightthickness=0, height=1, width=1)
         style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32',
                         highlightthickness=0)
         style.configure('ChromeProfiles.TButton', font=('Helvetica', 8, 'bold'), foreground='Black',
@@ -139,6 +143,9 @@ def rtvsmaster():
 
         # style.configure('My.TButton', font=('American typewriter', 14), background='#232323', foreground='white')
         style.map('My.TButton', background=[('active', '#72B132')])
+        style.map('My_edit.TButton', background=[('active', '#72B132')])
+        style.map('My_split.TButton', background=[('active', '#72B132')])
+
 
         def image_sizer(image_path):
             image_small = Image.open(image_path).resize((25, 25))
@@ -171,14 +178,14 @@ def rtvsmaster():
         # Widgets+
 
         logo_label = Label(root, image=cozeva_logo_image, background="white")
-        logo_label.grid(row=0, column=1)
+        logo_label.grid(row=0, column=2)
 
         root.columnconfigure(1, weight=1)
         root.rowconfigure(0, weight=1)
         logo_label.grid(sticky="n")
         please_select_label = Label(root, text="Release Team Verification Suite", background="white",
                                     font=("Times New Roman", 15))
-        please_select_label.grid(row=1, column=1)
+        please_select_label.grid(row=1, column=2)
         root.rowconfigure(1, weight=1)
         please_select_label.grid(sticky='n')
 
@@ -202,6 +209,10 @@ def rtvsmaster():
             root.destroy()
             import global_search
 
+        def on_global_search_edit():
+            print(os.getcwd())
+            os.startfile(os.path.join(os.getcwd(),'assets/GlobalSearch.xlsx'))
+
         def on_filter_validaton():
             flush_unused_driver()
             root.destroy()
@@ -216,6 +227,10 @@ def rtvsmaster():
             flush_unused_driver()
             root.destroy()
             import runner
+
+        def on_analytics_edit():
+            print(os.getcwd())
+            os.startfile(os.path.join(os.getcwd(), 'assets/SchemaForAllWorksheets.xlsx'))
 
         def on_slow_trends():
             root.destroy()
@@ -321,9 +336,18 @@ def rtvsmaster():
                        style='My.TButton'))
         button_widgets.append(ttk.Button(root, text="Task Ingestion(AWV)", command=on_task_ingestion,
                                          image=task_ingestion_image, compound="left", style='My.TButton'))
-        button_widgets.append(
-            ttk.Button(root, text="Analytics(Default)", command=on_analytics, image=analytics_image,
-                       compound="left", style='My.TButton'))
+        # button_widgets.append(
+        #     ttk.Button(root, text="Analytics(Default)", command=on_analytics, image=analytics_image,
+        #                compound="left", style='My.TButton'))
+
+        analytics_buttons = [
+            ttk.Button(root, text="Analytics Full", command=on_analytics, image=analytics_image,
+                       compound="left", style='My_split.TButton'),
+            ttk.Button(root, text="", command=on_analytics_edit, image=first_time_setup_image,
+                       compound="left", style='My_edit.TButton')]
+
+        button_widgets.append(analytics_buttons)
+
         button_widgets.append(
             ttk.Button(root, text="Slow Log Trends", command=on_slow_trends, image=slow_log_image, compound="left",
                        style='My.TButton'))
@@ -341,6 +365,55 @@ def rtvsmaster():
         button_widgets.append(
             ttk.Button(root, text="Overwatch", command=lambda: root_overwatch.deiconify(), image=global_search_image,
                        compound="left", style='My.TButton'))
+        global_search_buttons = [
+            ttk.Button(root, text="Global Search", command=on_global_search, image=global_search_image,
+                       compound="left", style='My_split.TButton'),
+            ttk.Button(root, text="", command=on_global_search_edit, image=first_time_setup_image,
+                       compound="left", style='My_edit.TButton')]
+
+        button_widgets.append(global_search_buttons)
+
+        button_widgets.append(
+            ttk.Button(root, text="PH", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+        button_widgets.append(
+            ttk.Button(root, text="TMP", image=help_icon_image,
+                       compound="left", style='My.TButton'))
+
+
+
+        # button_widgets.append(
+        #     ttk.Button(root, text="XML Parser", command=on_supp_data, image=global_search_image,
+        #                compound="left", style='My.TButton'))
 
         help_button = ttk.Button(root, text="Help", command=on_help, image=help_icon_image,
                                  compound="left", style='Configs.TButton')
@@ -349,10 +422,14 @@ def rtvsmaster():
         # widget counter to add the buttons in gridwise
         widget_counter = 0
         loopbreak = 0
-        for i in range(2, 6):
-            for j in range(3):
+        for i in range(2, 7):
+            for j in range(0, 6, 2):
                 try:
-                    button_widgets[widget_counter].grid(row=i, column=j, padx=5, pady=5)
+                    if isinstance(button_widgets[widget_counter], list):
+                        button_widgets[widget_counter][0].grid(row=i, column=j, padx=5, pady=5)
+                        button_widgets[widget_counter][1].grid(row=i, column=j+1, padx=5, pady=5)
+                    else:
+                        button_widgets[widget_counter].grid(row=i, column=j, columnspan=2, padx=5, pady=5)
                 except IndexError as e:
                     loopbreak = 1
                     break
@@ -361,7 +438,7 @@ def rtvsmaster():
                 break
 
         help_button.grid(row=0, column=0, sticky='nw', padx=5, pady=5)
-        update_button.grid(row=0, column=2, sticky='NE', padx=5, pady=5)
+        update_button.grid(row=0, column=4, columnspan=2, sticky='Ne', padx=5, pady=5)
 
         def chrome_profile_thread_info(state):
             chrome_profile_frame = Frame(root, background="white")
@@ -539,7 +616,7 @@ def rtvsmaster():
 
                 reset_chrome_profile_button.grid(row=11, column=0, columnspan=2)
                 kill_chromedriver_button.grid(row=12, column=0, columnspan=2)
-                chrome_profile_frame.grid(row=2, rowspan=4, column=3, sticky="NE")
+                chrome_profile_frame.grid(row=2, rowspan=6, column=6, sticky="NE")
             elif state == "REMOVE":
                 #chrome_profile_frame.grid_forget()
                 chrome_profile_frame.grid_remove()
@@ -728,7 +805,7 @@ def rtvsmaster():
 
                 reset_edge_profile_button.grid(row=11, column=0, columnspan=2)
                 kill_edgedriver_button.grid(row=12, column=0, columnspan=2)
-                edge_profile_frame.grid(row=2, rowspan=4, column=3, sticky="NE")
+                edge_profile_frame.grid(row=2, rowspan=4, column=6, sticky="NE")
             elif state == "REMOVE":
                 edge_profile_frame.destroy()
                 print("Forget Edge")
@@ -795,7 +872,7 @@ def rtvsmaster():
               font=("Times New Roman", 15)).grid(row=0, column=0, padx=1, pady=2)
         edge_check.grid(row=1, column=0, padx=2, pady=1)
         chrome_check.grid(row=2, column=0, padx=2, pady=1)
-        driver_choice_frame.grid(row=0, column=3)
+        driver_choice_frame.grid(row=0, column=6)
 
         on_driver_choice("CHROME")
 
@@ -939,8 +1016,8 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
     multi = 0
     #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
-    print("Release Team Verification Suite(RTVS) Version: 1.4.2, Latest Update: Selectable MY, Help Icon dropdown, REL Graph, Analytics Deep link")
-    print("Requires : Chrome Version 123, Edge Version 122, Python 3.9+, Git(for live updates), Windows 10, 11")
+    print("Release Team Verification Suite(RTVS) Version: 1.4.3, Latest Update: Global search, Custom Settings, Selectable MY, Help Icon dropdown, REL Graph")
+    print("Requires : Chrome Version 124, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
     print("Developed by: Writtwik Dey for the Cozeva Release Team")
     print("Current Client Count: " + str(len(db.getCustomerList()) - 2))
 
