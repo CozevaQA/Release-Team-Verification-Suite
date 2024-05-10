@@ -90,6 +90,12 @@ def check_and_create_driver_choice_pkl(file_path):
         print("Changed to Chrome 1")
         driver_choice_file.close()
 
+def check_and_create_load_contact_log_pkl(file_path):
+    if not os.path.exists(file_path):
+        with open(file_path, "wb") as contact_log_file:
+            pickle.dump(["1500"], contact_log_file)
+
+
 
 
 
@@ -98,6 +104,7 @@ check_and_create_login_file('assets\loginInfo.txt')
 check_and_create_profile_info_file('assets/chrome_profile_info.xlsx')
 check_and_create_edge_profile_info_file('assets/edge_profile_info.xlsx')
 check_and_create_driver_choice_pkl('assets/driver_choice.txt')
+check_and_create_load_contact_log_pkl('assets/contact_log.pkl')
 # This snippet will check if the logininfo file is empty. If it is, it will run first time setup
 # then it will import the locator library
 file = open(r"assets\loginInfo.txt", "r+")
@@ -146,7 +153,25 @@ def rtvsmaster():
         style.map('My_edit.TButton', background=[('active', '#72B132')])
         style.map('My_split.TButton', background=[('active', '#72B132')])
 
+        def create_tooltip(widget, text):
+            def on_enter(event):
+                global tooltip_window
+                x = widget.winfo_rootx() + 20
+                y = widget.winfo_rooty() + widget.winfo_height() + 20
+                tooltip_window = Toplevel()
+                tooltip_window.wm_overrideredirect(True)
+                tooltip_window.wm_geometry("+%d+%d" % (x, y))
+                label = Label(tooltip_window, text=text, justify='left',
+                                 background='yellow', relief='solid', borderwidth=1,
+                                 font=("tahoma", "8", "normal"))
+                label.pack(ipadx=1)
 
+            def on_leave(event):
+                global tooltip_window
+                tooltip_window.destroy()
+
+            widget.bind("<Enter>", on_enter)
+            widget.bind("<Leave>", on_leave)
         def image_sizer(image_path):
             image_small = Image.open(image_path).resize((25, 25))
 
@@ -166,6 +191,7 @@ def rtvsmaster():
         special_column_image = ImageTk.PhotoImage(image_sizer("assets/images/special_columns.png"))
         hospital_activity_image = ImageTk.PhotoImage(image_sizer("assets/images/hospital_activity.png"))
         supp_data_image = ImageTk.PhotoImage(image_sizer("assets/images/supp_data.png"))
+        contact_log_image = ImageTk.PhotoImage(image_sizer("assets/images/contact_log.png"))
         cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((320, 71)))
         help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((20, 20)))
         update_image = ImageTk.PhotoImage(Image.open("assets/images/update_image_2.png").resize((20, 20)))
@@ -174,6 +200,7 @@ def rtvsmaster():
         orange_dot_image = ImageTk.PhotoImage(Image.open("assets/images/OrangeDot.png").resize((10, 10)))
         chrome_logo_image = ImageTk.PhotoImage(Image.open("assets/images/chrome_logo.png").resize((15, 15)))
         edge_logo_image = ImageTk.PhotoImage(Image.open("assets/images/edge_logo.png").resize((15, 15)))
+
 
         # Widgets+
 
@@ -254,6 +281,61 @@ def rtvsmaster():
             # import Supplemental_data_alternate
             # import secret_menu
             import xml_parser
+
+        def on_contact_log():
+            root.destroy()
+            import contact_log_validator
+
+        # Settings will open a small UI to add in client IDS. Maybe the checkbox UI?
+        root_contact_log = Toplevel(root)
+        root_contact_log.title("Contact Log Client Selector")
+        root_contact_log.iconbitmap("assets/icon.ico")
+        root_contact_log.withdraw()
+
+        def on_submitbutton_contact_log():
+            global client_list_contact_log
+            for i_clog2 in range(1, len(Checkbox_variables_contact_log)):
+                # print("In here?")
+                if Checkbox_variables_contact_log[i_clog2].get() == 1:
+                    #print(db.fetchCustomerID(customer_list_contact_log[i_clog2]))
+                    client_list_contact_log.append(db.fetchCustomerID(customer_list_contact_log[i_clog2]))
+            #print("asdfdf")
+            # print(client_list_contact_log)
+            with open("assets/contact_log.pkl", "wb") as contact_log_file:
+                pickle.dump(client_list_contact_log, contact_log_file)
+
+            # root_contact_log.destroy()
+
+        customer_list_contact_log = db.getCustomerList()
+        # print(customer_list_contact_log)
+        # Checkbox_variables_contact_log = [None] * len(customer_list_contact_log)
+        Checkbox_variables_contact_log = [IntVar() for _ in range(len(customer_list_contact_log))]
+        # for i_clog in range(0, len(Checkbox_variables_contact_log)):
+        #    Checkbox_variables_contact_log[i_clog] = IntVar()
+        # print(len(Checkbox_variables_contact_log))
+        Checkbox_widgets_contact_log = []
+
+        # GenerateCheckboxesForall
+        for i_clog3 in range(0, len(customer_list_contact_log)):
+            Checkbox_widgets_contact_log.append(
+                Checkbutton(root_contact_log, text=customer_list_contact_log[i_clog3],
+                            variable=Checkbox_variables_contact_log[i_clog3],
+                            font=("Nunito Sans", 10)))
+        submit_button_contact_log = Button(root_contact_log, text="Submit", command=on_submitbutton_contact_log,
+                                           font=("Nunito Sans", 10))
+        # print(Checkbox_widgets_contact_log)
+        # add all checkboxes to a grid
+        # practice_sidemenu_checkbox.grid(row=3, column=0, columnspan=5, sticky="w")
+        for i_clog4 in range(1, len(Checkbox_widgets_contact_log)):
+            if i_clog4 <= 20:
+                Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4, column=0, sticky="w")
+            elif 20 < i_clog4 <= 40:
+                Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 20, column=1, sticky="w")
+            elif 40 < i_clog4 <= 60:
+                Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 40, column=2, sticky="w")
+            elif 60 < i_clog4 <= 80:
+                Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 60, column=3, sticky="w")
+        submit_button_contact_log.grid(row=0, column=3, sticky="e")
 
         def on_submitbutton():
             flush_unused_driver()
@@ -374,12 +456,18 @@ def rtvsmaster():
         button_widgets.append(global_search_buttons)
 
         button_widgets.append(
-            ttk.Button(root, text="PH", image=help_icon_image,
-                       compound="left", style='My.TButton'))
-
-        button_widgets.append(
             ttk.Button(root, text="TMP", image=help_icon_image,
                        compound="left", style='My.TButton'))
+
+        contact_log_buttons = [
+            ttk.Button(root, text="Contact Log", command=on_contact_log, image=contact_log_image,
+                       compound="left", style='My_split.TButton'),
+            ttk.Button(root, text="", command=lambda: root_contact_log.deiconify(), image=first_time_setup_image,
+                       compound="left", style='My_edit.TButton')]
+
+        button_widgets.append(contact_log_buttons)
+
+
 
         button_widgets.append(
             ttk.Button(root, text="TMP", image=help_icon_image,
@@ -422,12 +510,23 @@ def rtvsmaster():
         # widget counter to add the buttons in gridwise
         widget_counter = 0
         loopbreak = 0
+        tooptip_counter = 0
+        with open("assets/contact_log.pkl", 'rb') as contact_log_file:
+            client_list_contact_log = pickle.load(contact_log_file)
+        contact_log_tooltip = '''Saved Config: \n'''
+        for contact_log_id in client_list_contact_log:
+            contact_log_tooltip += db.fetchCustomerName(contact_log_id) + "\n"
+        contact_log_tooltip = contact_log_tooltip[:-1]
+
         for i in range(2, 7):
             for j in range(0, 6, 2):
                 try:
                     if isinstance(button_widgets[widget_counter], list):
+                        tooptip_counter+=1
                         button_widgets[widget_counter][0].grid(row=i, column=j, padx=5, pady=5)
                         button_widgets[widget_counter][1].grid(row=i, column=j+1, padx=5, pady=5)
+                        if tooptip_counter == 3:
+                            create_tooltip(button_widgets[widget_counter][1], contact_log_tooltip)
                     else:
                         button_widgets[widget_counter].grid(row=i, column=j, columnspan=2, padx=5, pady=5)
                 except IndexError as e:
@@ -1015,8 +1114,9 @@ def run_script(argument):
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     multi = 0
+    client_list_contact_log = []
     #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
-    print("Release Team Verification Suite(RTVS) Version: 1.4.3, Latest Update: Global search, Custom Settings, Selectable MY, Help Icon dropdown, REL Graph")
+    print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
     print("Requires : Chrome Version 124, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
     print("Developed by: Writtwik Dey for the Cozeva Release Team")
     print("Current Client Count: " + str(len(db.getCustomerList()) - 2))

@@ -3785,6 +3785,9 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
     test_case_id = 1
     last_url = driver.current_url
 
+    screenshot_path_analytics=os.path.join(screenshot_path,"Analytics")
+    sf.make_directory(screenshot_path_analytics)
+
     try:
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
         driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
@@ -3836,7 +3839,11 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
                                 (By.XPATH, "// div[@class ='sm_download_cssload_loader']")))
                             WebDriverWait(driver, 30).until(
                                 EC.presence_of_element_located((By.XPATH, "//a[@id='sm_back']")))
+                            worksheet_name_xpath='//div[@class="grey-text text-darken-2 sm_panel_heading"]'
+                            worksheet_name=driver.find_element_by_xpath(worksheet_name_xpath).get_attribute("innerHTML")
+                            worksheet_name_modified = worksheet_name.replace("*", "")
                             time_taken = time.perf_counter() - start_time
+                            no_data_found_flag=False
                             if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
                                 print(workbook_name + "Passed")
                                 test_case_id += 1
@@ -3845,71 +3852,79 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
                                 test_case_id += 1
                                 ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', time_taken,
                                            'No data for the selected filters', driver.current_url))
+                                no_data_found_flag=True
 
-                            sf.captureScreenshot(driver, workbook_name, screenshot_path)
+
+                            screenshot_final_path=os.path.join(screenshot_path_analytics,worksheet_name_modified)
+                            sf.make_directory(screenshot_final_path)
+                            sf.captureScreenshot(driver, worksheet_name, screenshot_final_path)
 
                             # ASPY EDIT -------------------------------------------------------------------------------------------------------------------------
                             # '''
-                            loader_element = 'sm_download_cssload_loader_wrap'
-                            loader_element2 = 'toast sm_small_toast_message'
-                            WebDriverWait(driver, 100).until(
-                                EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
-                            WebDriverWait(driver, 100).until(
-                                EC.invisibility_of_element_located((By.CLASS_NAME, loader_element2)))
-                            # WebDriverWait(driver, 30).until(
-                            # EC.element_to_be_clickable((By.XPATH, "// *[ @ id = 'sm_select_all'] / i")))
-                            time.sleep(0.5)
-                            select_all_present = True
-                            try:
-                                driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
-                            except Exception as e:
-                                print("No select all checkbox")
-                                select_all_present = False
-                            if select_all_present:
-                                Drilldown_links = driver.find_element_by_class_name("breadcrumb_dropdown"). \
-                                    find_elements_by_tag_name("a")
-                            print("hello???")
-                            # Next_drilldown_present = True
-                            Drilldown_links.pop(0)
-                            for link in Drilldown_links:
+                            if(no_data_found_flag==False):
+                                loader_element = 'sm_download_cssload_loader_wrap'
+                                loader_element2 = 'toast sm_small_toast_message'
+                                WebDriverWait(driver, 100).until(
+                                    EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
+                                WebDriverWait(driver, 100).until(
+                                    EC.invisibility_of_element_located((By.CLASS_NAME, loader_element2)))
+                                # WebDriverWait(driver, 30).until(
+                                # EC.element_to_be_clickable((By.XPATH, "// *[ @ id = 'sm_select_all'] / i")))
+                                time.sleep(0.5)
+                                select_all_present = True
+                                try:
+                                    driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
+                                except Exception as e:
+                                    print("No select all checkbox")
+                                    select_all_present = False
                                 if select_all_present:
-                                    link.click()
-                                    start_time = time.perf_counter()
-                                    WebDriverWait(driver, 500).until(
-                                        EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
-                                    time_taken = time.perf_counter() - start_time
-                                    WebDriverWait(driver, 100).until(
-                                        EC.invisibility_of_element_located((By.CLASS_NAME, loader_element2)))
-                                    Worksheet_name = link.text
-                                    if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
-                                        print(Worksheet_name + "Passed")
-                                        test_case_id += 1
-                                        ws.append(
-                                            (test_case_id, 'Analytics Worksheet', Worksheet_name, 'Passed',
-                                             (str)(round(time_taken, 3))))
-                                    elif len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
-                                        test_case_id += 1
-                                        ws.append((test_case_id, 'Analytics Worksheet',
-                                                   workbook_name + "-" + Worksheet_name, 'Failed',
-                                                   (str)(round(time_taken, 3)),
-                                                   'No data for the selected filters', driver.current_url))
-                                    worksheet_filename = workbook_name + "-" + Worksheet_name
-                                    worksheet_filename.replace("⇛", "")
-                                    worksheet_filename.replace("⤋", "")
-                                    #sf.captureScreenshot(driver, worksheet_filename, screenshot_path)
-                                    try:
-                                        driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
-                                        print("Found Select all")
-                                    except Exception as e:
-                                        print("No select all checkbox")
-                                        print(e)
-                                        select_all_present = False
-                                        break
-                                        # '''
+                                    Drilldown_links = driver.find_element_by_class_name("breadcrumb_dropdown"). \
+                                        find_elements_by_tag_name("a")
+                                print("hello???")
+                                # Next_drilldown_present = True
+                                Drilldown_links.pop(0)
+                                for link in Drilldown_links:
+                                    if select_all_present:
+                                        link.click()
+                                        start_time = time.perf_counter()
+                                        WebDriverWait(driver, 500).until(
+                                            EC.invisibility_of_element_located((By.CLASS_NAME, loader_element)))
+                                        time_taken = time.perf_counter() - start_time
+                                        WebDriverWait(driver, 100).until(
+                                            EC.invisibility_of_element_located((By.CLASS_NAME, loader_element2)))
+                                        Worksheet_name = link.text
+                                        if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
+                                            print(Worksheet_name + "Passed")
+                                            test_case_id += 1
+                                            ws.append(
+                                                (test_case_id, 'Analytics Worksheet', Worksheet_name, 'Passed',
+                                                 (str)(round(time_taken, 3))))
+                                        elif len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
+                                            test_case_id += 1
+                                            ws.append((test_case_id, 'Analytics Worksheet',
+                                                       workbook_name + "-" + Worksheet_name, 'Failed',
+                                                       (str)(round(time_taken, 3)),
+                                                       'No data for the selected filters', driver.current_url))
+                                        worksheet_filename = workbook_name + "-" + Worksheet_name
+                                        worksheet_filename.replace("⇛", "")
+                                        worksheet_filename.replace("⤋", "")
+                                        sf.captureScreenshot(driver, worksheet_filename, screenshot_final_path)
+                                        try:
+                                            driver.find_element_by_xpath("// *[ @ id = 'sm_select_all'] / i").click()
+                                            print("Found Select all")
+                                        except Exception as e:
+                                            print("No select all checkbox")
+                                            print(e)
+                                            select_all_present = False
+                                            # '''
+
+
+
+
                             # Aspyedit ends here ---------------------------------------------------------------------------------------------------------------------------------------
                             try:
-                                driver.find_element_by_xpath("//a[@id='sm_back']").click()
-                            except ElementClickInterceptedException as e:
+                                sf.action_click(driver,driver.find_element_by_xpath("//a[@id='sm_back']"))
+                            except (ElementClickInterceptedException,ElementNotInteractableException) as e:
                                 raise Exception("Back button not clickable")
                         except TimeoutException as e:
                             print(e)
@@ -3919,15 +3934,16 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
                             ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', 'Loading Timed out',
                                        driver.current_url))
                             driver.get(current_url)
+                            continue
 
                         except Exception as e:
                             print(e)
                             traceback.print_exc()
-                            print(workbook_name + "Failed!Exception occurred!")
-                            if "Back button not clickable" not in e:
-                                test_case_id += 1
-                                ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', '', driver.current_url))
+                            print(workbook_name + " Failed!Exception occurred!")
+                            test_case_id += 1
+                            ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', '', '', driver.current_url))
                             driver.get(current_url)
+                            continue
 
                         finally:
                             workbook_link += 1
@@ -6358,6 +6374,8 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
 
     # verify_sticket(driver, workbook, logger, run_from, customer_id)
     verify_sticket(driver, workbook, logger, run_from, customer_id)
+
+
 
 
 def map_codingtool(driver, workbook, logger, run_from, customer_id):

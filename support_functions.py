@@ -1,4 +1,6 @@
+import os
 import re
+import shutil
 import traceback
 from datetime import date, datetime, time
 import random
@@ -8,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException
+    ElementClickInterceptedException, StaleElementReferenceException
 import time
 import py_compile
 
@@ -170,7 +172,7 @@ def captureScreenshot(driver, page_title, screenshot_path):
     try:
         date = datetime.now().strftime('%H_%M_%S_%p')
 
-        bad_chars = [';', ':', '|', ' ', '/', '\\']
+        bad_chars = [';', ':', '|', ' ', '/', '\\','*']
         for i in bad_chars:
             final_title_text = page_title.replace(i, '_')
 
@@ -199,3 +201,32 @@ def URLAccessCheck(targetpath,driver):
 def get_patient_id(href):
     cozeva_id = re.search('/patient_detail/(.*)?session', href)
     return (cozeva_id.group(1).replace("?", ""))
+
+
+
+def make_directory(customer):
+    customer_id = customer
+    path1 = str(customer_id)
+    if not os.path.exists(path1):
+        try:
+            os.mkdir(path1)
+            return path1
+        except OSError as error:
+            print(error)
+            return False
+    else:
+        try:
+            shutil.rmtree(path1)
+            os.mkdir(path1)
+            return path1
+        except OSError as error:
+            print(error)
+            return False
+
+
+def action_click(driver,element):
+    try:
+        element.click()
+    except (ElementNotInteractableException, ElementClickInterceptedException,StaleElementReferenceException):
+        driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        driver.execute_script("arguments[0].click();", element)
