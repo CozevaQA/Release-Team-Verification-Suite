@@ -50,8 +50,6 @@ def init_global_search():
     global_search_prac = None
 
 
-
-
 def support_menubar(driver, workbook, ws, logger, run_from):
     current_function = "any"
     if ws is None:
@@ -2006,9 +2004,20 @@ def practice_registry(driver, workbook, logger, run_from):
                 print("Preloader Reappeared")
                 sf.ajax_preloader_wait(driver)
             time_taken = round((time.perf_counter() - start_time), 3)
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
+            # WebDriverWait(driver, 30).until(
+            #    EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, "ui_header_patient_name")))
+
             if len(driver.find_elements_by_xpath(locator.xpath_careops)) != 0:
+                ws.append([test_case_id, selected_patient_name,
+                           "Navigation to patient context through patient toggle of practice Metric Specific List",
+                           'Passed', time_taken])
+                test_case_id += 1
+                driver.close()
+                driver.switch_to.window(driver.window_handles[0])
+                driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
+            elif len(driver.find_elements_by_xpath(locator.xpath_careops2)) != 0:
                 ws.append([test_case_id, selected_patient_name,
                            "Navigation to patient context through patient toggle of practice Metric Specific List",
                            'Passed', time_taken])
@@ -6374,8 +6383,6 @@ def sticket_validation(driver, workbook, logger, screenshot_path, run_from, cust
 
     # verify_sticket(driver, workbook, logger, run_from, customer_id)
     verify_sticket(driver, workbook, logger, run_from, customer_id)
-
-
 
 
 def map_codingtool(driver, workbook, logger, run_from, customer_id):

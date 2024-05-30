@@ -20,7 +20,7 @@ from msedge.selenium_tools import Edge, EdgeOptions
 import ExcelProcessor as db
 import openpyxl
 from PIL import ImageTk, Image
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import webbrowser
 import os
 
@@ -140,7 +140,9 @@ def rtvsmaster():
                         padding=15, highlightthickness=0, height=1, width=25)
         style.configure('My_split.TButton', font=('Helvetica', 12, 'bold'), foreground='Black', background='#5a9c32',
                         padding=15, highlightthickness=0, height=1, width=15)
-        style.configure('My_edit.TButton', font=('Helvetica', 12, 'bold'), foreground='Black', background='#5a9c32',
+        style.configure('My_split_filt.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32',
+                        padding=15, highlightthickness=0, height=1, width=20)
+        style.configure('My_edit.TButton', font=('Helvetica', 8, 'bold'), foreground='Black', background='#5a9c32',
                         padding=15, highlightthickness=0, height=1, width=1)
         style.configure('Configs.TButton', font=('Helvetica', 10, 'bold'), foreground='Black', background='#5a9c32',
                         highlightthickness=0)
@@ -152,6 +154,7 @@ def rtvsmaster():
         style.map('My.TButton', background=[('active', '#72B132')])
         style.map('My_edit.TButton', background=[('active', '#72B132')])
         style.map('My_split.TButton', background=[('active', '#72B132')])
+        style.map('My_split_filt.TButton', background=[('active', '#72B132')])
 
         def create_tooltip(widget, text):
             def on_enter(event):
@@ -179,7 +182,8 @@ def rtvsmaster():
 
         # making image widgets
         first_time_setup_image = ImageTk.PhotoImage(image_sizer("assets/images/first_time_setup.png"))
-        verification_suite_image = ImageTk.PhotoImage(image_sizer("assets/images/verification_suite.png"))
+        # verification_suite_image = ImageTk.PhotoImage(image_sizer("assets/images/verification_suite.png"))
+        verification_suite_image = ImageTk.PhotoImage(Image.open("assets/images/verification_suite.png").resize((20, 22)))
         hcc_validation_image = ImageTk.PhotoImage(image_sizer("assets/images/hcc_validation.png"))
         global_search_image = ImageTk.PhotoImage(image_sizer("assets/images/global_search.png"))
         filter_validation_image = ImageTk.PhotoImage(image_sizer("assets/images/filter_validation_icon.png"))
@@ -200,6 +204,7 @@ def rtvsmaster():
         orange_dot_image = ImageTk.PhotoImage(Image.open("assets/images/OrangeDot.png").resize((10, 10)))
         chrome_logo_image = ImageTk.PhotoImage(Image.open("assets/images/chrome_logo.png").resize((15, 15)))
         edge_logo_image = ImageTk.PhotoImage(Image.open("assets/images/edge_logo.png").resize((15, 15)))
+        export_logo_image = ImageTk.PhotoImage(image_sizer("assets/images/export_logo.png"))
 
 
         # Widgets+
@@ -304,7 +309,27 @@ def rtvsmaster():
             with open("assets/contact_log.pkl", "wb") as contact_log_file:
                 pickle.dump(client_list_contact_log, contact_log_file)
 
-            # root_contact_log.destroy()
+            new_config_popup = '''Configuration changed to:\n'''
+            for contact_log_id_popup in client_list_contact_log:
+                new_config_popup += db.fetchCustomerName(contact_log_id_popup) + "\n"
+            new_config_popup = new_config_popup[:-1]
+
+            messagebox.showinfo("Contact Log Config", new_config_popup)
+
+            root_contact_log.destroy()
+            root.destroy()
+            import contact_log_validator
+
+        def on_chart_list_export():
+            print("Chart List validation clicked")
+            root.destroy()
+            import ChartListExportVerification
+
+        def on_chart_list_report_preview():
+            print("Chart List preview clicked")
+            #root.destroy()
+            #import view_chartlist_report
+            exec(open("view_chartlist_report.py").read(), globals())
 
         customer_list_contact_log = db.getCustomerList()
         # print(customer_list_contact_log)
@@ -412,10 +437,19 @@ def rtvsmaster():
                        compound="left", style='My.TButton'))
         button_widgets.append(ttk.Button(root, text="HCC Validation Multi-Client", command=on_hcc_validation,
                                          image=hcc_validation_image, compound="left", style='My.TButton'))
-        button_widgets.append(
-            ttk.Button(root, text="Filter Validation", command=on_filter_validaton, image=filter_validation_image,
-                       compound="left",
-                       style='My.TButton'))
+        # button_widgets.append(
+        #     ttk.Button(root, text="Filter Validation", command=on_filter_validaton, image=filter_validation_image,
+        #                compound="left",
+        #                style='My.TButton'))
+
+        chart_list_export_buttons = [
+            ttk.Button(root, text="Filters and Exports", command=on_chart_list_export, image=export_logo_image,
+                       compound="left", style='My_split_filt.TButton'),
+            ttk.Button(root, text="", command=on_chart_list_report_preview, image=first_time_setup_image,
+                       compound="left", style='My_edit.TButton')]
+
+        button_widgets.append(chart_list_export_buttons)
+
         button_widgets.append(ttk.Button(root, text="Task Ingestion(AWV)", command=on_task_ingestion,
                                          image=task_ingestion_image, compound="left", style='My.TButton'))
         # button_widgets.append(
@@ -436,9 +470,11 @@ def rtvsmaster():
         button_widgets.append(
             ttk.Button(root, text="PDF Print Validation", command=on_pdf_print, image=pdf_printer_image,
                        compound="left", style='My.TButton'))
+
         button_widgets.append(
             ttk.Button(root, text="Special Columns", command=on_special_columns, image=special_column_image,
                        compound="left", style='My.TButton'))
+
         button_widgets.append(ttk.Button(root, text="Hospital Activity (All Clients)", command=on_hospital_activity,
                                          image=hospital_activity_image, compound="left", style='My.TButton'))
         button_widgets.append(
@@ -510,23 +546,33 @@ def rtvsmaster():
         # widget counter to add the buttons in gridwise
         widget_counter = 0
         loopbreak = 0
-        tooptip_counter = 0
+        tooltip_counter = 0
         with open("assets/contact_log.pkl", 'rb') as contact_log_file:
             client_list_contact_log = pickle.load(contact_log_file)
         contact_log_tooltip = '''Saved Config: \n'''
         for contact_log_id in client_list_contact_log:
-            contact_log_tooltip += db.fetchCustomerName(contact_log_id) + "\n"
+            contact_log_tooltip += contact_log_id+" - "+ db.fetchCustomerName(contact_log_id) + "\n"
         contact_log_tooltip = contact_log_tooltip[:-1]
+        view_report_tooltip = "View Previous Report"
+        filters_exports_tooltip = '''Predefined List: \n'''
+        customer_ids_filter_export = ["3000", "1300", "200", "4600", "6800", "6700", "1000", "3300", "1850"]
+        customer_ids_filter_export.sort()
+        for customer_id_filter_export in customer_ids_filter_export:
+            filters_exports_tooltip+= customer_id_filter_export+" - "+db.fetchCustomerName(customer_id_filter_export) + "\n"
+        filters_exports_tooltip = filters_exports_tooltip[:-1]
 
         for i in range(2, 7):
             for j in range(0, 6, 2):
                 try:
                     if isinstance(button_widgets[widget_counter], list):
-                        tooptip_counter+=1
+                        tooltip_counter+=1
                         button_widgets[widget_counter][0].grid(row=i, column=j, padx=5, pady=5)
                         button_widgets[widget_counter][1].grid(row=i, column=j+1, padx=5, pady=5)
-                        if tooptip_counter == 3:
-                            create_tooltip(button_widgets[widget_counter][1], contact_log_tooltip)
+                        if tooltip_counter == 1:
+                            create_tooltip(button_widgets[widget_counter][0], filters_exports_tooltip)
+                            create_tooltip(button_widgets[widget_counter][1], view_report_tooltip)
+                        if tooltip_counter == 4:
+                            create_tooltip(button_widgets[widget_counter][0], contact_log_tooltip)
                     else:
                         button_widgets[widget_counter].grid(row=i, column=j, columnspan=2, padx=5, pady=5)
                 except IndexError as e:
@@ -718,7 +764,8 @@ def rtvsmaster():
                 chrome_profile_frame.grid(row=2, rowspan=6, column=6, sticky="NE")
             elif state == "REMOVE":
                 #chrome_profile_frame.grid_forget()
-                chrome_profile_frame.grid_remove()
+                #chrome_profile_frame.grid_remove()
+                chrome_profile_frame.destroy()
                 print("Forget Chrome")
 
         def edge_profile_thread_info(state):
@@ -784,7 +831,6 @@ def rtvsmaster():
                         2].strip() + "\\AppData\\Local\\Microsoft\\Edge\\User Data\\" + expired_profile
                     login_info_file.seek(0)
                     login_info_file.close()
-                    print("is this even working???? helloooooooooo?")
                     print(expired_edge_profile_path)
 
                     options = EdgeOptions()
@@ -1116,7 +1162,8 @@ if __name__ == '__main__':
     multi = 0
     client_list_contact_log = []
     #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
-    print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
+    #print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
+    print("Release Team Verification Suite(RTVS) Version: 1.4.5, Latest Update: Exports and filters(Chart Lists), Global search, Custom Settings, Help Icon dropdown")
     print("Requires : Chrome Version 124, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
     print("Developed by: Writtwik Dey for the Cozeva Release Team")
     print("Current Client Count: " + str(len(db.getCustomerList()) - 2))

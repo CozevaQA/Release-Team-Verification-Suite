@@ -23,13 +23,13 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'PROD'
-URL = ""
-client_list = ["1300"]
-Selected_checklist = []
-provider_count = 1
-measurement_year = "2022"
-PatientDashboardFlag = 0
+# ENV = 'PROD'
+# URL = ""
+# client_list = ["1300"]
+# Selected_checklist = []
+# provider_count = 1
+# measurement_year = "2022"
+# PatientDashboardFlag = 0
 
 
 
@@ -69,11 +69,11 @@ def fetch_client_name():
     # root.geometry("400x400")
     root.mainloop()
 
-def supplemental_data_list():
-    wb.create_sheet('Supplemental Data List')
-    ws = wb['Supplemental Data List']
+def supplemental_data_list(driver, client_id, wb, report_folder, workbook_title):
+    wb.create_sheet('Supplemental Data List'+ client_id)
+    ws = wb['Supplemental Data List'+ client_id]
     ws.append(["ID", "Filter", "Filtered Value", "Data Present", "Status", "Comments"])
-    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_list[0], client_list[0], client_list[0], client_list[0], client_list[0])
+    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_id, client_id, client_id, client_id, client_id)
     encoded_string = base64.b64encode(url_session.encode('utf-8'))
     supplemental_data_list_url = "https://www.cozeva.com/smart_chart?session={}&list_type=1".format(encoded_string.decode('utf-8'))
     print(supplemental_data_list_url)
@@ -207,11 +207,11 @@ def supplemental_data_list():
 
     wb.save(report_folder + "\\" + workbook_title)
 
-def hcc_chart_list():
-    wb.create_sheet('HCC Chart List')
-    ws = wb['HCC Chart List']
+def hcc_chart_list(driver, client_id, wb, report_folder, workbook_title):
+    wb.create_sheet('HCC Chart List'+ client_id)
+    ws = wb['HCC Chart List'+ client_id]
     ws.append(["ID", "Filter", "Filtered Value", "Data Present", "Status", "Comments"])
-    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_list[0], client_list[0], client_list[0], client_list[0], client_list[0])
+    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_id, client_id, client_id, client_id, client_id)
     encoded_string = base64.b64encode(url_session.encode('utf-8'))
     supplemental_data_list_url = "https://www.cozeva.com/smart_chart?session={}&list_type=2".format(encoded_string.decode('utf-8'))
     print(supplemental_data_list_url)
@@ -357,11 +357,11 @@ def hcc_chart_list():
     wb.save(report_folder + "\\" + workbook_title)
 
 
-def awv_chart_list():
-    wb.create_sheet('AWV Chart List')
-    ws = wb['AWV Chart List']
+def awv_chart_list(driver, client_id, wb, report_folder, workbook_title):
+    wb.create_sheet('AWV Chart List '+client_id)
+    ws = wb['AWV Chart List '+client_id]
     ws.append(["ID", "Filter", "Filtered Value", "Data Present", "Status", "Comments"])
-    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_list[0], client_list[0], client_list[0], client_list[0], client_list[0])
+    url_session = "app_id=registries&custId={}&payerId={}&orgId={}&vgpId={}&vpId={}".format(client_id, client_id, client_id, client_id, client_id)
     encoded_string = base64.b64encode(url_session.encode('utf-8'))
     supplemental_data_list_url = "https://www.cozeva.com/smart_chart?session={}&list_type=3".format(encoded_string.decode('utf-8'))
     print(supplemental_data_list_url)
@@ -506,54 +506,64 @@ def awv_chart_list():
 
     wb.save(report_folder + "\\" + workbook_title)
 
-def pending_list():
+def pending_list(client_id, wb, report_folder, workbook_title):
     # make a copy the hcc chart list but replace the list type with 4, and the filter names with the pending list filter names
     wb.create_sheet('Pending List')
     ws = wb['Pending List']
     ws.append(["ID", "Filter", "Filtered Value", "Data Present", "Status", "Comments"]) # add the filter names
 
-fetch_client_name()
+# fetch_client_name()
 
-report_folder = os.path.join(locator.parent_dir,"Filter Validation")
-isdir = os.path.isdir(report_folder)
-if not isdir:
-    os.mkdir(report_folder)
-client_string = ""
-for ID in client_list:
-    client_string = client_string + "_" +ID
-workbook_title = "Filter_report"+client_string+"_"+sf.date_time()+".xlsx"
+def create_report_folder_and_file(client_list):
+    report_folder = os.path.join(locator.parent_dir, "Filter Validation")
+    isdir = os.path.isdir(report_folder)
+    if not isdir:
+        os.mkdir(report_folder)
+    client_string = ""
+    for ID in client_list:
+        client_string = client_string + "_" + ID
+    workbook_title = "Filter_report" + client_string + "_" + sf.date_time() + ".xlsx"
+    wb = Workbook()
+    wb.save(report_folder + "\\" + workbook_title)
+    return wb, report_folder, workbook_title
 
-wb = Workbook()
+
+
+
+
+
+
+
 #ws.title = client_list[0] + ENV
 
-wb.save(report_folder + "\\" + workbook_title)
 
-for ID in client_list:
-    driver = setups.driver_setup()
-    if ENV == 'CERT':
-        setups.login_to_cozeva_cert(ID)
-    elif ENV == 'STAGE':
-        setups.login_to_cozeva_stage()
-    elif ENV == "PROD":
-        setups.login_to_cozeva(ID)
-    else:
-        print("ENV INVALID")
-        driver.quit()
-        exit(3)
 
-    try:
-        supplemental_data_list()
-        try:
-            hcc_chart_list()
-        except IndexError as e:
-            pass
-        try:
-            awv_chart_list()
-        except IndexError as e:
-            pass
-    except Exception as e:
-        traceback.print_exc()
-        print(e)
+# for ID in client_list:
+#     driver = setups.driver_setup()
+#     if ENV == 'CERT':
+#         setups.login_to_cozeva_cert(ID)
+#     elif ENV == 'STAGE':
+#         setups.login_to_cozeva_stage()
+#     elif ENV == "PROD":
+#         setups.login_to_cozeva(ID)
+#     else:
+#         print("ENV INVALID")
+#         driver.quit()
+#         exit(3)
+#
+#     try:
+#         supplemental_data_list()
+#         try:
+#             hcc_chart_list()
+#         except IndexError as e:
+#             pass
+#         try:
+#             awv_chart_list()
+#         except IndexError as e:
+#             pass
+#     except Exception as e:
+#         traceback.print_exc()
+#         print(e)
 
 
 

@@ -54,7 +54,9 @@ def driver_setup():
         options.add_argument("--no-sandbox")
         options.add_argument("--dns-prefetch-disable")
         preferences = {
-            "download.default_directory": locator.download_dir}
+            "download.default_directory": locator.download_dir,
+            "download.prompt_for_download": False,
+            "safebrowsing.enabled": True}
         options.add_experimental_option("prefs", preferences)
 
         driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
@@ -84,6 +86,78 @@ def driver_setup():
         options.add_argument("--dns-prefetch-disable")
         preferences = {
             "download.default_directory": locator.download_dir}
+        options.add_experimental_option("prefs", preferences)
+        driver = Edge(executable_path=locator.edge_driver_path, options=options)
+        print("Edge Driver setup with: " + locator.edge_profile_path)
+        print(guiwindow.Window_location)
+        # if guiwindow.Window_location == 1:
+        #     driver.set_window_position(-1000, 0)
+        # elif guiwindow.Window_location == 0:
+        #     driver.set_window_position(1000, 0)
+        driver.maximize_window()
+        driver.implicitly_wait(0.75)
+        return driver
+
+
+def driver_setup_with_download(download_dir):
+    global driver
+    # Loading the string value from the .pkl file
+    # with open('assets/driver_choice.pkl', "rb") as file:
+    #     driver_choice = pickle.load(file)
+    #     print("In Driver setup with :"+driver_choice)
+    #     file.close()
+    with open("assets/driver_choice.txt", 'r+') as driver_choice_file:
+        driver_choice = driver_choice_file.read().strip()
+        driver_choice_file.seek(0)
+    driver_choice_file.close()
+
+    print("In Driver setup with :" + driver_choice)
+    if driver_choice == "CHROME":
+        options = webdriver.ChromeOptions()
+        options.add_argument("--disable-notifications")
+        options.add_argument("--start-maximized")
+        options.add_argument(locator.chrome_profile_path)  # Path to your chrome profile
+        if guiwindow.headlessmode == 1:
+            options.add_argument("--headless")
+
+        options.add_argument('--disable-gpu')
+        # options.add_argument("--window-size=1920,1080")
+        # options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--dns-prefetch-disable")
+        preferences = {
+            "download.default_directory": download_dir,
+            "download.prompt_for_download": False,
+            "safebrowsing.enabled": True}
+        options.add_experimental_option("prefs", preferences)
+
+        driver = webdriver.Chrome(executable_path=locator.chrome_driver_path, options=options)
+        print("Chrome Driver setup with: " + locator.chrome_profile_path)
+        print(guiwindow.Window_location)
+        if guiwindow.Window_location == 1:
+            driver.set_window_position(-1000, 0)
+        elif guiwindow.Window_location == 0:
+            driver.set_window_position(1000, 0)
+        driver.maximize_window()
+        driver.implicitly_wait(0.75)
+        return driver
+    elif driver_choice == "EDGE":
+        options = EdgeOptions()
+        options.use_chromium = True  # Ensure we're using the Chromium-based version of Edge
+        options.add_argument("--disable-notifications")
+        options.add_argument("--start-maximized")
+        options.add_argument("--"+locator.edge_profile_path)  # Path to your edge profile
+        if guiwindow.headlessmode == 1:
+            options.add_argument("--headless")
+
+        options.add_argument('--disable-gpu')
+        # options.add_argument("--window-size=1920,1080")
+        # options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-extensions")  # Disabling extensions in Edge
+        options.add_argument("--dns-prefetch-disable")
+        preferences = {
+            "download.default_directory": download_dir}
         options.add_experimental_option("prefs", preferences)
         driver = Edge(executable_path=locator.edge_driver_path, options=options)
         print("Edge Driver setup with: " + locator.edge_profile_path)

@@ -2,7 +2,9 @@ import datetime
 import traceback
 import itertools
 from tkinter.ttk import Progressbar
-import babel
+#import babel
+
+from babel import numbers
 
 import matplotlib.pyplot as plt
 import numpy as np
