@@ -47,6 +47,7 @@ def getDefaultUserNames(customer):
             if user_name != 'None':
                 username_dict.update({role_name: user_name})
         row_counter = row_counter + 1
+    #print(username_dict)
     return username_dict
 
 def fetchCustomerID(customer):
@@ -72,10 +73,6 @@ def fetchCustomerName(ID):
             break
         row_counter+=1
     return name
-
-
-
-
 
 
 

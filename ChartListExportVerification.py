@@ -12,6 +12,7 @@ import pyautogui
 import re
 import time
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from dateutil import parser
 from openpyxl.styles import PatternFill,Font
 ### Write in such a way that you can always edit the page you will compare for time load
@@ -137,7 +138,7 @@ def download_and_copy_files(customer_id,chart_type):
 
 
 
-def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title):
+def check_chartlist_export(driver,customer_id,wb, report_folder, workbook_title):
     hamburger_icon="//i[text()='menu']"
     supplemental_data_link_xpath="//li[@class='chart_chase_list_type' and @data-list-type='1']//a"
     hcc_data_link_xpath="//li[@class='chart_chase_list_type' and @data-list-type='2']//a"
@@ -146,7 +147,7 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
     filter_list_xpath = "//i[text()=\"filter_list\"]"
     new_creation_date_filter_from_xpath = "//input[@name='chart_chase_uploaded_from']"
     new_creation_date_filter_to_xpath = "//input[@name='chart_chase_uploaded_to']"
-    apply_xpath = "//a[text()=\"Apply\"]"
+    apply_xpath = "//a[@class='rfloat green-text datatable_apply' and text()='Apply']"
     footer_xpath="//div[@class='dataTables_info']"
     export_icon_xpath="//a[@data-tooltip=\"Export\"]"
     export_list_xpath="//a[text()='Export all to CSV ']"
@@ -177,11 +178,8 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
 
     customer_id_file_dict={}
     customer_id_file_dict[customer_id]=[]
-    idx = 1
-
-    while idx <= 3:
-        print("ID dict idx = "+str(idx))
-        print(customer_id_file_dict)
+    idx=1
+    while(idx<=3):
         if (idx == 1):
             xpath_to_click = supplemental_data_link_xpath
             chart_type = "Supplemental Data"
@@ -223,11 +221,12 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
                     EC.visibility_of_element_located((By.XPATH, column_header_xpath)))
         except NoSuchElementException:
             print(f"Error : Unable to find chart_type {chart_type}")
-            stored_file_path = 0
+            stored_file_path = '9999'
             print(f"Customer {customer_id} file available at {stored_file_path}")
-            customer_id_file_dict[customer_id].append(stored_file_path)
-            idx+=1
-            continue
+            customer_id_file_dict[customer_id].append(str(stored_file_path))
+            if(idx==2):
+                customer_id_file_dict[customer_id].append(str(stored_file_path))
+            break
         time_delta = 3
         while (1):
             # wait for page to load
@@ -235,31 +234,12 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
             timeout_for_column_headers = 20
             WebDriverWait(driver, timeout_for_column_headers).until(
                 EC.visibility_of_element_located((By.XPATH, column_header_xpath)))
-            list_base_url = driver.current_url
-            # try:
-            #     if chart_type == "Supplemental Data" and (customer_id == "1300" or customer_id == "3000"):
-            #         filterValidator.supplemental_data_list(driver, customer_id, wb, report_folder, workbook_title)
-            #     elif chart_type == "HCC Chart" and customer_id == "1300" or customer_id == "3000":
-            #         filterValidator.hcc_chart_list(driver, customer_id, wb, report_folder, workbook_title)
-            #     elif chart_type == "AWV Chart" and customer_id == "1300" or customer_id == "3000":
-            #         filterValidator.awv_chart_list(driver, customer_id, wb, report_folder, workbook_title)
-            #     driver.get(list_base_url)
-            #     wait_to_load(driver, 300)
-            #     timeout_for_column_headers = 20
-            #     WebDriverWait(driver, timeout_for_column_headers).until(
-            #         EC.visibility_of_element_located((By.XPATH, column_header_xpath)))
-            # except Exception as e:
-            #     traceback.print_exc()
-            #     driver.get(list_base_url)
-            #     wait_to_load(driver, 300)
-            #     timeout_for_column_headers = 20
-            #     WebDriverWait(driver, timeout_for_column_headers).until(
-            #         EC.visibility_of_element_located((By.XPATH, column_header_xpath)))
+
 
 
             # Set date filter
             # Get the current date
-            current_date = datetime.now()
+            current_date = datetime.now()-relativedelta(months=2)
             formatted_date_to = current_date.strftime("%m/%d/%Y")
             date_from = current_date - timedelta(days=time_delta)
             formatted_date_from = date_from.strftime("%m/%d/%Y")
@@ -277,7 +257,11 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
             time.sleep(1)
             driver.find_element(By.XPATH, new_creation_date_filter_to_xpath).send_keys(formatted_date_to)
 
-            action_click(driver, driver.find_element(By.XPATH, apply_xpath))
+            try:
+                action_click(driver, driver.find_element(By.XPATH, apply_xpath))
+                print("Clicked on applied")
+            except Exception as e:
+                print("Unable to click on Apply")
 
             wait_to_load(driver, 300)
             time.sleep(2)
@@ -295,12 +279,12 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
             number_between_of_and_entries = int(footer_text[index_of_of + 3:index_of_entries].strip().replace(",", ""))
 
             print("No of entries ", number_between_of_and_entries)
-            if (number_between_of_and_entries > 300 and number_between_of_and_entries < 2500):
+            if (number_between_of_and_entries >=300 and number_between_of_and_entries < 2500):
                 print(f"Optimal entries present for {time_delta} days before current date ")
                 break
-            if (number_between_of_and_entries <= 300):
+            if (number_between_of_and_entries < 300):
                 time_delta = time_delta + 5
-                if chart_type=="HCC Chart" or chart_type=="AWV Chart":
+                if(chart_type=="HCC Chart" or (chart_type=="AWV Chart" and number_between_of_and_entries>0) ):
                     print(f"Optimal entries present for {time_delta} days before current date ")
                     break
 
@@ -311,8 +295,6 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
         download_successful = False
         try:
             action_click(driver, driver.find_element(By.XPATH, export_icon_xpath))
-            WebDriverWait(driver, 100).until(
-                EC.element_to_be_clickable((By.XPATH, export_list_xpath)))
             action_click(driver, driver.find_element(By.XPATH, export_list_xpath))
             download_successful = True
             print("Downloaded File")
@@ -333,7 +315,7 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
     #fix here for optum
         idx=idx+1
     return customer_id_file_dict
-# ['3000', 'C:\\ChartListExports\\3000\\Supplemental Data 2024-04-18 (1).csv', '0', '0', 'C:\\VerificationReports\\']
+
 
 
 
@@ -368,7 +350,8 @@ def check_chartlist_export(driver,customer_id, wb, report_folder, workbook_title
 
 #"3000","1300","200","4600","6800","6700","1000","3300","1850
 
-customer_ids = ["3000","1300","200","4600","6800","6700","1000","3300","1850"]
+#customer_ids = ["3000","1300","200","4600","6800","6700","1000","3300","1850"]
+customer_ids = ["3000", "1300"]
 customer_ids.sort()
 
 start_time = time.time()

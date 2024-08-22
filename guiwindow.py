@@ -14,7 +14,8 @@ import Schema_processor as sp
 checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist, "Default"]
-#verification_specs = ['Optum Care Arizona', '5100', 'Onshore', {'Cozeva Support': '99999'}, [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Default']
+#verification_specs = ['OptumCare - Nevada', '4500', 'Onshore', {'Cozeva Support': '99999'}, [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Default']
+
 env = "PROD"
 headlessmode = 0
 Window_location = 1 #1 = left, 0 = Right

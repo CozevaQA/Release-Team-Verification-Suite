@@ -205,6 +205,7 @@ def rtvsmaster():
         chrome_logo_image = ImageTk.PhotoImage(Image.open("assets/images/chrome_logo.png").resize((15, 15)))
         edge_logo_image = ImageTk.PhotoImage(Image.open("assets/images/edge_logo.png").resize((15, 15)))
         export_logo_image = ImageTk.PhotoImage(image_sizer("assets/images/export_logo.png"))
+        view_report_image = ImageTk.PhotoImage(image_sizer("assets/images/view_report.png"))
 
 
         # Widgets+
@@ -443,9 +444,9 @@ def rtvsmaster():
         #                style='My.TButton'))
 
         chart_list_export_buttons = [
-            ttk.Button(root, text="Filters and Exports", command=on_chart_list_export, image=export_logo_image,
+            ttk.Button(root, text="Filters and Exports*", command=on_chart_list_export, image=export_logo_image,
                        compound="left", style='My_split_filt.TButton'),
-            ttk.Button(root, text="", command=on_chart_list_report_preview, image=first_time_setup_image,
+            ttk.Button(root, text="", command=on_chart_list_report_preview, image=view_report_image,
                        compound="left", style='My_edit.TButton')]
 
         button_widgets.append(chart_list_export_buttons)
@@ -982,8 +983,26 @@ def rtvsmaster():
             driver_choice_file.close()
             print("Set to :" + driver_choice)
 
+        def on_cron_checkbox():
+            cron_choice = cron_choice_var.get()
+            with open("assets/cron_choice.pkl", "wb") as cron_choice_file:
+                pickle.dump(cron_choice, cron_choice_file)
+
+            driver_choice_file.close()
+            if cron_choice == 0:
+                print("Cron deactivated")
+            elif cron_choice == 1:
+                print("Cron Activated")
 
 
+
+        green_box = Frame(root, bg='#5a9c32', bd=3, relief='raised')
+        green_box.grid(row=6, rowspan=2, column=6, pady=30, sticky='N')
+
+        # Create the checkbox and place it inside the green box
+        cron_choice_var = IntVar()
+        cron_checkbox = Checkbutton(green_box, text="*Validate CRON", variable=cron_choice_var, command=on_cron_checkbox, font=("Nunito Sans", 10), background='#5a9c32')
+        cron_checkbox.pack()
 
         # Define a style for Checkbuttons
         style.configure('My.TCheckbutton', font=('Helvetica', 10, 'bold'), foreground='Black',
@@ -1163,8 +1182,10 @@ if __name__ == '__main__':
     client_list_contact_log = []
     #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
     #print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
-    print("Release Team Verification Suite(RTVS) Version: 1.4.5, Latest Update: Exports and filters(Chart Lists), Global search, Custom Settings, Help Icon dropdown")
-    print("Requires : Chrome Version 124, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
+    #print("Release Team Verification Suite(RTVS) Version: 1.4.5, Latest Update: javascript alert error handling, Exports and filters(Chart Lists), Global search, Custom Settings")
+    print("Release Team Verification Suite(RTVS) Version: 1.4.6, Latest Update: Patient Dashboard and other minor bug fixes, javascript alert error handling, Exports and filters(Chart Lists), Global search")
+
+    print("Requires : Chrome Version 127, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
     print("Developed by: Writtwik Dey for the Cozeva Release Team")
     print("Current Client Count: " + str(len(db.getCustomerList()) - 2))
 

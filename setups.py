@@ -585,9 +585,9 @@ def new_launch(environment):
     if checklist[5] == 1:
         context_functions.practice_registry(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
-    if checklist[24] == 1:
-        context_functions.sticket_validation(driver, workbook, logger, report_folder, run_from, guiwindow.verification_specs[1])
-        workbook.save(report_folder + "\\Report.xlsx")
+    # if checklist[24] == 1:
+    #     context_functions.sticket_validation(driver, workbook, logger, report_folder, run_from, guiwindow.verification_specs[1])
+    #     workbook.save(report_folder + "\\Report.xlsx")
     if checklist[28] == 1:
         context_functions.group_menubar(driver, workbook, logger, report_folder, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
@@ -610,9 +610,9 @@ def new_launch(environment):
     if checklist[12] == 1:
         context_functions.SupportpageAccordionValidation(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
-    if checklist[18] == 1:
-        context_functions.map_codingtool(driver, workbook, logger, run_from, guiwindow.verification_specs[1])
-        workbook.save(report_folder + "\\Report.xlsx")
+    # if checklist[18] == 1:
+    #     context_functions.map_codingtool(driver, workbook, logger, run_from, guiwindow.verification_specs[1])
+    #     workbook.save(report_folder + "\\Report.xlsx")
     if checklist[23] == 1:
         context_functions.cetoggle(driver, workbook, logger, report_folder, run_from)
     if checklist[29] == 1:

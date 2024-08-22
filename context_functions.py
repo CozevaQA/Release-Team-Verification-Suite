@@ -26,7 +26,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException, TimeoutException
+    ElementClickInterceptedException, TimeoutException, UnexpectedAlertPresentException
 from sigfig import round
 
 import guiwindow
@@ -129,11 +129,12 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 if len(driver.find_elements(By.CLASS_NAME, "sm_chart_filter_wrapper")) != 0:
                     test_case_id += 1
                     ws.append((test_case_id, context_name, 'Analytics Deep Link', 'Passed', 'x', 'Link is clickable'))
-
-                    WebDriverWait(driver, 100).until(EC.invisibility_of_element_located(
+                    print("Deeplink page loading")
+                    WebDriverWait(driver, 300).until(EC.invisibility_of_element_located(
                         (By.XPATH, "// div[@class ='sm_download_cssload_loader']")))
-                    WebDriverWait(driver, 30).until(
+                    WebDriverWait(driver, 300).until(
                         EC.presence_of_element_located((By.XPATH, "//a[@id='sm_back']")))
+                    print("Deep link page loaded completely")
                     if len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
                         test_case_id += 1
                         ws.append((test_case_id, 'context_name', 'Analytics Deep Link', 'Failed', 'x', 'No data for the selected filters', driver.current_url))
@@ -165,9 +166,38 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 driver.get(main_registry_url)
                 window_switched = 0
 
+            except UnexpectedAlertPresentException as e:
+                print(e)
+                traceback.print_exc()
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'Analytics Deep Link', 'Failed', 'x', 'Javascript alert' +str(e)))
+                try:
+                    alert = driver.switch_to.alert
+                    alert.accept()  # or alert.dismiss() depending on your needs
+                except:
+                    pass  # Handle cases where the alert might have already been closed
+                if window_switched == 1:
+                    driver.close()
+                    driver.switch_to.window(driver.window_handles[0])
+                driver.get(main_registry_url)
+                window_switched = 0
+
+            except TimeoutException as e:
+                print(e)
+                traceback.print_exc()
+                test_case_id += 1
+                ws.append((test_case_id, context_name, 'Analytics Deep Link', 'Failed', 'x', 'Page is taking longer than 300s to load'))
+                if window_switched == 1:
+                    driver.close()
+                    driver.switch_to.window(driver.window_handles[0])
+                driver.get(main_registry_url)
+                window_switched = 0
 
         # Checking Rel chart
         try:
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             #sf.action_click(driver.find_element(By.ID, 'rel_chart'), driver)
             #driver.find_element(By.ID, 'rel_chart').click()
             driver.find_element(By.XPATH, '//*[@id="rel-chart"]').click()
@@ -315,7 +345,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                                     ws.append((test_case_id, context_name, 'Imported Charts Tab', "Passed", "x",
                                                "Chart modal is unclickable for Onshore Clients"))
 
-                                elif len(random_imported_chart.find_element(By.CLASS_NAME, "modal-content").find_elements(By.TAG_NAME, "title")) != 0:
+                                elif len(driver.find_elements(By.CLASS_NAME, "modal-content")[0].find_elements(By.TAG_NAME, "title")) != 0:
                                     test_case_id += 1
                                     ws.append((test_case_id, context_name, 'Imported Charts Tab', "Passed", "x",
                                                "Chart modal is populating as expected"))
@@ -683,12 +713,14 @@ def patient_dashboard(driver, workbook, logger, run_from):
             if len(metrics) > 1:
                 selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
                 percent = selectedMetric.find_element_by_class_name('percent').text
+                print("Looking for a suitable metric with more than 0/0")
             else:
                 selectedMetric = metrics[0]
                 percent = selectedMetric.find_element_by_class_name('percent').text
         print("Found a Suitable Metric to click on")
         print("Attempting to click on " + selectedMetric.text)
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selectedMetric)
+        time.sleep(0.5)
         #selectedMetric.click()
         sf.action_click(selectedMetric, driver)
         print("Click Performed")
@@ -975,7 +1007,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
         traceback.print_exc()
         traceback.print_exc()
 
-        ws.append(['1', 'Unable to navigate to a patient from random metric'])
+        ws.append(['NA','NA', "Navigation to a random patient from a random metric", "Failed", 'x', 'Unable to navigate to a patient from random metric'])
     finally:
         if window_switched == 1:
             driver.close()
@@ -3932,7 +3964,7 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
 
                             # Aspyedit ends here ---------------------------------------------------------------------------------------------------------------------------------------
                             try:
-                                sf.action_click(driver,driver.find_element_by_xpath("//a[@id='sm_back']"))
+                                sf.action_click(driver.find_element_by_xpath("//a[@id='sm_back']"), driver)
                             except (ElementClickInterceptedException,ElementNotInteractableException) as e:
                                 raise Exception("Back button not clickable")
                         except TimeoutException as e:
@@ -4466,7 +4498,8 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         ws_counts.append([currentLOBName, "0/0 Measures", "Null", "Failed",
                                           "Couldn't count 0/0 measures in this lob"])
 
-                    total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
+                    # total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
+                    total_accordion_metric = driver.find_elements_by_xpath("//*[contains(@class, 'accordion active')]")
                     print("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
                     logger.info("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
 

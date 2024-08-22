@@ -60,6 +60,10 @@ def ajax_preloader_wait(driver):
         except Exception as e:
             print("Announcement not present")
 
+    # current_url = driver.current_url
+    # with open("visited_urls.txt", "a") as file:
+    #     file.write(current_url + "\n")
+
 
 def ajax_preloader_wait2(driver):
     wait_time = 300
@@ -224,7 +228,7 @@ def make_directory(customer):
             return False
 
 
-def action_click(driver,element):
+def action_click(element, driver):
     try:
         element.click()
     except (ElementNotInteractableException, ElementClickInterceptedException,StaleElementReferenceException):
