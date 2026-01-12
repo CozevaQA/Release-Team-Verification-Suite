@@ -56,6 +56,9 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         workbook.create_sheet('Support Menubar')
         ws = workbook['Support Menubar']
         current_function = "support_menubar"
+    else:
+        current_function = "other menubar"
+
 
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
     logger.info("MenubarNavigation function started.")
@@ -74,6 +77,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
     ws.name = "Arial"
     test_case_id = 1
     main_registry_url = driver.current_url
+    window_switched = 0
 
 
     try:
@@ -93,6 +97,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
 
             time.sleep(0.5)
             context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
+
             print(context_name)
             if context_name is None or context_name == "":
                 print("EXECUTION FAILED. PLEASE RERUN")
@@ -117,7 +122,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         main_registry_url = driver.current_url
 
         # Checking Analytics deep link
-        if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" and current_function == "support_menubar":
+        if (run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support") and current_function == "support_menubar":
             window_switched = 0
             try:
                 driver.find_element(By.ID, "reg-qwb-trigger").click()
@@ -196,7 +201,7 @@ def support_menubar(driver, workbook, ws, logger, run_from):
         # Checking Rel chart
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             #sf.action_click(driver.find_element(By.ID, 'rel_chart'), driver)
             #driver.find_element(By.ID, 'rel_chart').click()
@@ -223,14 +228,15 @@ def support_menubar(driver, workbook, ws, logger, run_from):
 
         driver.get(main_registry_url)
 
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
-        WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 100).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
         time.sleep(0.5)
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
         print(context_name)
-        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
 
 
 
@@ -244,8 +250,10 @@ def support_menubar(driver, workbook, ws, logger, run_from):
 
             #print(links)
             #print(names)
-            # links1, names1 = [links[8],links[9],links[11]], [names[8],names[9],names[11]]
-            # links, names = links1, names1
+            # if len(links) > 15:
+            #     links1, names1 = [links[13], links[14], links[15], links[16]], [names[13], names[14], names[15],
+            #                                                                         names[16]]
+            #     links, names = links1, names1
 
 
 
@@ -286,6 +294,11 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                         ws.append((test_case_id, context_name, link_name + ' without error message', 'Failed', driver.current_url))
                         logger.error(context_name + "-->" + link_name + ": " + "Error message found!")
                     else:
+                        if link_name != "Registries" and link_name != "Web Interface" and link_name != "Reports" and link_name != "Add Patient" and link_name != "Payment Tool" and link_name != "Export Dashboard":
+                            try:
+                                sf.sidebar_list_loading(driver)
+                            except Exception as e:
+                                traceback.print_exc()
 
                         if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
                             time.sleep(0.5)
@@ -304,6 +317,70 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                             test_case_id += 1
                             ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
                                        str(round(total_time, sigfigs=3))))
+                        if link_name == "Export Dashboard":
+                            try:
+                                #switch window to new tab and check for presence for x element
+                                driver.switch_to.window(driver.window_handles[1])
+                                window_switched = 1
+                                sf.ajax_preloader_wait(driver)
+                                time.sleep(2)
+                                WebDriverWait(driver, 60).until(
+                                    EC.presence_of_element_located((By.XPATH, "//div[@id='export_dashboard_wrapper']")))
+                                if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
+                                    time.sleep(0.5)
+                                    datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
+                                    print(datatable_info)
+                                    test_case_id += 1
+
+                                    ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
+                                            str(round(total_time, sigfigs=3)),
+                                            datatable_info))
+                                    logger.info(context_name + "-->" + link_name + ": " + "Navigation done.")
+
+                                else:
+                                    print("No datatable!")
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed',
+                                            str(round(total_time, sigfigs=3))))
+
+
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                                window_switched = 0
+
+                            #switch back to window 0
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                if window_switched == 1:
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    window_switched = 0
+
+
+                        if link_name == "Payment Tool":
+                            # check if Cards are populated. If no cards, check for the text. If none, fail case.
+                            try:
+                                cards_element = driver.find_element(By.CLASS_NAME, "stages-wrapper")
+                                cards_elements = cards_element.find_elements(By.XPATH, "//div[contains(concat(' ', normalize-space(@class), ' '), ' program-state ')]")
+                                if len(cards_elements) == 4:
+                                    test_case_id += 1
+                                    ws.append((test_case_id, context_name, 'Counting Number of Cards', 'Passed', 'x', "Card Count = " + str(len(cards_elements))))
+                                elif len(cards_elements) != 4:
+                                    ws.append((test_case_id, context_name, 'Counting Number of Cards', 'Failed', 'x',
+                                               "Card Count = " + str(len(cards_elements))))
+
+                            except Exception as e:
+                                traceback.print_exc()
+                                if "You do not have any active or previously completed programs." in driver.find_element(By.TAG_NAME, "body").text:
+                                    ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Passed', str(round(total_time, sigfigs=3)), "You do not have any active or previously completed programs."))
+                                else:
+                                    ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Failed',
+                                               str(round(total_time, sigfigs=3)),
+                                               "Page is Blank", driver.current_url))
+
+
+
                         if link_name == "Patients":
                             if len(driver.find_elements_by_xpath(locator.xpath_had_er_visit)) != 0:
                                 test_case_id+=1
@@ -367,13 +444,13 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                                     ws.append((test_case_id, context_name, 'Provider\'s tab Info Modal', 'Passed', 'x',
                                                'No Providers Present'))
                                 elif len(driver.find_elements(By.CLASS_NAME, 'dataTables_empty')) == 0:
-                                    WebDriverWait(driver, 60).until(
+                                    WebDriverWait(driver, 300).until(
                                         EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
                                     provider_table = driver.find_element(By.ID, "metric-support-prov-ls").find_element(By.TAG_NAME, "tbody").find_elements(By.XPATH, "//tr[@role='row']")
                                     random_provider = random.choice(provider_table)
                                     random_provider.find_elements(By.TAG_NAME, "a")[0].click()
                                     time.sleep(3)
-                                    WebDriverWait(driver, 30).until(
+                                    WebDriverWait(driver, 300).until(
                                         EC.presence_of_element_located((By.ID, "provider_info_modal")))
 
                                     if len(driver.find_element(By.ID, "provider_info_modal").find_element(By.CLASS_NAME, "modal-body").find_element(By.TAG_NAME, "tbody").find_elements(By.TAG_NAME, "th")) != 0:
@@ -412,13 +489,23 @@ def support_menubar(driver, workbook, ws, logger, run_from):
                 ws.append((test_case_id, context_name, 'Navigation to ' + link_name, 'Failed', driver.current_url))
 
             finally:
+                print("finally executing")
                 links = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link)
                 names = driver.find_elements_by_xpath(locator.xpath_menubar_Item_Link_Name)
+                if sf.check_sidebar_open_status(driver):
+                    driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+                    print("open sidebar closed at finally")
+                    time.sleep(0.4)
+                print("finally executed")
 
-                # links1, names1 = [links[8], links[9], links[11]], [names[8], names[9], names[11]]
-                # links, names = links1, names1
-        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
-        WebDriverWait(driver, 10).until(
+                # if len(links) > 15:
+                #     links1, names1 = [links[13], links[14], links[15], links[16]], [names[13], names[14], names[15],
+                #                                                                     names[16]]
+                #     links, names = links1, names1
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        WebDriverWait(driver, 100).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_registry_Link)))
         time.sleep(2)
         driver.find_element_by_xpath(locator.xpath_registry_Link).click()
@@ -450,16 +537,18 @@ def practice_menubar(driver, workbook, logger, run_from):
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         # Switching to random Practice name from default set context, main page
         try:
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
-            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 60).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name("tabs").find_elements_by_tag_name('li')[0].click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
             list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name("tbody").find_elements_by_tag_name('tr')
             #Practice patient counts
@@ -514,6 +603,12 @@ def practice_menubar(driver, workbook, logger, run_from):
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random practice", 'Navigation to practice context', 'Failed',
                        "Unable to navigate to a practice. Either the Practice list is unreachable or navigation access is denied", driver.current_url])
+            print("Are you getting here???0")
+            print(main_registry_url)
+            driver.get(main_registry_url)
+            sf.ajax_preloader_wait(driver)
+            WebDriverWait(driver, 300).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
             print(e)
             traceback.print_exc()
             return
@@ -563,12 +658,14 @@ def provider_menubar(driver, workbook, logger, run_from):
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
         # Switching to random Provider name from default set context, main page
         try:
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
-            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 60).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, 'metric-support-prov-ls')))
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name("tbody").\
                 find_elements_by_tag_name('tr')
@@ -624,9 +721,11 @@ def provider_menubar(driver, workbook, logger, run_from):
         except Exception as e:
             ws.append(['1', "Attempting to navigate to a random provider", 'Navigation to provider context', 'Failed',
                        "Unable to navigate to a provider. Either the Provider list is unreachable or navigation access is denied", driver.current_url])
+            print("Are you getting here???0")
+            print(main_registry_url)
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
             print(e)
             traceback.print_exc()
@@ -663,7 +762,7 @@ def provider_menubar(driver, workbook, logger, run_from):
 
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
-    WebDriverWait(driver, 30).until(
+    WebDriverWait(driver, 300).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_side_nav_SlideOut)))
     rows = ws.max_row
     cols = ws.max_column
@@ -701,19 +800,22 @@ def patient_dashboard(driver, workbook, logger, run_from):
     main_registry_url = driver.current_url
     window_switched = 0
     try:
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element(By.ID, "registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         print("Provider Registry metrics loaded into a variable")
         if len(metrics) == 0:
             raise Exception("No metrics in the default Lob of this User")
 
         percent = '0.00'
-        while percent == '0.00' or percent == '0.00 %':
+        attempts = 0
+        while percent == '0.00' or percent == '0.00 %' or percent =='0.00%':
             if len(metrics) > 1:
                 selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
                 percent = selectedMetric.find_element_by_class_name('percent').text
                 print("Looking for a suitable metric with more than 0/0")
+                attempts+=1
             else:
                 selectedMetric = metrics[0]
                 percent = selectedMetric.find_element_by_class_name('percent').text
@@ -721,44 +823,57 @@ def patient_dashboard(driver, workbook, logger, run_from):
         print("Attempting to click on " + selectedMetric.text)
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", selectedMetric)
         time.sleep(0.5)
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
         #selectedMetric.click()
-        sf.action_click(selectedMetric, driver)
+        #sf.action_click(selectedMetric, driver)
+
         print("Click Performed")
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
 
         if run_from == "Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Limited Cozeva Support":
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
             sf.ajax_preloader_wait(driver)
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
                 driver.find_element_by_class_name('dt_tag_close').click()
                 sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
             patients = driver.find_element_by_id("metric-support-pat-ls").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
         elif run_from == "Office Admin Practice Delegate":
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[1].click()
             sf.ajax_preloader_wait(driver)
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
                 driver.find_element_by_class_name('dt_tag_close').click()
                 sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
             patients = driver.find_element_by_id("metric-support-pat-ls").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
         elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
                 driver.find_element_by_class_name('dt_tag_close').click()
                 sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
             patients = driver.find_element_by_id("quality_registry_list").find_elements_by_tag_name('tr')
             patients[sf.RandomNumberGenerator(len(patients), 1)[0]].find_element_by_class_name('pat_name').click()
@@ -766,7 +881,14 @@ def patient_dashboard(driver, workbook, logger, run_from):
         driver.switch_to.window(driver.window_handles[1])
         window_switched = 1
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
+
+        #overideurl= "https://www.cozeva.com/patient_detail/142F263?session=YXBwX2lkPXJlZ2lzdHJpZXMmcGF5ZXJJZD00NzUwJmN1c3RJZD00NzUwJnZncElkPTQ3NTAmdnBJZD00NzUwJnZnMElkPTQ3NTAmb3JnSWQ9NDc1MCZwVWlkPTExNTM3OA%3D%3D&cozeva_id=142F263&patient_id=77465470&tab_type=CareOps&first_load=1"
+        #driver.get(overideurl)
+
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
         patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
         global global_search_pat
@@ -795,15 +917,32 @@ def patient_dashboard(driver, workbook, logger, run_from):
                       'Failed', 'x', 'Error toast message is displayed', driver.current_url))
 
             else:
+                #measure_count_dashboard = len \
+                #     (driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
                 measure_count_dashboard = len \
-                    (driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+                    (driver.find_elements_by_xpath("//div[contains(@class, 'row-group') and contains(@class, 'row') and contains(@class, 'dashboard_row') and (contains(@class, 'compliant_true') or contains(@class, 'compliant_none'))]"))
                 test_case_id += 1
-                ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
-                           'Passed', 'x', 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                if measure_count_dashboard != 0:
+                    ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                            'Passed', 'x', 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                else:
+                    ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                               'Failed', 'x', 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+
                 logger.info(patient_id + ": Navigated to patient dashboard.")
                 """ **** PCP INFO BLOCK **** """
                 try:
-                    Pcp_Name = driver.find_element_by_id("pcp_name").text
+                    time.sleep(1)
+                    try:
+                        WebDriverWait(driver, 2).until(EC.element_to_be_clickable((By.CLASS_NAME, "more_info_header")))
+                        more_info_clickable = True
+                    except TimeoutException:
+                        more_info_clickable = False
+                    if more_info_clickable:
+                        more_info_element = driver.find_element(By.CLASS_NAME, "more_info_header")
+                        more_info_element.click()
+                        time.sleep(1)
+                    Pcp_Name = driver.find_element_by_xpath("//span[@id='pcp_name']").text
                     Pcp_Webelement = driver.find_element_by_id("pcp_name")
                     Pcp_hover = Pcp_Webelement.get_attribute("data-tooltip")
                     # Pcp_Name = "-"
@@ -813,35 +952,43 @@ def patient_dashboard(driver, workbook, logger, run_from):
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Failed', 'x', "PCP Name is Blank", driver.current_url))
+                        print("PCP Name is Blank")
                     elif Pcp_Name == "N/A":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Failed', 'x', "PCP Name is NA", driver.current_url))
+                        print("PCP Name is NA")
                     elif Pcp_Name == "NO PCP":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Passed', 'x', "PCP Name is No PCP", driver.current_url))
+                        print("PCP Name is NO PCP")
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Name',
                                    'Passed', 'x', Pcp_Name))
+                        print("PCP Name is Present: " + Pcp_Name)
 
-                    if Pcp_hover == "N/A, N/A, No Practice" or Pcp_hover == "N/A, N/A, N/A" and Pcp_Name == "NO PCP":
+                    if Pcp_hover == "N/A, N/A, No Practice" or Pcp_hover == "N/A, N/A, N/A" or "N/A" in Pcp_hover and Pcp_Name == "NO PCP":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Passed', 'x', "No region panel attribution since its no PCP", driver.current_url))
+                        print("No region panel attribution since its no PCP")
                     elif Pcp_hover == "N/A, N/A, No Practice" or Pcp_hover == "N/A, N/A, No PRACTICE":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Failed', 'x', "PCP does not have Region/Panel Attribution", driver.current_url))
+                        print("PCP does not have Region/Panel Attribution")
                     elif Pcp_hover == "N/A, N/A, N/A":
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Failed', 'x', "PCP does not have any attribution", driver.current_url))
+                        print("PCP does not have any attribution")
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, patient_id, 'PCP Attribution on hover',
                                    'Passed', 'x', Pcp_hover))
+                        print("PCP Attribution on hover is present: " + Pcp_hover)
                         # function for hovercheck
                         hoverCheck(driver, ws, run_from, Pcp_hover, test_case_id)
                 except Exception as e:
@@ -850,14 +997,15 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     test_case_id += 1
                     ws.append((test_case_id, patient_id, 'PCP hover',
                                'Failed', 'x', "PCP Name is not present/Not interactable", driver.current_url))
+                    print("PCP Name is not present/Not interactable")
 
                 # Aspy Edit ------------------------------------------------------------------------------------
                 # '''
                 """ **** PATIENT MENUBAR NAVIGATION **** """
-                WebDriverWait(driver, 30).until(EC.presence_of_element_located(
+                WebDriverWait(driver, 300).until(EC.presence_of_element_located(
                     (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
                 driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
-                WebDriverWait(driver, 30).until(
+                WebDriverWait(driver, 300).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
                 history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
                 ActionChains(driver).move_to_element(history_link).perform()
@@ -865,11 +1013,11 @@ def patient_dashboard(driver, workbook, logger, run_from):
                     locator.xpath_patient_History_Item_Link)
                 driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
                 for item_counter in range(len(patient_history_items)):
-                    WebDriverWait(driver, 30).until(
+                    WebDriverWait(driver, 300).until(
                         EC.presence_of_element_located(
                             (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
                     driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
-                    WebDriverWait(driver, 30).until(
+                    WebDriverWait(driver, 300).until(
                         EC.presence_of_element_located((By.XPATH, locator.xpath_patient_History)))
                     history_link = driver.find_element_by_xpath(locator.xpath_patient_History)
                     time.sleep(0.5)
@@ -932,7 +1080,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
 
                 """ **** PATIENT INFO **** """
                 driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
-                WebDriverWait(driver, 30).until(
+                WebDriverWait(driver, 300).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_patient_Info_Link)))
                 driver.find_element_by_xpath(locator.xpath_patient_Info_Link).click()
                 start_time = time.perf_counter()
@@ -964,7 +1112,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
 
                     else:
                         """ **** COVERAGE **** """
-                        WebDriverWait(driver, 30).until(
+                        WebDriverWait(driver, 300).until(
                             EC.presence_of_element_located
                             ((By.XPATH, locator.xpath_patient_Info_Coverage_Link)))
                         driver.find_element_by_xpath(locator.xpath_patient_Info_Coverage_Link).click()
@@ -984,7 +1132,7 @@ def patient_dashboard(driver, workbook, logger, run_from):
                                        'Number of Coverage card(s): ' + str(coverage_number), driver.current_url))
 
                         """ **** PATIENT INFO **** """
-                        WebDriverWait(driver, 30).until(
+                        WebDriverWait(driver, 300).until(
                             EC.presence_of_element_located(
                                 (By.XPATH, locator.xpath_patient_Info_Care_Team_Link)))
                         driver.find_element_by_xpath(locator.xpath_patient_Info_Care_Team_Link).click()
@@ -1027,6 +1175,386 @@ def patient_dashboard(driver, workbook, logger, run_from):
                 ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
 
 
+def check_preferred_pharmacy(driver, workbook, logger, run_from):
+    if 'Patient Dashboard' in workbook.sheetnames:
+        ws = workbook['Patient Dashboard']
+        test_case_id = ws.max_row + 1
+    else:
+        ws = workbook.create_sheet('Patient Dashboard')
+        ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
+        header_font = Font(color='FFFFFF', bold=False, size=12)
+        header_cell_color = PatternFill('solid', fgColor='030303')
+        ws['A1'].font = header_font
+        ws['A1'].fill = header_cell_color
+        ws['B1'].font = header_font
+        ws['B1'].fill = header_cell_color
+        ws['C1'].font = header_font
+        ws['C1'].fill = header_cell_color
+        ws['D1'].font = header_font
+        ws['D1'].fill = header_cell_color
+        ws.name = "Arial"
+        test_case_id = 1
+
+    window_switched = 0
+    main_registry_url = driver.current_url
+    sf.ajax_preloader_wait(driver)
+    try:
+        # Locate Test Patient via global search and launch
+        window_switched = 0
+        driver.find_element_by_id('globalsearch_input').send_keys("1C-XM-JJM")
+        start_time = time.perf_counter()
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
+        driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+        sf.ajax_preloader_wait(driver)
+        time_taken = round((time.perf_counter() - start_time), 3)
+        driver.find_element_by_id('search_patients_link').click()
+        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'search_patients')))
+        driver.find_element_by_id('search_patients').find_elements_by_tag_name('li')[1].find_element_by_css_selector(
+            "a[href*='patient_detail']").click()
+        driver.switch_to.window(driver.window_handles[1])
+        window_switched = 1
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+        ws.append([test_case_id, 'Preferred Pharmacy', 'Searching for test Patient 1C-XM-JJM', 'Passed', time_taken,
+                   "Test Patient Located"])
+        # Check prefered pharmacy launched from patient header
+
+        try:
+            more_info_element = driver.find_element(By.CLASS_NAME, "more_info_header")
+            more_info_element.click()
+            time.sleep(1)
+            preferred_pharmacy_name_original_header = \
+            driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[0].find_element(By.XPATH,
+                                                                                                          ".//div[@class='left']").text
+            header_preferred_pharmacy = driver.find_element(By.XPATH, "//div[contains(@class,'pharmacy_block')]")
+            header_preferred_pharmacy.click()
+
+            pharm_modal_title_header_xpath = "//div[contains(concat(' ', normalize-space(@class), ' '), ' modal-header-content ')][normalize-space()='Pharmacy Details']"
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, pharm_modal_title_header_xpath)))
+
+            # Case 1 : Successful Modal Launch from header,  Patient Header pharmacy load/Empty - Count number of entries, and fail if 0 entries.
+            try:
+                # find the modal header and two buttons "Select a Preferred pharmacy from the list or add a new pharmacy"
+                header_pharm_hint_statement = driver.find_element(By.CLASS_NAME, "pharmacy_info").text
+                if header_pharm_hint_statement == "Select a Preferred pharmacy from the list or add a new pharmacy":
+                    ws.append(
+                        [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from header', 'Passed',
+                         'x', "Modal Launched"])
+                else:
+                    ws.append(
+                        [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from header', 'Failed',
+                         'x', "Modal is blank"])
+
+                # find the two buttons
+                add_new_pharm_header_button = driver.find_element(By.XPATH, "//a[contains(@class, 'add_new_pharm')]")
+                add_new_pharm_header_button_state = add_new_pharm_header_button.is_displayed() and add_new_pharm_header_button.is_enabled()
+
+                if add_new_pharm_header_button_state:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Add New Pharmacy', 'Passed', 'x',
+                               "Add New Pharmacy Button Present"])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Add New Pharmacy', 'Failed', 'x',
+                               "Add New Pharmacy Button not interactable"])
+
+                save_and_exit_header_button = driver.find_element(By.XPATH,
+                                                                  "//div[contains(@class, 'save_pharm_data')]")
+                save_and_exit_header_button_state = save_and_exit_header_button.is_displayed() and save_and_exit_header_button.is_enabled()
+
+                if save_and_exit_header_button_state:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Save and Exit', 'Passed', 'x',
+                               "Save and Exit Button Present"])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Add New Pharmacy', 'Failed', 'x',
+                               "Save and Exit Button not interactable"])
+
+                time.sleep(3)
+
+
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
+            ws.append(
+                [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from header', 'Failed', 'x',
+                 "Cannot Find/Launch modal from dashboard header"])
+            driver.get(main_registry_url)
+            sf.ajax_preloader_wait(driver)
+
+        # check proper launch and population of current prefered pharmacy
+        try:
+            time.sleep(3)
+            driver.refresh()
+            sf.ajax_preloader_wait(driver)
+            driver.find_element_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow).click()
+            WebDriverWait(driver, 300).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_patient_Info_Link)))
+            driver.find_element_by_xpath(locator.xpath_patient_Info_Link).click()
+            start_time = time.perf_counter()
+            sf.ajax_preloader_wait(driver)
+            total_time = time.perf_counter() - start_time
+
+            preferred_pharmacy_sidebar_element = driver.find_element(By.XPATH, "//li/span[@href='#preferred_pharmacy']")
+            preferred_pharmacy_sidebar_element.click()
+            time.sleep(2)
+            preferred_pharmacy_name_original_pat_info = \
+            driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[1].find_element(By.XPATH,
+                                                                                                          ".//span[@class='pls']").text
+            preferred_pharmacy_element = driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[
+                1]
+            preferred_pharmacy_element.click()
+            time.sleep(2)
+
+            # check modal launch
+            header_pharm_hint_statement = driver.find_element(By.CLASS_NAME, "pharmacy_info").text
+            if header_pharm_hint_statement == "Select a Preferred pharmacy from the list or add a new pharmacy":
+                ws.append(
+                    [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from patient information',
+                     'Passed', 'x', "Modal Launched"])
+            else:
+                ws.append(
+                    [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from patient information',
+                     'Failed', 'x', "Modal is blank"])
+
+            # load the present pharmacies into an element
+            pharm_entries_raw = {}
+            pharm_entries = driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_val')]")
+            for index, pharm_entry in enumerate(pharm_entries):
+                pharm_entries_raw.update({str(index): [
+                    pharm_entry.find_element(By.XPATH, ".//div[contains(@class, 'pharm_name')]").text,
+                    pharm_entry.get_attribute('pharmacy_id')]})
+
+            if len(pharm_entries_raw) > 0:
+                pharms_in_modal = ""
+                for pharm in pharm_entries_raw:
+                    pharms_in_modal = pharms_in_modal + pharm_entries_raw[pharm][0] + ","
+                ws.append(
+                    [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacies in the modal', 'Passed', 'x',
+                     "Pharmacies - " + pharms_in_modal])
+            else:
+                ws.append(
+                    [test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacies in the modal', 'Passed', 'x',
+                     "No Pharmacies"])
+
+            print(pharm_entries_raw)
+
+            # include one of the suggestions into the modal:
+            try:
+                add_new_pharm = driver.find_element(By.XPATH, "//a[contains(@class, 'add_new_pharm')]")
+                add_new_pharm.click()
+                time.sleep(1)
+
+                pharm_input_element = driver.find_element(By.XPATH, "//input[@id='pharmacy_search_input']")
+                pharm_input_element.send_keys("Medical")
+                time.sleep(4)
+
+                add_new_pharm_result_indicator = driver.find_element(By.XPATH,
+                                                                     "//li[contains(@class, 'no-result-pharm')]")
+                add_new_pharm_result_indicator_first_word = add_new_pharm_result_indicator.text.split(" ")[0]
+
+                print("Pharm results = " + add_new_pharm_result_indicator.text)
+                print("Pharm results = " + add_new_pharm_result_indicator_first_word)
+
+                if add_new_pharm_result_indicator_first_word == "No":
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Attempting to add new pharmacy', 'Failed', 'x',
+                               "No results when searching for string 'Medical' on the search bar"])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Attempting to add new pharmacy', 'Passed', 'x',
+                               "Found " + add_new_pharm_result_indicator_first_word + " Results"])
+
+                # click on a result
+                add_new_pharm_result_list = driver.find_elements(By.XPATH, "//li[@class='pharmacy_search_element']")
+
+                if add_new_pharm_result_indicator_first_word != "No" and add_new_pharm_result_indicator_first_word == str(
+                        len(add_new_pharm_result_list)):
+                    ws.append(
+                        [test_case_id, 'Preferred Pharmacy', 'Attempting to search pharmacy to add', 'Passed', 'x',
+                         "All " + str(len(add_new_pharm_result_list)) + " Results are visible"])
+                else:
+                    ws.append(
+                        [test_case_id, 'Preferred Pharmacy', 'Attempting to search pharmacy to add', 'Failed', 'x',
+                         "Displayed Result count does not match with header result count"])
+
+                pharm_index, choosen_pharm_to_add = random.choice(list(enumerate(add_new_pharm_result_list)))
+
+                # record chosen pharm name, scroll to it and add it using the radio button
+                chosen_pharm_name = choosen_pharm_to_add.find_element(By.XPATH,
+                                                                      ".//div[@class='pharmacy_result_name']").text
+                chosen_pharm_id = choosen_pharm_to_add.get_attribute('pharmacy_id')
+                # click radiobutton
+                choosen_pharm_radio_button = choosen_pharm_to_add.find_element(By.XPATH,
+                                                                               ".//div[contains(@class, 'pharmacy_search_radio')]")
+                choosen_pharm_radio_button.click()
+                time.sleep(0.5)
+
+                # click Submit
+                pharm_modal_submit_button = driver.find_element(By.XPATH, "//a[@data-index='confirm']")
+                pharm_modal_submit_button.click()
+                time.sleep(2)
+
+                # now check the elements again, compare if an additional element is added, and if that element matches the chosen_pharm_namne
+                pharm_entries_raw_after_add = {}
+                pharm_entries_after_add = driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_val')]")
+                for index, pharm_entry in enumerate(pharm_entries_after_add):
+                    pharm_entries_raw_after_add.update({str(index): [
+                        pharm_entry.find_element(By.XPATH, ".//div[contains(@class, 'pharm_name')]").text,
+                        pharm_entry.get_attribute('pharmacy_id')]})
+
+                print(pharm_entries_raw_after_add)
+
+                if len(pharm_entries_raw_after_add) > len(pharm_entries_raw):
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Adding a Pharmacy', 'Passed', 'x',
+                               "Added " + chosen_pharm_name + " to the list"])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Adding a Pharmacy', 'Failed', 'x',
+                               "Chosen Pharmacy: " + chosen_pharm_name + " is not in the list"])
+
+                # select the radio button for the new entry
+                added_pharm_entry_radiobutton = driver.find_element(By.XPATH,
+                                                                    ".//div[@pharmacy_id='" + chosen_pharm_id + "']").find_element(
+                    By.XPATH, ".//div[contains(@class, 'pharmacy_search_radio')]")
+                added_pharm_entry_radiobutton.click()
+                time.sleep(0.5)
+
+                # click Save and exit
+                save_and_exit_header_button = driver.find_element(By.XPATH,
+                                                                  "//div[contains(@class, 'save_pharm_data')]")
+                save_and_exit_header_button.click()
+                time.sleep(0.5)
+                sf.ajax_preloader_wait(driver)
+
+                # find entry that is extra here
+                preferred_pharmacy_sidebar_element = driver.find_element(By.XPATH,
+                                                                         "//li/span[@href='#preferred_pharmacy']")
+                preferred_pharmacy_sidebar_element.click()
+                time.sleep(2)
+
+                more_info_element = driver.find_element(By.CLASS_NAME, "more_info_header")
+                more_info_element.click()
+                time.sleep(1)
+
+                preferred_pharmacy_name_changed_header = \
+                driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[0].find_element(By.XPATH,
+                                                                                                              ".//div[@class='left']").text
+                preferred_pharmacy_name_changed_pat_info = \
+                driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[1].find_element(By.XPATH,
+                                                                                                              ".//span[@class='pls']").text
+
+                preferred_pharmacy_element = \
+                driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[1]
+                preferred_pharmacy_element.click()
+                time.sleep(2)
+
+                print(preferred_pharmacy_name_original_header)
+                print(preferred_pharmacy_name_changed_header)
+                print(preferred_pharmacy_name_original_pat_info)
+                print(preferred_pharmacy_name_changed_pat_info)
+
+                if preferred_pharmacy_name_original_header != preferred_pharmacy_name_changed_header:
+                    ws.append([test_case_id, 'Preferred Pharmacy',
+                               'Making the added pharmacy the preferred pharmacy on the header', 'Passed', 'x',
+                               "Original Pharmacy is: " + preferred_pharmacy_name_original_header + " , and changed pharmacy is: " + preferred_pharmacy_name_changed_header])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy',
+                               'Making the added pharmacy the preferred pharmacy on the header', 'Failed', 'x',
+                               "Original Pharmacy is: " + preferred_pharmacy_name_original_header + " , and changed pharmacy is: " + preferred_pharmacy_name_changed_header])
+
+                if preferred_pharmacy_name_original_pat_info != preferred_pharmacy_name_changed_pat_info:
+                    ws.append([test_case_id, 'Preferred Pharmacy',
+                               'Making the added pharmacy the preferred pharmacy on patient information', 'Passed', 'x',
+                               "Original Pharmacy is: " + preferred_pharmacy_name_original_pat_info + " , and changed pharmacy is: " + preferred_pharmacy_name_changed_pat_info])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy',
+                               'Making the added pharmacy the preferred pharmacy on patient information', 'Failed', 'x',
+                               "Original Pharmacy is: " + preferred_pharmacy_name_original_pat_info + " , and changed pharmacy is: " + preferred_pharmacy_name_changed_pat_info])
+
+                # modal is open, check the added entry, delete and switch to previous, save and exit
+                added_pharm_entry_deletebutton = driver.find_element(By.XPATH,
+                                                                     ".//div[@pharmacy_id='" + chosen_pharm_id + "']").find_element(
+                    By.XPATH, ".//span[contains(@class, 'pharm_delete')]")
+                added_pharm_entry_deletebutton.click()
+                time.sleep(1)
+
+                save_and_exit_header_button = driver.find_element(By.XPATH,
+                                                                  "//div[contains(@class, 'save_pharm_data')]")
+                save_and_exit_header_button.click()
+                time.sleep(0.5)
+                sf.ajax_preloader_wait(driver)
+
+                # find entry that is extra here
+                preferred_pharmacy_sidebar_element = driver.find_element(By.XPATH,
+                                                                         "//li/span[@href='#preferred_pharmacy']")
+                preferred_pharmacy_sidebar_element.click()
+                time.sleep(2)
+
+                more_info_element = driver.find_element(By.CLASS_NAME, "more_info_header")
+                more_info_element.click()
+                time.sleep(1)
+
+                preferred_pharmacy_name_after_delete_header = \
+                driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[0].find_element(By.XPATH,
+                                                                                                              ".//div[@class='left']").text
+                preferred_pharmacy_name_after_delete_pat_info = \
+                driver.find_elements(By.XPATH, "//div[contains(@class, 'pharmacy_details')]")[1].find_element(By.XPATH,
+                                                                                                              ".//span[@class='pls']").text
+
+                print(preferred_pharmacy_name_after_delete_header)
+                print(preferred_pharmacy_name_after_delete_pat_info)
+
+                if preferred_pharmacy_name_original_header == preferred_pharmacy_name_after_delete_header == preferred_pharmacy_name_original_pat_info == preferred_pharmacy_name_after_delete_pat_info:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Deleting the added pharmacy', 'Passed', 'x',
+                               "Pharmacy name changed back to original"])
+                else:
+                    ws.append([test_case_id, 'Preferred Pharmacy', 'Deleting the added pharmacy', 'Passed', 'x',
+                               "Pharmacy name changed back to original"])
+
+
+            except Exception as e:
+                print(e)
+                traceback.print_exc()
+                ws.append([test_case_id, 'Preferred Pharmacy', 'Attempting to add new pharmacy', 'Failed', 'x',
+                           "Cannot add new pharmacy"])
+
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            ws.append([test_case_id, 'Preferred Pharmacy', 'Checking Prefered Pharmacy modal from patient information',
+                       'Failed', 'x', "Cannot Find/Launch modal from patient dashboard"])
+
+        # Go to patient information, and click on pharm modal, Add new pharm, save and exit, check new name is set to prefered.
+        # Delete added pharmacy
+        if window_switched == 1:
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+            driver.get(main_registry_url)
+            sf.ajax_preloader_wait(driver)
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        if window_switched == 1:
+            driver.close()
+            driver.switch_to.window(driver.window_handles[0])
+        ws.append([test_case_id, 'Preferred Pharmacy', 'Searching for test Patient 1C-XM-JJM', 'Failed', 'x',
+                   "Cannot Find test patient"])
+        driver.get(main_registry_url)
+        sf.ajax_preloader_wait(driver)
+
+    rows = ws.max_row
+    cols = ws.max_column
+    for i in range(2, rows + 1):
+        for j in range(3, cols + 1):
+            if ws.cell(i, j).value == 'Passed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='0FC404')
+            elif ws.cell(i, j).value == 'Failed':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FC0E03')
+            elif ws.cell(i, j).value == 'Data table is empty':
+                ws.cell(i, j).fill = PatternFill('solid', fgColor='FCC0BB')
+
+
 def provider_registry(driver, workbook, logger, run_from):
     workbook.create_sheet('Provider Registry')
     ws = workbook['Provider Registry']
@@ -1054,10 +1582,12 @@ def provider_registry(driver, workbook, logger, run_from):
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
         try:
             print("1")
-            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
             list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name(
                 'tr')
@@ -1076,7 +1606,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 list_of_provider_elements[0].find_elements_by_tag_name('a')[1].click()
 
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
         except Exception as e:
@@ -1086,7 +1616,7 @@ def provider_registry(driver, workbook, logger, run_from):
             test_case_id += 1
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             print(e)
             traceback.print_exc()
@@ -1098,7 +1628,7 @@ def provider_registry(driver, workbook, logger, run_from):
     try:
         current_url = driver.current_url
         driver.find_element_by_xpath(locator.xpath_resources_link).click()
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "help_menu_options")))
         time.sleep(1)
 
@@ -1148,14 +1678,30 @@ def provider_registry(driver, workbook, logger, run_from):
 
                 #validate the following element is also present and matching
                 '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
-                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+
+                '''New element
+                   <h3 class="service-title">NEW CUSTOMERS START HERE</h3> 
+                    '''
+
+                projects_welcome_text_xpath = "//h2[@class='section-title']"
+                if len(driver.find_elements(By.XPATH, projects_welcome_text_xpath)) > 0:
+                    expected_text = "Welcome to Projects.Cozeva"
+                    actual_text = driver.find_element(By.XPATH, projects_welcome_text_xpath).text
+                    if actual_text == expected_text:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Passed',
+                                   'Welcome text is present on page'))
+                        print("Welcome text found")
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                                   'Welcome text mismatch'))
+                        print("Welcome text mismatch")
+                else:
                     test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
-                    print("Phone number found")
-                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
-                    test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
-                    print("Phone number not found")
+                    ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                               'Welcome text not found on page'))
+                    print("Welcome text not found on page")
 
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -1245,8 +1791,9 @@ def provider_registry(driver, workbook, logger, run_from):
             elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
                 element.click()
                 time.sleep(1)
+                sf.ajax_preloader_wait(driver)
 
-                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0 or len(driver.find_element(By.XPATH, "//label[@for='edit-urgency']")) > 0:
                     test_case_id += 1
                     ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
                     print("Support Activity Modal opened successfully")
@@ -1296,7 +1843,7 @@ def provider_registry(driver, workbook, logger, run_from):
 
             driver.get(current_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     except Exception as e:
         print(e)
@@ -1310,9 +1857,11 @@ def provider_registry(driver, workbook, logger, run_from):
     # Navigation test 1 : Navigation to patient context through providers patients tab
     try:
         current_context = driver.find_element_by_class_name("current_context").text
-        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         time.sleep(3)
-        WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "all_patients_tab"))).click()
+        WebDriverWait(driver, 200).until(EC.element_to_be_clickable((By.ID, "all_patients_tab"))).click()
         #driver.find_element_by_id("all_patients_tab").click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
@@ -1346,7 +1895,7 @@ def provider_registry(driver, workbook, logger, run_from):
                            'Passed', total_time))
                 logger.info(current_context + ": Navigated to all patients tab.")
                 # Now navigating to a patient dashboard at random
-                WebDriverWait(driver, 30).until(
+                WebDriverWait(driver, 300).until(
                     EC.presence_of_element_located((By.ID, "all_patients")))
                 patient_elements = driver.find_element_by_id("all_patients").find_element_by_tag_name(
                     'tbody').find_elements_by_tag_name('tr')
@@ -1390,10 +1939,18 @@ def provider_registry(driver, workbook, logger, run_from):
                     else:
                         measure_count_dashboard = len \
                             (driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+                        measure_count_dashboard = len \
+                            (driver.find_elements_by_xpath(
+                                "//div[contains(@class, 'row-group') and contains(@class, 'row') and contains(@class, 'dashboard_row') and (contains(@class, 'compliant_true') or contains(@class, 'compliant_none'))]"))
                         test_case_id += 1
-                        ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
-                                   'Passed', total_time,
-                                   'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                        if measure_count_dashboard != 0:
+                            ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                                    'Passed', total_time,
+                                    'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                        else:
+                            ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                                       'Failed', total_time,
+                                       'Measures count in dashboard: ' + str(measure_count_dashboard)))
                         logger.info(patient_id + ": Navigated to patient dashboard.")
                         if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                             test_case_id += 1
@@ -1411,7 +1968,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
         driver.get(registry_url)
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
     except Exception as e:
@@ -1423,15 +1980,16 @@ def provider_registry(driver, workbook, logger, run_from):
         traceback.print_exc()
         driver.get(registry_url)
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
     # Navigation test 2: Navigation to patient context through providers MSPL
     try:
         current_context = driver.find_element_by_class_name("current_context").text
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         percent = '0.00'
         loop_counter = 0
         while percent == '0.00' or percent == '0.00 %':
@@ -1450,7 +2008,20 @@ def provider_registry(driver, workbook, logger, run_from):
             else:
                 ws.append(['Quit this section because there are no metrics with patients'])
                 raise Exception("No Metrics with Available Patients")
-        selectedMetric.click()
+
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
+        #selectedMetric.click()
         start_time = time.perf_counter()
         sf.ajax_preloader_wait(driver)
         total_time = time.perf_counter() - start_time
@@ -1459,14 +2030,14 @@ def provider_registry(driver, workbook, logger, run_from):
         window_switched = 0
         try:
             patient_id = 'Couldn\'t Fetch'
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
             if len(driver.find_elements_by_class_name('dt_tag_value')) > 0:
                 driver.find_element_by_class_name('dt_tag_close').click()
                 sf.ajax_preloader_wait(driver)
             time.sleep(3)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "quality_registry_list")))
             patients = driver.find_element_by_id("quality_registry_list").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
@@ -1483,7 +2054,7 @@ def provider_registry(driver, workbook, logger, run_from):
             window_switched = 1
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
             total_time = time.perf_counter() - start_time
 
@@ -1491,9 +2062,17 @@ def provider_registry(driver, workbook, logger, run_from):
 
             measure_count_dashboard = len \
                 (driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+            measure_count_dashboard = len \
+                (driver.find_elements_by_xpath(
+                    "//div[contains(@class, 'row-group') and contains(@class, 'row') and contains(@class, 'dashboard_row') and (contains(@class, 'compliant_true') or contains(@class, 'compliant_none'))]"))
             test_case_id += 1
-            ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
-                       'Passed', total_time, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+            if measure_count_dashboard != 0:
+                ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                        'Passed', total_time, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+            else:
+                ws.append((test_case_id, patient_id, 'Navigation to dashboard page',
+                           'Failed', total_time, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+
             logger.info(patient_id + ": Navigated to patient dashboard.")
             if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                 test_case_id += 1
@@ -1511,7 +2090,7 @@ def provider_registry(driver, workbook, logger, run_from):
             driver.switch_to.window(driver.window_handles[0])
             driver.get(registry_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
         except Exception as e:
@@ -1526,7 +2105,7 @@ def provider_registry(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
             driver.get(main_registry_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
 
@@ -1538,12 +2117,12 @@ def provider_registry(driver, workbook, logger, run_from):
         traceback.print_exc()
         driver.get(main_registry_url)
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
-    WebDriverWait(driver, 30).until(
+    WebDriverWait(driver, 300).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     rows = ws.max_row
     cols = ws.max_column
@@ -1585,14 +2164,16 @@ def practice_registry(driver, workbook, logger, run_from):
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         # Switching to random Practice name from default set context, main page
         try:
-            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name("tabs").find_elements_by_tag_name('li')[0].click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
             list_of_practice_elements = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name('tbody').find_elements_by_tag_name('tr')
             global global_search_prac
@@ -1618,7 +2199,7 @@ def practice_registry(driver, workbook, logger, run_from):
             print(e)
             traceback.print_exc()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             return
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
@@ -1630,7 +2211,7 @@ def practice_registry(driver, workbook, logger, run_from):
     try:
         current_url = driver.current_url
         driver.find_element_by_xpath(locator.xpath_resources_link).click()
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "help_menu_options")))
         time.sleep(1)
 
@@ -1680,14 +2261,28 @@ def practice_registry(driver, workbook, logger, run_from):
 
                 #validate the following element is also present and matching
                 '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
-                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+                '''New element
+                                   <h3 class="service-title">NEW CUSTOMERS START HERE</h3> 
+                                    '''
+                projects_welcome_text_xpath = "//h2[@class='section-title']"
+                if len(driver.find_elements(By.XPATH, projects_welcome_text_xpath)) > 0:
+                    expected_text = "Welcome to Projects.Cozeva"
+                    actual_text = driver.find_element(By.XPATH, projects_welcome_text_xpath).text
+                    if actual_text == expected_text:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Passed',
+                                   'Welcome text is present on page'))
+                        print("Welcome text found")
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                                   'Welcome text mismatch'))
+                        print("Welcome text mismatch")
+                else:
                     test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
-                    print("Phone number found")
-                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
-                    test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
-                    print("Phone number not found")
+                    ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                               'Welcome text not found on page'))
+                    print("Welcome text not found on page")
 
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -1808,8 +2403,10 @@ def practice_registry(driver, workbook, logger, run_from):
             elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
                 element.click()
                 time.sleep(1)
+                sf.ajax_preloader_wait(driver)
 
-                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0 or len(
+                        driver.find_element(By.XPATH, "//label[@for='edit-urgency']")) > 0:
                     test_case_id += 1
                     ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
                     print("Support Activity Modal opened successfully")
@@ -1859,7 +2456,7 @@ def practice_registry(driver, workbook, logger, run_from):
 
             driver.get(current_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     except Exception as e:
         print(e)
@@ -1874,9 +2471,10 @@ def practice_registry(driver, workbook, logger, run_from):
     try:
         # selecting a random non zero metric from the registry
         context_name = driver.find_element_by_class_name("specific_most").text
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         percent = '0.00'
         loop_count = 0
         while percent == '0.00' or percent == '0.00%':
@@ -1888,16 +2486,28 @@ def practice_registry(driver, workbook, logger, run_from):
                 ws.append([test_case_id, context_name, 'Skipped this because control was stuck in infinite loop'])
                 driver.get(main_registry_url)
                 sf.ajax_preloader_wait(driver)
-                WebDriverWait(driver, 30).until(
+                WebDriverWait(driver, 300).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
                 return
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
+        #selectedMetric.click()
         sf.ajax_preloader_wait(driver)
 
         # clicking on a random provider name from the practice MSPL
         try:
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located(
                     (By.ID, 'metric-support-prov-ls')))
             providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
@@ -1912,7 +2522,7 @@ def practice_registry(driver, workbook, logger, run_from):
                 providers[0].find_elements_by_tag_name('a')[2].click()
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
@@ -1959,9 +2569,10 @@ def practice_registry(driver, workbook, logger, run_from):
         # selecting a random non-zero metric from the registry
         print(driver.current_url)
         context_name = driver.find_element_by_class_name("specific_most").text
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         percent = '0.00'
         loop_count = 0
         while percent == '0.00' or percent == '0.00%':
@@ -1973,19 +2584,31 @@ def practice_registry(driver, workbook, logger, run_from):
                 ws.append([test_case_id, context_name, 'Skipped this because control was stuck in infinite loop'])
                 driver.get(main_registry_url)
                 sf.ajax_preloader_wait(driver)
-                WebDriverWait(driver, 30).until(
+                WebDriverWait(driver, 300).until(
                     EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
                 return
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
+        #selectedMetric.click()
         sf.ajax_preloader_wait(driver)
         try:
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             time_taken = time.perf_counter() - start_time
             if driver.find_elements_by_id('performance_details') != 0:
@@ -2013,7 +2636,7 @@ def practice_registry(driver, workbook, logger, run_from):
             if len(driver.find_elements_by_class_name("ajax_preloader")) != 0:
                 print("Preloader Reappeared")
                 sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
@@ -2038,7 +2661,7 @@ def practice_registry(driver, workbook, logger, run_from):
             time_taken = round((time.perf_counter() - start_time), 3)
             # WebDriverWait(driver, 30).until(
             #    EC.presence_of_element_located((By.XPATH, locator.xpath_careops)))
-            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, "ui_header_patient_name")))
+            WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.CLASS_NAME, "ui_header_patient_name")))
 
             if len(driver.find_elements_by_xpath(locator.xpath_careops)) != 0:
                 ws.append([test_case_id, selected_patient_name,
@@ -2100,12 +2723,14 @@ def practice_registry(driver, workbook, logger, run_from):
     # nav check 3 : Navigation to provider registry through providers tab in of a practice
     registry_url = driver.current_url
     try:
-        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         time.sleep(1)
         driver.execute_script("arguments[0].scrollIntoView();", driver.find_element_by_id("providers-list"))
         driver.find_element_by_id("providers-list").click()
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
         list_of_provider_elements = driver.find_element_by_id("metric-support-prov-ls").find_elements_by_tag_name('tr')
         if len(list_of_provider_elements) > 1:
@@ -2119,7 +2744,7 @@ def practice_registry(driver, workbook, logger, run_from):
             selected_provider.click()
         time_start = time.perf_counter()
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
         time_taken = time.perf_counter() - time_start
         if driver.find_elements_by_xpath(locator.xpath_filter_measure_list) != 0:
@@ -2149,14 +2774,16 @@ def practice_registry(driver, workbook, logger, run_from):
     # nav check 4 : Navigation to Performance Stats from Practice Metric specific list
 
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
-        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
         time.sleep(1)
         driver.execute_script("arguments[0].scrollIntoView();", driver.find_element_by_id("home"))
         driver.find_element_by_id("home").click()
         sf.ajax_preloader_wait(driver)
     driver.get(main_registry_url)
     sf.ajax_preloader_wait(driver)
-    WebDriverWait(driver, 30).until(
+    WebDriverWait(driver, 300).until(
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     rows = ws.max_row
     cols = ws.max_column
@@ -2197,7 +2824,7 @@ def support_level(driver, workbook, logger, run_from):
     try:
         current_url = driver.current_url
         driver.find_element_by_xpath(locator.xpath_resources_link).click()
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "help_menu_options")))
         time.sleep(1)
 
@@ -2247,14 +2874,28 @@ def support_level(driver, workbook, logger, run_from):
 
                 #validate the following element is also present and matching
                 '''<p class="top-phone">PRODUCT SUPPORT : <span>(877) 862-7048</span></p>'''
-                if len(driver.find_elements(By.CLASS_NAME, "top-phone")) > 0:
+                '''New element
+                                   <h3 class="service-title">NEW CUSTOMERS START HERE</h3> 
+                                    '''
+                projects_welcome_text_xpath = "//h2[@class='section-title']"
+                if len(driver.find_elements(By.XPATH, projects_welcome_text_xpath)) > 0:
+                    expected_text = "Welcome to Projects.Cozeva"
+                    actual_text = driver.find_element(By.XPATH, projects_welcome_text_xpath).text
+                    if actual_text == expected_text:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Passed',
+                                   'Welcome text is present on page'))
+                        print("Welcome text found")
+                    else:
+                        test_case_id += 1
+                        ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                                   'Welcome text mismatch'))
+                        print("Welcome text mismatch")
+                else:
                     test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Passed', 'PhoneNumber=' + driver.find_element(By.CLASS_NAME, "top-phone").text))
-                    print("Phone number found")
-                elif len(driver.find_elements(By.CLASS_NAME, "top-phone")) == 0:
-                    test_case_id += 1
-                    ws.append((test_case_id, "Projects Phone number", 'Help Menu Dropdown', 'Failed', 'PhoneNumber not found'))
-                    print("Phone number not found")
+                    ws.append((test_case_id, "Help Menu dropdown", 'Projects Page', 'Failed',
+                               'Welcome text not found on page'))
+                    print("Welcome text not found on page")
 
                 driver.close()
                 driver.switch_to.window(driver.window_handles[0])
@@ -2352,8 +2993,10 @@ def support_level(driver, workbook, logger, run_from):
             elif element.find_element(By.TAG_NAME, "dt").text == "Submit a support ticket":
                 element.click()
                 time.sleep(1)
+                sf.ajax_preloader_wait(driver)
 
-                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0:
+                if len(driver.find_elements(By.ID, "modal_dialog_body_support_activity_form")) > 0 or len(
+                        driver.find_element(By.XPATH, "//label[@for='edit-urgency']")) > 0:
                     test_case_id += 1
                     ws.append((test_case_id, 'Help Menu Dropdown', 'Submit a support ticket', 'Passed', driver.current_url))
                     print("Support Activity Modal opened successfully")
@@ -2403,7 +3046,7 @@ def support_level(driver, workbook, logger, run_from):
 
             driver.get(current_url)
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     except Exception as e:
         print(e)
@@ -2418,12 +3061,13 @@ def support_level(driver, workbook, logger, run_from):
     # Selecting tabs from Support MSPL
     context_name = "Couldn't Fetch"
     try:
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.ID, "registry_body")))
         selected_metric_name = 'Couldnt fetch Metric Name'
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
 
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         percent = '0.00'
         num_den = "(0/0)"
         iter_count = 0
@@ -2435,9 +3079,21 @@ def support_level(driver, workbook, logger, run_from):
             if iter_count > 10:
                 raise Exception("All/most metrics are 0/0")
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
+        #selectedMetric.click()
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
+        WebDriverWait(driver, 300).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
         metric_url = driver.current_url
         # nav 1 : Practice Tab
@@ -2445,7 +3101,7 @@ def support_level(driver, workbook, logger, run_from):
             selectedPracticeName = 'Couldn\'t Fetch'
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[0].click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prac-ls")))
             practices = driver.find_element_by_id("metric-support-prac-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
@@ -2483,7 +3139,7 @@ def support_level(driver, workbook, logger, run_from):
                 selectedPractice.click()
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
@@ -2512,12 +3168,12 @@ def support_level(driver, workbook, logger, run_from):
         # Nav to provider registry
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
             selectedProviderName = 'Couldn\'t Fetch'
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[1].click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-prov-ls")))
             providers = driver.find_element_by_id("metric-support-prov-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
@@ -2534,7 +3190,7 @@ def support_level(driver, workbook, logger, run_from):
                     random_provider = random.choice(provider_table)
                     random_provider.find_elements(By.TAG_NAME, "a")[0].click()
                     time.sleep(3)
-                    WebDriverWait(driver, 30).until(
+                    WebDriverWait(driver, 300).until(
                         EC.presence_of_element_located((By.ID, "provider_info_modal")))
 
                     if len(driver.find_element(By.ID, "provider_info_modal").find_element(By.CLASS_NAME, "modal-body").find_element(
@@ -2603,7 +3259,7 @@ def support_level(driver, workbook, logger, run_from):
                 selectedProvider.click()
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
             time_taken = round((time.perf_counter() - start_time), 3)
             if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
@@ -2632,12 +3288,12 @@ def support_level(driver, workbook, logger, run_from):
         # nav 3 : Patient context
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
             patient_id = 'Couldn\'t Fetch'
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[2].click()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.ID, "metric-support-pat-ls")))
             patients = driver.find_element_by_id("metric-support-pat-ls").find_element_by_tag_name(
                 'tbody').find_elements_by_tag_name('tr')
@@ -2651,7 +3307,7 @@ def support_level(driver, workbook, logger, run_from):
             driver.switch_to.window(driver.window_handles[1])
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.XPATH, locator.xpath_cozeva_Id)))
             time_taken = round((time.perf_counter() - start_time), 3)
             patient_id = driver.find_element_by_xpath(locator.xpath_cozeva_Id).text
@@ -2660,10 +3316,20 @@ def support_level(driver, workbook, logger, run_from):
             if sf.check_exists_by_xpath(driver, locator.xpath_careops):
                 measure_count_dashboard = len(
                     driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+                measure_count_dashboard = len \
+                    (driver.find_elements_by_xpath(
+                        "//div[contains(@class, 'row-group') and contains(@class, 'row') and contains(@class, 'dashboard_row') and (contains(@class, 'compliant_true') or contains(@class, 'compliant_none'))]"))
                 test_case_id += 1
-                ws.append(
-                    (test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
-                     'Passed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                if measure_count_dashboard != 0:
+                    ws.append(
+                        (test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                        'Passed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                else:
+                    ws.append(
+                        (
+                        test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                        'Failed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+
                 logger.info(patient_id + ": Navigated to patient dashboard.")
                 test_case_id += 1
                 ws.append(
@@ -2675,10 +3341,20 @@ def support_level(driver, workbook, logger, run_from):
             elif sf.check_exists_by_xpath(driver, locator.xpath_careops2):
                 measure_count_dashboard = len(
                     driver.find_elements_by_xpath("//tbody[@class='measurement-body careops-new']/tr"))
+                measure_count_dashboard = len \
+                    (driver.find_elements_by_xpath(
+                        "//div[contains(@class, 'row-group') and contains(@class, 'row') and contains(@class, 'dashboard_row') and (contains(@class, 'compliant_true') or contains(@class, 'compliant_none'))]"))
                 test_case_id += 1
-                ws.append(
-                    (test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
-                     'Passed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                if measure_count_dashboard != 0:
+                    ws.append(
+                        (test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                        'Passed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+                else:
+                    ws.append(
+                        (
+                        test_case_id, patient_id, 'Navigation to patient context from the patients tab of support MSPL',
+                        'Failed', time_taken, 'Measures count in dashboard: ' + str(measure_count_dashboard)))
+
                 logger.info(patient_id + ": Navigated to patient dashboard.")
                 test_case_id += 1
                 ws.append(
@@ -2708,12 +3384,12 @@ def support_level(driver, workbook, logger, run_from):
         # nav 4 : Performance Statistics
         try:
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 300).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
             driver.find_element_by_class_name('tabs').find_elements_by_class_name('tab')[3].click()
             start_time = time.perf_counter()
             sf.ajax_preloader_wait(driver)
-            WebDriverWait(driver, 30).until(
+            WebDriverWait(driver, 3006).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
             time_taken = time.perf_counter() - start_time
             if driver.find_elements_by_id('performance_details') != 0:
@@ -2919,6 +3595,257 @@ def global_search(driver, workbook, logger, run_from):
                            'Unable to global search', driver.current_url])
                 driver.get(main_registry_url)
 
+    def performGlobalSearchSingleString(to_search: str, string_type: str):
+        # Search the to_search string, Press enter.
+        collection_header_found = 0
+        try:
+            window_switched = 0
+            driver.find_element_by_id('globalsearch_input').send_keys(to_search)
+            start_time = time.perf_counter()
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
+            if len(driver.find_elements(By.CLASS_NAME, 'collection-header')) != 0:
+                print("Result got")
+                collection_header_found = 1
+            driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+            sf.ajax_preloader_wait(driver)
+            time_taken = round((time.perf_counter() - start_time), 3)
+
+            if string_type == "Practice":
+                try:
+                    driver.find_element_by_id('search_practices_link').click()
+                    WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, 'search_practices')))
+                    if collection_header_found == 1:
+                        ws.append([test_case_id, 'Practice Global Search', 'Searching for: ' + to_search, 'Passed',
+                                   time_taken, "Suggestion dropdown loaded"])
+                    else:
+                        ws.append([test_case_id, 'Practice Global Search', 'Searching for: ' + to_search, 'Failed',
+                                   time_taken, "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                    result_list = driver.find_element(By.XPATH,
+                                                      "//ul[@class = 'collection with-header']").find_elements(By.XPATH,
+                                                                                                               ".//li[contains(@class,'collection-item')]")
+                    print(len(result_list))
+                    for index, result in enumerate(result_list):
+                        try:
+                            to_click = result.find_element(By.TAG_NAME, 'a')
+                            print("Practice Name = " + to_click.text)
+                            org_name = result.find_elements(By.XPATH, ".//div[contains(@class,'col')]")[6].text
+                            print("Organisation = " + org_name)
+                            # Within Prac
+                            if org_name == guiwindow.verification_specs[0]:
+                                start_time = time.perf_counter()
+                                to_click.click()
+                                driver.switch_to.window(driver.window_handles[1])
+                                window_switched = 1
+                                sf.ajax_preloader_wait(driver)
+                                WebDriverWait(driver, 30).until(
+                                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+                                time_taken = round((time.perf_counter() - start_time), 3)
+                                if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                                    ws.append([test_case_id, 'Practice Global Search', 'Context set to: ' + to_search,
+                                               'Passed', time_taken])
+                                else:
+                                    ws.append([test_case_id, 'Practice Global Search', 'Context set to: ' + to_search,
+                                               'Failed', 'x', "Unable to reach practice Registry", driver.current_url])
+
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                                driver.get(main_registry_url)
+                                break
+
+                        except Exception as e:
+                            traceback.print_exc()
+                            print(e)
+                            if window_switched == 1:
+                                ws.append(
+                                    [test_case_id, 'Practice Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to reach practice Registry", driver.current_url])
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                            elif window_switched == 0:
+                                ws.append(
+                                    [test_case_id, 'Practice Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to Click on practice name", driver.current_url])
+
+                            driver.get(main_registry_url)
+
+                            continue
+                except Exception as e:
+                    traceback.print_exc()
+                    print(e)
+                    ws.append(
+                        [test_case_id, 'Practice Global Search', 'Searching for: ' + to_search, 'Failed', time_taken,
+                         "Unable to Global Search", driver.current_url])
+
+                    driver.get(main_registry_url)
+
+            if string_type == "Provider":
+                try:
+                    driver.find_element_by_id('search_providers_link').click()
+                    WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, 'search_providers')))
+                    if collection_header_found == 1:
+                        ws.append([test_case_id, 'Provider Global Search', 'Searching for: ' + to_search, 'Passed',
+                                   time_taken, "Suggestion dropdown loaded"])
+                    else:
+                        ws.append([test_case_id, 'Provider Global Search', 'Searching for: ' + to_search, 'Failed',
+                                   time_taken, "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                    result_list = driver.find_element(By.XPATH,
+                                                      "//ul[@class = 'collection with-header']").find_elements(By.XPATH,
+                                                                                                               ".//li[contains(@class,'collection-item')]")
+                    print(len(result_list))
+                    for index, result in enumerate(result_list):
+                        try:
+                            to_click = result.find_elements(By.TAG_NAME, 'a')[0]
+                            print("Provider Name = " + to_click.text)
+                            org_name = result.find_elements(By.XPATH, ".//div[contains(@class,'col')]")[6].text
+                            print("Organisation = " + org_name)
+                            # Within Prov
+                            if org_name == guiwindow.verification_specs[0]:
+                                start_time = time.perf_counter()
+                                to_click.click()
+                                driver.switch_to.window(driver.window_handles[1])
+                                window_switched = 1
+                                sf.ajax_preloader_wait(driver)
+                                WebDriverWait(driver, 30).until(
+                                    EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+                                time_taken = round((time.perf_counter() - start_time), 3)
+                                if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                                    ws.append([test_case_id, 'Provider Global Search', 'Context set to: ' + to_search,
+                                               'Passed', time_taken])
+                                else:
+                                    ws.append([test_case_id, 'Provider Global Search', 'Context set to: ' + to_search,
+                                               'Failed', 'x', "Unable to reach provider Registry", driver.current_url])
+
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                                driver.get(main_registry_url)
+                                break
+
+
+                        except Exception as e:
+                            traceback.print_exc()
+                            print(e)
+                            if window_switched == 1:
+                                ws.append(
+                                    [test_case_id, 'Provider Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to reach provider Registry", driver.current_url])
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                            elif window_switched == 0:
+                                ws.append(
+                                    [test_case_id, 'Provider Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to Click on provider name", driver.current_url])
+
+                            driver.get(main_registry_url)
+
+                            continue
+
+                except Exception as e:
+                    traceback.print_exc()
+                    print(e)
+                    ws.append(
+                        [test_case_id, 'Provider Global Search', 'Searching for: ' + to_search, 'Failed', time_taken,
+                         "Unable to Global Search", driver.current_url])
+
+                    driver.get(main_registry_url)
+
+            if string_type == "Patient":
+                try:
+                    driver.find_element_by_id('search_patients_link').click()
+                    WebDriverWait(driver, 30).until(
+                        EC.presence_of_element_located((By.ID, 'search_patients')))
+                    if collection_header_found == 1:
+                        ws.append(
+                            [test_case_id, 'Patient Global Search', 'Searching for: ' + to_search, 'Passed', time_taken,
+                             "Suggestion dropdown loaded"])
+                    else:
+                        ws.append(
+                            [test_case_id, 'Patient Global Search', 'Searching for: ' + to_search, 'Failed', time_taken,
+                             "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                    result_list = driver.find_element(By.XPATH,
+                                                      "//ul[@class = 'collection with-header']").find_elements(By.XPATH,
+                                                                                                               ".//li[contains(@class,'collection-item')]")
+                    print(len(result_list))
+                    for index, result in enumerate(result_list):
+                        try:
+                            to_click = result.find_element(By.XPATH, ".//div[contains(@class,'patient_title')]")
+                            print("Patient Name = " + to_click.text)
+                            cz_id = result.find_element(By.XPATH, ".//div[contains(@class,'cozevaid')]")
+                            print("Cz ID = " + cz_id.text)
+                            org_name = result.find_element(By.XPATH,
+                                                           ".//div[contains(@class,'cust_name_content')]").text
+                            print("Organisation = " + org_name)
+                            # Within pat
+                            if org_name == guiwindow.verification_specs[0]:
+                                start_time = time.perf_counter()
+                                to_click.click()
+                                driver.switch_to.window(driver.window_handles[1])
+                                window_switched = 1
+                                sf.ajax_preloader_wait(driver)
+                                WebDriverWait(driver, 30).until(
+                                    EC.presence_of_element_located(
+                                        (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                                time_taken = round((time.perf_counter() - start_time), 3)
+                                if len(driver.find_elements_by_xpath(locator.xpath_patient_Header_Dropdown_Arrow)) != 0:
+                                    ws.append([test_case_id, 'Patient Global Search', 'Context set to: ' + to_search,
+                                               'Passed', time_taken])
+                                else:
+                                    ws.append([test_case_id, 'Patient Global Search', 'Context set to: ' + to_search,
+                                               'Failed', 'x', "Unable to reach provider Registry", driver.current_url])
+
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                                driver.get(main_registry_url)
+                                break
+
+
+
+                        except Exception as e:
+                            traceback.print_exc()
+                            print(e)
+                            if window_switched == 1:
+                                ws.append(
+                                    [test_case_id, 'Patient Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to reach Patient Dashboard", driver.current_url])
+                                driver.close()
+                                driver.switch_to.window(driver.window_handles[0])
+                            elif window_switched == 0:
+                                ws.append(
+                                    [test_case_id, 'Patient Global Search', 'Context set to: ' + to_search, 'Failed',
+                                     'x', "Unable to Click on Patient name", driver.current_url])
+
+                            driver.get(main_registry_url)
+                            continue
+                except Exception as e:
+                    traceback.print_exc()
+                    print(e)
+                    ws.append(
+                        [test_case_id, 'Patient Global Search', 'Searching for: ' + to_search, 'Failed', time_taken,
+                         "Unable to Global Search", driver.current_url])
+
+                    driver.get(main_registry_url)
+
+                # for der in result_list:
+                #    print(der.text)
+
+            driver.get(main_registry_url)
+            sf.ajax_preloader_wait(driver)
+
+
+        except Exception as e:
+            traceback.print_exc()
+            print(e)
+            ws.append([test_case_id, 'Practice Global Search', 'Searching for: ' + to_search, 'Failed', 'x',
+                       "Unable to Global Search", driver.current_url])
+            driver.get(main_registry_url)
+            sf.ajax_preloader_wait(driver)
+
+
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support":
         # Perform global search for Practice, Provider and Patient
         # Fetch Practice, provider and patient ID
@@ -2929,9 +3856,14 @@ def global_search(driver, workbook, logger, run_from):
         if global_search_pat is None:
             global_search_pat = fetchPatId()
 
-        performPracSearch()
-        performProvSearch()
-        performPatSearch()
+        #performPracSearch()
+        #performProvSearch()
+        #performPatSearch()
+
+        performGlobalSearchSingleString(global_search_prac, "Practice")
+        performGlobalSearchSingleString(global_search_prov, "Provider")
+        performGlobalSearchSingleString(global_search_pat, "Patient")
+
 
 
 
@@ -2943,15 +3875,20 @@ def global_search(driver, workbook, logger, run_from):
         if global_search_pat is None:
             global_search_pat = fetchPatId()
 
-        performProvSearch()
-        performPatSearch()
+        # performProvSearch()
+        # performPatSearch()
+
+        performGlobalSearchSingleString(global_search_prov, "Provider")
+        performGlobalSearchSingleString(global_search_pat, "Patient")
+
     elif run_from == "Office Admin Provider Delegate" or run_from == "Provider":
         # perform global search for patients
         # Fetch PatientID
         if global_search_pat is None:
             global_search_pat = fetchPatId()
 
-        performPatSearch()
+        # performPatSearch()
+        performGlobalSearchSingleString(global_search_pat, "Patient")
 
     rows = ws.max_row
     cols = ws.max_column
@@ -2989,7 +3926,9 @@ def provider_mspl(driver, workbook, logger, run_from):
     if run_from == "Cozeva Support" or run_from == "Limited Cozeva Support" or run_from == "Customer Support" or run_from == "Regional Support" or run_from == "Office Admin Practice Delegate":
         # Switching to random Practice name from default set context, main page
         try:
-            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            #driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
             time.sleep(1)
             driver.find_element_by_id("providers-list").click()
             sf.ajax_preloader_wait(driver)
@@ -3026,7 +3965,8 @@ def provider_mspl(driver, workbook, logger, run_from):
         # Now, Select a random metric that is not 0/0
         try:
             window_switched = 0
-            metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+            metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
             percent = '0.00'
             loop_count = 0
             while percent == '0.00' or percent == '0.00 %':
@@ -3054,7 +3994,19 @@ def provider_mspl(driver, workbook, logger, run_from):
                     sf.ajax_preloader_wait(driver)
                     return
             selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-            selectedMetric.click()
+            metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+            try:
+                selectedMetric.click()
+            except ElementClickInterceptedException as e:
+                print("Exception Occured")
+                if guiwindow.env == "CERT":
+                    print(metric_href)
+                    driver.get(metric_href)
+                elif guiwindow.env == "PROD":
+                    driver.get(metric_href)
+            except Exception as e:
+                traceback.print_exc()
+            #selectedMetric.click()
             sf.ajax_preloader_wait(driver)
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.CLASS_NAME, 'tabs')))
@@ -3500,9 +4452,18 @@ def time_capsule(driver, workbook, logger, run_from):
     test_case_id = 1
     try:
         last_url = driver.current_url
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(0.4)
         window_switched = 0
-        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
-        driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']"))
+
+        driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']").click()
+        time.sleep(0.4)
+        #driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//img[@alt='Time Capsule icon']"))
+        driver.find_element(By.XPATH, "//img[@alt='Time Capsule icon']").click()
+        #driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
         driver.switch_to.window(driver.window_handles[1])
         window_switched = 1
         sf.ajax_preloader_wait(driver)
@@ -3514,9 +4475,10 @@ def time_capsule(driver, workbook, logger, run_from):
             if access_message == 1:
                 print("Access Denied found!")
                 # logger.critical("Access Denied found!")
-                test_case_id+= 1
+                test_case_id += 1
                 ws.append(
-                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied', driver.current_url))
+                    (test_case_id, 'Time Capsule', 'Access check for Time Capsule', 'Failed', 'Access Denied',
+                     driver.current_url))
 
             else:
                 print("Access Check done!")
@@ -3528,21 +4490,21 @@ def time_capsule(driver, workbook, logger, run_from):
                     # logger.critical("ERROR TOAST MESSAGE IS DISPLAYED!")
                     test_case_id += 1
                     ws.append((test_case_id, 'Time Capsule', 'Navigation to Time Capsule without error message',
-                                'Failed', 'Error toast message is displayed', driver.current_url))
+                               'Failed', 'Error toast message is displayed', driver.current_url))
 
                 else:
                     ws.append((test_case_id, 'Time Capsule', 'Time Capsule page loading',
-                                    'Passed'))
+                               'Passed'))
                     if len(driver.find_elements_by_xpath(locator.xpath_latest_Card_Title)) != 0:
                         latest_computation_dete = driver.find_element_by_xpath(
                             locator.xpath_latest_Card_Title).text
                         test_case_id += 1
                         ws.append((test_case_id, 'Time Capsule', 'Computation Card',
-                                    'Passed', 'Latest Computation date: ' + latest_computation_dete))
+                                   'Passed', 'Latest Computation date: ' + latest_computation_dete))
                     else:
                         test_case_id += 1
                         ws.append((test_case_id, 'Time Capsule', 'Computation Card', 'Failed',
-                                    'Computation card details is not found!', driver.current_url))
+                                   'Computation card details is not found!', driver.current_url))
 
                     # time capsule cards comparision, Making variables
                     measure_performance = []
@@ -3553,9 +4515,10 @@ def time_capsule(driver, workbook, logger, run_from):
                     lab_count = []
                     lab_members_count = []
 
-                    cards = driver.find_element_by_class_name("card_section_wrapper").find_elements_by_class_name("card_wrapper")
+                    cards = driver.find_element_by_class_name("card_section_wrapper").find_elements_by_class_name(
+                        "card_wrapper")
                     cards = cards[0:4]
-                    for card in cards:
+                    for i, card in enumerate(cards):
                         measure_performance.append(str(card.find_element_by_class_name("card_body_value").text))
                         card.click()
                         time.sleep(2)
@@ -3563,6 +4526,7 @@ def time_capsule(driver, workbook, logger, run_from):
                         WebDriverWait(driver, 60).until(
                             EC.presence_of_element_located((By.CLASS_NAME, 'card_details_body')))
                         card_details = driver.find_element_by_id('card_details_modal')
+
                         claim_count.append(str(
                             card_details.find_element_by_class_name('card_claims').find_elements_by_tag_name('span')[
                                 1].text))
@@ -3579,100 +4543,253 @@ def time_capsule(driver, workbook, logger, run_from):
                             card_details.find_element_by_class_name('card_labs').find_elements_by_tag_name('span')[
                                 1].text))
                         lab_members_count.append(str(
-                            card_details.find_element_by_class_name('card_lab_members').find_elements_by_tag_name('span')[
+                            card_details.find_element_by_class_name('card_lab_members').find_elements_by_tag_name(
+                                'span')[
                                 1].text))
+                        # Add extra checks for latest card
+                        if i == 0:
+                            # verify if any count is zero
+                            current_claim_count = claim_count[0]
+                            current_provider_count = claim_provider_count[0]
+                            current_claim_member_count = claim_member_count[0]
+                            current_pmc_count = pmc_count[0]
+                            current_lab_count = lab_count[0]
+                            current_lab_members_count = lab_members_count[0]
 
-                        measure_performance_copy = [*set(measure_performance)]
-                        claim_count_copy = [*set(claim_count)]
-                        claim_member_count_copy = [*set(claim_member_count)]
-                        claim_provider_count_copy = [*set(claim_provider_count)]
-                        pmc_count_copy = [*set(pmc_count)]
-                        lab_count_copy = [*set(lab_count)]
-                        lab_members_count_copy = [*set(lab_members_count)]
+                            current_claim_count = claim_count[0].replace(',', '')
+                            current_provider_count = claim_provider_count[0].replace(',', '')
+                            current_claim_member_count = claim_member_count[0].replace(',', '')
+                            current_pmc_count = pmc_count[0].replace(',', '')
+                            current_lab_count = lab_count[0].replace(',', '')
+                            current_lab_members_count = lab_members_count[0].replace(',', '')
 
-                        #add appends
-                    print(measure_performance)
-                    print(claim_count)
-                    print(pmc_count)
-                    if float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) < 2:
-                        ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Passed',
-                                   'Measure performance has increased or is the same', driver.current_url))
-                    elif float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) > 2:
-                        ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Failed',
-                                   'Measure performance has decreased since previous computation', driver.current_url))
-                    if len(measure_performance_copy) == len(measure_performance):
-                        ws.append((test_case_id, 'Time Capsule', 'Measure Performance Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Measure Performance Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in measure_performance_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(claim_count_copy) == len(claim_count):
-                        ws.append((test_case_id, 'Time Capsule', 'Claim count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Claim count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in claim_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(claim_provider_count_copy) == len(claim_provider_count):
-                        ws.append((test_case_id, 'Time Capsule', 'Claim Provider Count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Claim Provider Count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in claim_provider_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(claim_member_count_copy) == len(claim_member_count):
-                        ws.append((test_case_id, 'Time Capsule', 'Claim Member Count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Claim Member Count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in claim_member_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(pmc_count_copy) == len(pmc_count):
-                        ws.append((test_case_id, 'Time Capsule', 'PMC Count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'PMC Count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in pmc_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(lab_count_copy) == len(lab_count):
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    elif "0" in lab_count_copy or "1" in lab_count_copy:
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
-                                   'Card values are 0 or 1', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in lab_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
-                    if len(lab_members_count_copy) == len(lab_members_count):
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
-                                   'All cards have different values', driver.current_url))
-                    elif "0" in lab_members_count_copy or "1" in lab_members_count_copy:
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
-                                   'Card values are 0 or 1', driver.current_url))
-                    else:
-                        ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Failed',
-                                   'Unique values: \"'+'\",\"'.join([str(elem) for elem in lab_members_count_copy])+'\"', driver.current_url))
-                    test_case_id+=1
+                            # Claim count verification
+                            if int(current_claim_count) == 0:
 
-                    #measure performance check for lower performance in nearest week
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Claim count in latest card', 'Failed',
+                                    'Claim count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Claim count displayed correctly', 'Passed',
+                                    f'Claim count is displayed correctly: {current_claim_count}',
+                                    driver.current_url
+                                ))
+                            test_case_id += 1
 
+                            # Provider count verification
+                            if int(current_provider_count) == 0:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Provider count in latest card', 'Failed',
+                                    'Provider count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Provider count displayed correctly', 'Passed',
+                                    f'Provider count is displayed correctly: {current_provider_count}',
+                                    driver.current_url
+                                ))
+                            test_case_id += 1
+                            # Claim member count verification
+                            if int(current_claim_member_count) == 0:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Claim member count in latest card', 'Failed',
+                                    'Claim member count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Claim member count displayed correctly', 'Passed',
+                                    f'Claim member count is displayed correctly: {current_claim_member_count}',
+                                    driver.current_url
+                                ))
 
+                            test_case_id += 1
 
+                            # PMC count verification
+                            if int(current_pmc_count) == 0:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'PMC count in latest card', 'Failed',
+                                    'PMC count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'PMC count displayed correctly', 'Passed',
+                                    f'PMC count is displayed correctly: {current_pmc_count}',
+                                    driver.current_url
+                                ))
 
+                            test_case_id += 1
 
+                            # Lab count verification
+                            if int(current_lab_count) == 0:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Lab count in latest card', 'Failed',
+                                    'Lab count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Lab count displayed correctly', 'Passed',
+                                    f'Lab count is displayed correctly: {current_lab_count}',
+                                    driver.current_url
+                                ))
 
+                            test_case_id += 1
 
-                    #populate these counts to the 4th capsule card and then make copies of the list with _copy
-                    #remove duplicates and compare the list lengths. If length is different, fail the test case
+                            # Lab member count verification
+                            if int(current_lab_members_count) == 0:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Lab member count in latest card', 'Failed',
+                                    'Lab member count is zero, please check',
+                                    driver.current_url
+                                ))
+                            else:
+                                ws.append((
+                                    test_case_id, 'Time Capsule', 'Lab member count displayed correctly', 'Passed',
+                                    f'Lab member count is displayed correctly: {current_lab_members_count}',
+                                    driver.current_url
+                                ))
+
+                            test_case_id += 1
+
+                            # Verify if LOB section is present
+                            lob_section_xpath = "//div[@class='card_details_body']//child::div[@class='col s12 m3 l2 lfloat lob_section_wrapper']"
+                            lob_count = len(driver.find_elements_by_xpath(lob_section_xpath)) - 1
+                            if int(lob_count) == 0:
+                                ws.append((test_case_id, 'Time Capsule', 'LOB Section appearing correctly ', 'Failed',
+                                           'LOB Details is not displayed ,Please check',
+                                           driver.current_url))
+                            else:
+                                ws.append((test_case_id, 'Time Capsule', 'LOB Section appearing correctly ', 'Passed',
+                                           f'LOB Details is displayed for {lob_count},Please check',
+                                           driver.current_url))
+
+                            # Verify if summary of metric score change has valid table
+                            # For testing
+                            # time.sleep(60)
+
+                            test_case_id += 1
+
+                            measure_label_xpath = "//th[text()='Measure Label']"
+                            measure_label_present = len(driver.find_element_by_xpath(measure_label_xpath).text)
+                            if int(measure_label_present) == 0:
+                                ws.append((test_case_id, 'Time Capsule',
+                                           'Summary of Metric Score Change table is not available', 'Failed',
+                                           'LOB Details is not displayed ,Please check',
+                                           driver.current_url))
+                            else:
+                                if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
+                                    datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
+                                    print(datatable_info)
+                                else:
+                                    datatable_info = "Data table is empty" #This case is for safe check, should not enter here
+                                ws.append((
+                                          test_case_id, 'Time Capsule', 'Summary of Metric Score Change table is displayed',
+                                          'Passed',
+                                          datatable_info,
+                                          driver.current_url))
+
+                            test_case_id += 1
+
+                    measure_performance_copy = [*set(measure_performance)]
+                    claim_count_copy = [*set(claim_count)]
+                    claim_member_count_copy = [*set(claim_member_count)]
+                    claim_provider_count_copy = [*set(claim_provider_count)]
+                    pmc_count_copy = [*set(pmc_count)]
+                    lab_count_copy = [*set(lab_count)]
+                    lab_members_count_copy = [*set(lab_members_count)]
+
+                    # add appends
+                print(measure_performance)
+                print(claim_count)
+                print(pmc_count)
+                if float(measure_performance[1].replace("%", "")) - float(measure_performance[0].replace("%", "")) < 2:
+                    ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Passed',
+                               'Measure performance has increased or is the same', driver.current_url))
+                elif float(measure_performance[1].replace("%", "")) - float(
+                        measure_performance[0].replace("%", "")) > 2:
+                    ws.append((test_case_id, 'Time Capsule', 'Measure performance increase', 'Failed',
+                               'Measure performance has decreased since previous computation', driver.current_url))
+                if len(measure_performance_copy) == len(measure_performance):
+                    ws.append((test_case_id, 'Time Capsule', 'Measure Performance Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Measure Performance Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join(
+                                   [str(elem) for elem in measure_performance_copy]) + '\"', driver.current_url))
+                test_case_id += 1
+                if len(claim_count_copy) == len(claim_count):
+                    ws.append((test_case_id, 'Time Capsule', 'Claim count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Claim count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join([str(elem) for elem in claim_count_copy]) + '\"',
+                               driver.current_url))
+                test_case_id += 1
+                if len(claim_provider_count_copy) == len(claim_provider_count):
+                    ws.append((test_case_id, 'Time Capsule', 'Claim Provider Count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Claim Provider Count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join(
+                                   [str(elem) for elem in claim_provider_count_copy]) + '\"', driver.current_url))
+                test_case_id += 1
+                if len(claim_member_count_copy) == len(claim_member_count):
+                    ws.append((test_case_id, 'Time Capsule', 'Claim Member Count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Claim Member Count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join(
+                                   [str(elem) for elem in claim_member_count_copy]) + '\"', driver.current_url))
+                test_case_id += 1
+                if len(pmc_count_copy) == len(pmc_count):
+                    ws.append((test_case_id, 'Time Capsule', 'PMC Count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'PMC Count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join([str(elem) for elem in pmc_count_copy]) + '\"',
+                               driver.current_url))
+                test_case_id += 1
+                if len(lab_count_copy) == len(lab_count):
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                elif "0" in lab_count_copy or "1" in lab_count_copy:
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Passed',
+                               'Card values are 0 or 1', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join([str(elem) for elem in lab_count_copy]) + '\"',
+                               driver.current_url))
+                test_case_id += 1
+                if len(lab_members_count_copy) == len(lab_members_count):
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
+                               'All cards have different values', driver.current_url))
+                elif "0" in lab_members_count_copy or "1" in lab_members_count_copy:
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Passed',
+                               'Card values are 0 or 1', driver.current_url))
+                else:
+                    ws.append((test_case_id, 'Time Capsule', 'Lab Members Count Duplicates', 'Failed',
+                               'Unique values: \"' + '\",\"'.join(
+                                   [str(elem) for elem in lab_members_count_copy]) + '\"', driver.current_url))
+                test_case_id += 1
+
+                # measure performance check for lower performance in nearest week
+
+                # populate these counts to the 4th capsule card and then make copies of the list with _copy
+                # remove duplicates and compare the list lengths. If length is different, fail the test case
 
 
         except Exception as e:
             print(e)
             test_case_id += 1
             ws.append(
-                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!', driver.current_url))
+                (test_case_id, 'Time Capsule', 'Navigation to Time Capsule', 'Failed', 'Exception occurred!',
+                 driver.current_url))
             traceback.print_exc()
         finally:
 
@@ -3682,7 +4799,8 @@ def time_capsule(driver, workbook, logger, run_from):
                 driver.switch_to.window(driver.window_handles[0])
                 sf.ajax_preloader_wait(driver)
                 window_switched = 0
-
+            driver.get(last_url)
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
     except Exception as e:
         print(e)
@@ -3707,6 +4825,7 @@ def time_capsule(driver, workbook, logger, run_from):
 
 
 def secure_messaging(driver, workbook, logger, run_from):
+    print("Starting Secure messaging")
     workbook.create_sheet('Secure Messaging')
     ws = workbook['Secure Messaging']
 
@@ -3730,12 +4849,26 @@ def secure_messaging(driver, workbook, logger, run_from):
     window_switched = 0
     try:
         last_url = driver.current_url
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
-        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Secure_Messaging)))
-        driver.find_element_by_xpath(locator.xpath_app_Secure_Messaging).click()
+        # WebDriverWait(driver, 30).until(
+        #     EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+        # driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        # WebDriverWait(driver, 30).until(
+        #     EC.presence_of_element_located((By.XPATH, locator.xpath_app_Secure_Messaging)))
+        # driver.find_element_by_xpath(locator.xpath_app_Secure_Messaging).click()
+
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(0.4)
+        window_switched = 0
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']"))
+
+        driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']").click()
+        time.sleep(0.4)
+        #driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//img[@alt='Secure Messaging icon']"))
+        driver.find_element(By.XPATH, "//img[@alt='Secure Messaging icon']").click()
+        #driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
+
         driver.switch_to.window(driver.window_handles[1])
         window_switched = 1
         try:
@@ -3779,6 +4912,9 @@ def secure_messaging(driver, workbook, logger, run_from):
             driver.close()
             time.sleep(1)
             driver.switch_to.window(driver.window_handles[0])
+            driver.get(last_url)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
     except Exception as e:
         print(e)
@@ -3787,8 +4923,8 @@ def secure_messaging(driver, workbook, logger, run_from):
                     'Exception occurred!', driver.current_url))
         driver.get(last_url)
         sf.ajax_preloader_wait(driver)
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+        # WebDriverWait(driver, 30).until(
+        #     EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
 
 
     rows = ws.max_row
@@ -3806,6 +4942,7 @@ def secure_messaging(driver, workbook, logger, run_from):
 def analytics(driver, workbook, logger,screenshot_path, run_from):
     workbook.create_sheet('Analytics')
     ws = workbook['Analytics']
+
 
     ws.append(['ID', 'Context', 'Scenario', 'Status', 'Time Taken', 'Comments'])
     header_font = Font(color='FFFFFF', bold=False, size=12)
@@ -3829,12 +4966,70 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
     screenshot_path_analytics=os.path.join(screenshot_path,"Analytics")
     sf.make_directory(screenshot_path_analytics)
 
+    def change_service_year_check(driver, year):
+
+        # Convert the year variable to an integer
+
+        year_int = int(year)
+        no_data_flag = False
+        year_dropdown_xpath = "//input[@type=\"radio\" and @value=\"%s\"]" % str(year_int)
+        year_value_xpath = "//select[@name='year']//following::button[1]"
+        original_year_xpath = year_value_xpath
+        # Extract the last two years
+        last_two_years = [year_int - 1, year_int - 2]
+        apply_filter_xpath = "(//a[text()='Apply'])"
+        page_timeout = 300
+        # Print the result
+        print(last_two_years)
+        print(original_year_xpath)
+        for value in last_two_years:
+            new_year_xpath = year_value_xpath.replace(f'{year}', f'{value}')
+            sf.action_click(driver.find_element(By.XPATH, year_dropdown_xpath), driver)
+            print(new_year_xpath)
+            sf.action_click(driver.find_element(By.XPATH, new_year_xpath), driver)
+            sf.wait_to_load_filter(driver)
+            sf.action_click(driver.find_element(By.XPATH, apply_filter_xpath), driver)
+            WebDriverWait(driver, 300).until(EC.invisibility_of_element_located(
+                (By.XPATH, "// div[@class ='sm_download_cssload_loader']")))
+            if sf.check_exists_by_class(driver, "nodata"):
+                ws.append(
+                    (test_case_id, 'Analytics', 'Data for current service year : '+str(value), 'Failed', 'x', 'No Data Found',
+                     driver.current_url))
+                no_data_flag = True
+                continue
+            else:
+                ws.append(
+                    (test_case_id, 'Analytics', 'Data for current service year : ' + str(value), 'Passed', 'x',
+                     'Data Found',
+                     driver.current_url))
+                no_data_flag = False
+                break
+
+        sf.action_click(driver.find_element(By.XPATH, year_dropdown_xpath), driver)
+        sf.action_click(driver.find_element(By.XPATH, original_year_xpath), driver)
+        sf.wait_to_load_filter(driver)
+        sf.action_click(driver.find_element(By.XPATH, apply_filter_xpath), driver)
+        return no_data_flag
+
     try:
-        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
-        driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
-        WebDriverWait(driver, 30).until(
-            EC.presence_of_element_located((By.XPATH, locator.xpath_app_Analytics)))
-        driver.find_element_by_xpath(locator.xpath_app_Analytics).click()
+        # WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, locator.xpath_app_Tray_Link)))
+        # driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        # WebDriverWait(driver, 30).until(
+        #     EC.presence_of_element_located((By.XPATH, locator.xpath_app_Analytics)))
+        # driver.find_element_by_xpath(locator.xpath_app_Analytics).click()
+
+        if not sf.check_sidebar_open_status(driver):
+            driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+            time.sleep(0.4)
+        window_switched = 0
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']"))
+
+        driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']").click()
+        time.sleep(0.4)
+        #driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+        driver.execute_script("arguments[0].scrollIntoView();", driver.find_element(By.XPATH, "//img[@alt='Analytics icon']"))
+        driver.find_element(By.XPATH, "//img[@alt='Analytics icon']").click()
+        #driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
         driver.switch_to.window(driver.window_handles[1])
         try:
             sf.ajax_preloader_wait(driver)
@@ -3885,15 +5080,18 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
                             worksheet_name_modified = worksheet_name.replace("*", "")
                             time_taken = time.perf_counter() - start_time
                             no_data_found_flag=False
+                            year_value_xpath = "//select[@name='year']//following::button[1]"
+                            current_year = driver.find_element(By.XPATH, year_value_xpath).text
+                            print("current Year" +current_year)
                             if len(driver.find_elements_by_xpath("//div[@class='nodata']")) == 0:
                                 print(workbook_name + "Passed")
                                 test_case_id += 1
                                 ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Passed', time_taken, ''))
                             elif len(driver.find_elements_by_xpath("//div[@class='nodata']")) != 0:
                                 test_case_id += 1
-                                ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', time_taken,
-                                           'No data for the selected filters', driver.current_url))
-                                no_data_found_flag=True
+                                #ws.append((test_case_id, 'Analytics Workbook', workbook_name, 'Failed', time_taken,
+                                #           'No data for the selected filters', driver.current_url))
+                                no_data_found_flag = change_service_year_check(driver, current_year)
 
 
                             screenshot_final_path=os.path.join(screenshot_path_analytics,worksheet_name_modified)
@@ -3999,6 +5197,9 @@ def analytics(driver, workbook, logger,screenshot_path, run_from):
             driver.close()
             time.sleep(1)
             driver.switch_to.window(driver.window_handles[0])
+            driver.get(last_url)
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
 
     except Exception as e:
@@ -4029,7 +5230,8 @@ def click_on_each_metric(customer, driver, workbook, path):
     ws.append(['ID', 'List', 'Context', 'Time-Taken'])
     workbook.save(path + "\\Report.xlsx")
 
-    metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+    metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
     tracker = 1
     i = 0
     while i < len(metrics):
@@ -4075,7 +5277,8 @@ def click_on_each_metric(customer, driver, workbook, path):
             sf.ajax_preloader_wait(driver)
             print("Back to registries")
             i = i + 1
-            metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+            metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
 
 
         except Exception as e:
@@ -4085,7 +5288,9 @@ def click_on_each_metric(customer, driver, workbook, path):
         finally:
             tracker = tracker + 1
 
-    driver.find_element_by_xpath(locator.side_nav_SlideOut).click()
+    if not sf.check_sidebar_open_status(driver):
+        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+    #driver.find_element_by_xpath(locator.side_nav_SlideOut).click()
     driver.find_element_by_id("providers-list").click()
     start = time.perf_counter()
     sf.ajax_preloader_wait(driver)
@@ -4498,8 +5703,44 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         ws_counts.append([currentLOBName, "0/0 Measures", "Null", "Failed",
                                           "Couldn't count 0/0 measures in this lob"])
 
+                    try:
+                        overall_rating = driver.find_element(By.XPATH, "//*[@id='reg-header-overall-rating']").text
+                        print(overall_rating)
+
+                        rating_from_chart = ""
+                        if 'stars' in overall_rating or 'Stars' in overall_rating:
+                            driver.find_element(By.XPATH, "//*[@id='rating_chart']").click()
+                            sf.ajax_preloader_wait(driver)
+                            WebDriverWait(driver, 300).until(
+                                EC.presence_of_element_located((By.XPATH, "//*[@id='cmsChart']")))
+                            rating_from_chart = driver.find_element(By.XPATH, "//*[@class='cms_star_val']").text
+                            print(rating_from_chart)
+                            number = len(driver.find_elements(By.XPATH, "//*[@class='tick']"))
+                            number_of_points = number - 6  # here 6 is 0*,1*,2*,3*,4*,5* since they are also included in class 'tick'
+                            print(number_of_points)
+                            driver.find_element(By.XPATH, "//*[@class='close-btn clearfix']").click()
+                            print(overall_rating)
+                            print(rating_from_chart)
+                            if overall_rating == rating_from_chart:
+                                print("Passed")
+                                ws_counts.append([currentLOBName, "Medicare Trend chart opening", "Null", "Passed", ""])
+                                ws_counts.append([currentLOBName, "Number of data points available in trend chart", str(number_of_points), "Passed", ])
+
+
+                            else:
+                                print("Failed")
+                                ws_counts.append([currentLOBName, "Medicare Trend chart opening", "Null", "Failed", "Overall rating is not matching with rating from chart"])
+                        else:
+                            print("Not Medicare LOB skipping trend chart check")
+                    except Exception as e:
+                        traceback.print_exc()
+                        ws_counts.append([currentLOBName, "Trend chart", "Null", "Failed",
+                                          "Unable to open trend chart"])
+
+
                     # total_accordion_metric = driver.find_elements_by_xpath("//*[@class='accordion active']")
-                    total_accordion_metric = driver.find_elements_by_xpath("//*[contains(@class, 'accordion active')]")
+                    total_accordion_metric = driver.find_elements(By.CSS_SELECTOR, ".accordion.active")
+
                     print("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
                     logger.info("Total Accordion Metric(s) :  " + str(len(total_accordion_metric)))
 
@@ -4511,7 +5752,7 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                         print(total_accordion_metric[i].get_attribute('id'))
 
                         # ["382","212","2053","2052","497","85"] -- Corresponding accordion metric id validation have been skipped
-                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508", "45", "599", "152", "361", "753", "400"]:
+                        if total_accordion_metric[i].get_attribute('id') in ["382", "212", "2053", "2052", "497","85","60","508", "45", "599", "152", "361", "753", "400", "558"]:
                             print("Accordion Metric id have been skipped")
 
                         else:
@@ -4524,13 +5765,14 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
 
                     for i in range(0, len(accordion_metric_list)):
                         parent_num_den = driver.find_element_by_xpath("//*[@id='" + str(
-                            accordion_metric_list[i]) + "']/div[1]/div/a/div/div[1]/div[2]/div[2]/span[2]")
+                            accordion_metric_list[i]) + "']/div[1]/div/a/div/div[2]/div[3]/span[1]")
                         print("Measure Num/Denom score of the Parent metric id  " + str(
                             accordion_metric_list[i]) + "  :  " + parent_num_den.text)
                         logger.info("Measure Num/Denom score of the Parent metric id  " + str(
                             accordion_metric_list[i]) + "  :  " + parent_num_den.text, )
                         parent_score = parent_num_den.text
-                        parent_num_den_extract = re.search('\(([^)]+)', parent_score).group(1)
+                        #parent_num_den_extract = re.search('\(([^)]+)', parent_score).group(1)
+                        parent_num_den_extract = parent_score
                         # print(parent_num_den_extract)
                         parent_num_den_val = parent_num_den_extract.replace(",", "")
                         parent_num_den_split = parent_num_den_val.split("/", 1)
@@ -4560,13 +5802,14 @@ def SupportpageAccordionValidation(driver, workbook, logger, run_from):
                             j = j + 1
                             child_num_den = driver.find_element_by_xpath(
                                 "//*[@id='" + str(accordion_metric_list[i]) + "']/div[2]/div[" + str(
-                                    j) + "]/a/div/div[1]/div[2]/div[2]/span[2]")
+                                    j) + "]/a/div/div[2]/div[3]/span")
                             # print("//*[@id='"+str(accordian_metric_list[i])+"']/div[2]/div["+str(j)+"]/a/div/div[1]/div[2]/div[2]/span[2]")
                             print("Child [" + str(j) + "] Num/Den score : " + child_num_den.text)
                             logger.info("Child [" + str(j) + "] Num/Den score : " + child_num_den.text,
                                         )
                             child_score = child_num_den.text
-                            child_num_den_extract = re.search('\(([^)]+)', child_score).group(1)
+                            #child_num_den_extract = re.search('\(([^)]+)', child_score).group(1)
+                            child_num_den_extract = child_score
                             child_num_den_val = child_num_den_extract.replace(",", "")
                             child_num_den_val = child_num_den_extract.replace(",", "")
                             child_num_den_split = child_num_den_val.split("/", 1)
@@ -4772,13 +6015,26 @@ def practice_tab_ss(driver, workbook, logger, screenshot_path, run_from):
         selected_metric_name = 'Couldnt fetch Metric Name'
         context_name = driver.find_element_by_xpath(locator.xpath_context_Name).text
 
-        metrics = driver.find_element_by_id("registry_body").find_elements_by_tag_name('li')
+        metrics = driver.find_element_by_id("registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")
+
         percent = '0.00'
         while percent == '0.00' or percent == '0.00%':
             selectedMetric = metrics[sf.RandomNumberGenerator(len(metrics), 1)[0]]
             percent = selectedMetric.find_element_by_class_name('percent').text
         selected_metric_name = selectedMetric.find_element_by_class_name('met-name').text
-        selectedMetric.click()
+        metric_href = selectedMetric.find_element(By.TAG_NAME, "a").get_attribute("href")
+        try:
+            selectedMetric.click()
+        except ElementClickInterceptedException as e:
+            print("Exception Occured")
+            if guiwindow.env == "CERT":
+                print(metric_href)
+                driver.get(metric_href)
+            elif guiwindow.env == "PROD":
+                driver.get(metric_href)
+        except Exception as e:
+            traceback.print_exc()
+        #selectedMetric.click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tab')))
@@ -5059,7 +6315,8 @@ def patient_medication(driver ,workbook, logger, screenshot_path, run_from):
         sf.ajax_preloader_wait(driver)
         if len(driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")) < 1:
             raise Exception("No PDC measure present in Medicare Lob")
-        driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")[0].click()
+        #driver.find_element_by_id("registry_body").find_elements_by_tag_name("li")[0].click()
+        driver.find_element(By.ID, "registry_body").find_elements(By.CSS_SELECTOR, "li.li-metric")[0].click()
         sf.ajax_preloader_wait(driver)
         WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'tab')))

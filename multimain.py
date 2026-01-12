@@ -46,13 +46,16 @@ with open("assets/overwatch_analytics_choice.pkl", "rb") as analytics_file:
 if analytics_choice == 1:
     feature_checklist[11] = 1
 
+#feature_checklist = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
 
 
 
 
 
 # comment the next 3 lines out when you need to run default. DO NOT COMMIT THIS YOU WILL BREAK EVERYTHING
-#feature_checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+#feature_checklist = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 #roleset = {'Cozeva Support': '99999'}
 #privacy_status = 'Onshore'
 guiwindow.verification_specs = [db.fetchCustomerName(current_client_id), current_client_id, privacy_status, roleset, feature_checklist, measurement_year]
@@ -80,7 +83,7 @@ if environment == "PROD":
 elif environment == "CERT":
     setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
 if guiwindow.verification_specs[2] == "Onshore":
-    if guiwindow.verification_specs[5].isnumeric():
+    if guiwindow.verification_specs[5].isnumeric() or "Q" in guiwindow.verification_specs[5]:
         print("Non Default MY selected, Attempting to change MY")
         setups.change_my(guiwindow.verification_specs[5])
     if launchstyle == "Def":

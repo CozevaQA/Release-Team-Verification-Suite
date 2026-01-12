@@ -117,6 +117,7 @@ if len(file_content) < 4:
 else:
     import variablestorage as locator
 
+
 client_list = []
 
 
@@ -206,6 +207,8 @@ def rtvsmaster():
         edge_logo_image = ImageTk.PhotoImage(Image.open("assets/images/edge_logo.png").resize((15, 15)))
         export_logo_image = ImageTk.PhotoImage(image_sizer("assets/images/export_logo.png"))
         view_report_image = ImageTk.PhotoImage(image_sizer("assets/images/view_report.png"))
+        side_bar_all_clients_image = ImageTk.PhotoImage(image_sizer("assets/images/sidebar_icon.png"))
+        all_view_image = ImageTk.PhotoImage(image_sizer("assets/images/allview_icon.png"))
 
 
         # Widgets+
@@ -236,7 +239,7 @@ def rtvsmaster():
         def on_hcc_validation():
             flush_unused_driver()
             root.destroy()
-            import HCC_Validation_multi
+            import HCC_Validation_multi_new
 
         def on_global_search():
             root.destroy()
@@ -288,6 +291,10 @@ def rtvsmaster():
             # import secret_menu
             import xml_parser
 
+        def on_support_activity():
+            root.destroy()
+            import SupportTicket_new
+
         def on_contact_log():
             root.destroy()
             import contact_log_validator
@@ -332,6 +339,14 @@ def rtvsmaster():
             #import view_chartlist_report
             exec(open("view_chartlist_report.py").read(), globals())
 
+        def on_all_view_validation():
+            root.destroy()
+            import alluser_rtvs
+
+        def on_global_search_all_clients():
+            root.destroy()
+            import global_search_allclients
+
         customer_list_contact_log = db.getCustomerList()
         # print(customer_list_contact_log)
         # Checkbox_variables_contact_log = [None] * len(customer_list_contact_log)
@@ -361,7 +376,9 @@ def rtvsmaster():
                 Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 40, column=2, sticky="w")
             elif 60 < i_clog4 <= 80:
                 Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 60, column=3, sticky="w")
-        submit_button_contact_log.grid(row=0, column=3, sticky="e")
+            elif 80 < i_clog4 <= 100:
+                Checkbox_widgets_contact_log[i_clog4].grid(row=i_clog4 - 80, column=4, sticky="w")
+        submit_button_contact_log.grid(row=0, column=4, sticky="e")
 
         def on_submitbutton():
             flush_unused_driver()
@@ -381,8 +398,14 @@ def rtvsmaster():
                 print("Validating Offshore clients as usual")
 
             my_choice = overwatch_my_var.get()
-            with open("assets/overwatch_my.pkl", "wb") as my_file:
-                pickle.dump(my_choice, my_file)
+            quarter_choice = quarter_var.get()
+            if quarter_choice == "No quarters":
+                with open("assets/overwatch_my.pkl", "wb") as my_file:
+                    pickle.dump(my_choice, my_file)
+            else:
+                with open("assets/overwatch_my.pkl", "wb") as my_file:
+                    pickle.dump(my_choice+" "+quarter_choice, my_file)
+
 
             analytics_choice = overwatch_analytics_choice_var.get()
             with open("assets/overwatch_analytics_choice.pkl", "wb") as analytics_file:
@@ -493,7 +516,7 @@ def rtvsmaster():
         button_widgets.append(global_search_buttons)
 
         button_widgets.append(
-            ttk.Button(root, text="TMP", image=help_icon_image,
+            ttk.Button(root, text="Support Activity", command=on_support_activity, image=help_icon_image,
                        compound="left", style='My.TButton'))
 
         contact_log_buttons = [
@@ -504,19 +527,18 @@ def rtvsmaster():
 
         button_widgets.append(contact_log_buttons)
 
+        button_widgets.append(
+            ttk.Button(root, text="Global Search (All Clients)",command=on_global_search_all_clients, image=global_search_image,
+                       compound="left", style='My.TButton'))
 
 
         button_widgets.append(
-            ttk.Button(root, text="TMP", image=help_icon_image,
+            ttk.Button(root, text="Sidebar Items (WIP)", image=side_bar_all_clients_image,
+                       compound="left", style='My.TButton'))
+        button_widgets.append(
+            ttk.Button(root, text="All View Validation", image=all_view_image, command=on_all_view_validation,
                        compound="left", style='My.TButton'))
 
-        button_widgets.append(
-            ttk.Button(root, text="TMP", image=help_icon_image,
-                       compound="left", style='My.TButton'))
-
-        button_widgets.append(
-            ttk.Button(root, text="TMP", image=help_icon_image,
-                       compound="left", style='My.TButton'))
 
         button_widgets.append(
             ttk.Button(root, text="TMP", image=help_icon_image,
@@ -562,7 +584,7 @@ def rtvsmaster():
             filters_exports_tooltip+= customer_id_filter_export+" - "+db.fetchCustomerName(customer_id_filter_export) + "\n"
         filters_exports_tooltip = filters_exports_tooltip[:-1]
 
-        for i in range(2, 7):
+        for i in range(2, 8):
             for j in range(0, 6, 2):
                 try:
                     if isinstance(button_widgets[widget_counter], list):
@@ -1004,6 +1026,22 @@ def rtvsmaster():
         cron_checkbox = Checkbutton(green_box, text="*Validate CRON", variable=cron_choice_var, command=on_cron_checkbox, font=("Nunito Sans", 10), background='#5a9c32')
         cron_checkbox.pack()
 
+        #create a section to display test patient as label. in one frame, create two labels, one for client name and one for test patient ID and a button next to ID to copy dashboard link
+
+        test_patient_frame = Frame(root, bg='white')
+        test_patient_frame.grid(row=7, rowspan=2, column=6, sticky='N')
+
+        test_patient_label = Label(test_patient_frame, text="Test Patient Details", font=("Helvetica", 10, 'bold'), background='white')
+        test_patient_label.grid(row=0, column=0)
+        test_patient_client_label = Label(test_patient_frame, text="Client: SIH", font=("Helvetica", 10), background='white')
+        test_patient_client_label.grid(row=1, column=0)
+        test_patient_id_label = Label(test_patient_frame, text="Cz ID: 1C-XM-JJM", font=("Helvetica", 10), background='white')
+        test_patient_id_label.grid(row=2, column=0)
+
+
+
+
+
         # Define a style for Checkbuttons
         style.configure('My.TCheckbutton', font=('Helvetica', 10, 'bold'), foreground='Black',
                         background='#5a9c32', focuscolor='none', padding=5, highlightthickness=0, height=1, width=20)
@@ -1068,7 +1106,9 @@ def rtvsmaster():
                 Checkbox_widgets[i].grid(row=i - 40, column=2, sticky="w")
             elif 60 < i <= 80:
                 Checkbox_widgets[i].grid(row=i - 60, column=3, sticky="w")
-        submit_button.grid(row=0, column=3, sticky="e")
+            elif 80 < i <= 100:
+                Checkbox_widgets[i].grid(row=i - 80, column=4, sticky="w")
+        submit_button.grid(row=0, column=4, sticky="e")
         offshore_override_var = IntVar()
         offshore_override_checkbutton = Checkbutton(root_overwatch, text="Validate Offshore clients through CS2", variable=offshore_override_var, font=("Nunito Sans", 11))
         offshore_override_checkbutton.grid(row=0, column=0, sticky='w')
@@ -1082,10 +1122,18 @@ def rtvsmaster():
         Label(root_overwatch, text=" || Select MY ||", font=("Nunito Sans", 12)).grid(row=0, column=1, sticky='w')
         overwatch_my_drop.grid(row=0, column=1, sticky='e')
 
+        quarter_var = StringVar()
+        quarter_var.set("No quarters")
+        quarter_list = ["Q4", "Q3", "Q2", "Q1"]
+        quarter_drop = ttk.Combobox(root_overwatch, textvariable=quarter_var, values=quarter_list, state='readonly',
+                               style='TCombobox', width=15, height=35)
+        quarter_drop.grid(row=0, column=2, sticky='w')
+
+
         #make a checkbox that checks if analytics is yes or no
         overwatch_analytics_choice_var = IntVar()
         overwatch_analytics_choice_checkbutton = Checkbutton(root_overwatch, text="Analytics Choice", variable=overwatch_analytics_choice_var, font=("Nunito Sans", 11))
-        overwatch_analytics_choice_checkbutton.grid(row=0, column=2, sticky='w')
+        overwatch_analytics_choice_checkbutton.grid(row=0, column=3, sticky='w')
         overwatch_analytics_choice_checkbutton.select()
 
 
@@ -1180,12 +1228,27 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
     multi = 0
     client_list_contact_log = []
-    #print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
-    #print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
-    #print("Release Team Verification Suite(RTVS) Version: 1.4.5, Latest Update: javascript alert error handling, Exports and filters(Chart Lists), Global search, Custom Settings")
-    print("Release Team Verification Suite(RTVS) Version: 1.4.6, Latest Update: Patient Dashboard and other minor bug fixes, javascript alert error handling, Exports and filters(Chart Lists), Global search")
+    # print("Release Team Verification Suite(RTVS) Version: 1.4.1, Latest Update: Edgedriver support, Overwatch onshore override")
+    # print("Release Team Verification Suite(RTVS) Version: 1.4.4, Latest Update: Contact Log, Global search, Custom Settings, Selectable MY, Help Icon dropdown")
+    # print("Release Team Verification Suite(RTVS) Version: 1.4.5, Latest Update: javascript alert error handling, Exports and filters(Chart Lists), Global search, Custom Settings")
+    # print("Release Team Verification Suite(RTVS) Version: 1.4.6, Latest Update: Patient Dashboard and other minor bug fixes, javascript alert error handling, Exports and filters(Chart Lists), Global search")
+    # print("Release Team Verification Suite(RTVS) Version: 1.5, Latest Update: Support Activity Validation, Patient Dashboard and other minor bug fixes, Exports and filters(Chart Lists)")
+    # print("Release Team Verification Suite(RTVS) Version: 1.5.1, Latest Update: No data MY switch (Analytics), Support Activity Validation, Patient Dashboard and other minor bug fixes")
+    # print("Release Team Verification Suite(RTVS) Version: 1.5.2, Latest Update: Implemented Quarters for MY Selection, No data MY switch (Analytics), Support Activity Validation")
+    # print("Release Team Verification Suite(RTVS) Version: 1.5.3, Latest Update: IHA registry fixes, some other minor bug fixes, Implemented Quarters for MY Selection, No data MY switch (Analytics), Support Activity Validation")
+    # print("Release Team Verification Suite(RTVS) Version: 1.6, Latest Update: Bulk Global Search, All Level Reports, Health net fixes, IHA registry fixes, some other minor bug fixes, Implemented Quarters for MY Selection")
+    # print("Release Team Verification Suite(RTVS) Version: 1.6, Latest Update: Support Tickets enchancement, AMP server addition, Bulk Global Search, All Level Reports, Health net fixes, IHA registry fixes")
+    # print("Release Team Verification Suite(RTVS) Version: 1.7, Latest Update: HCC Validation Update, Slow Log update, Support Tickets enchancement, AMP server addition, Bulk Global Search, All Level Reports")
+    # print("Release Team Verification Suite(RTVS) Version: 1.7.1, Latest Update: Payment tool Fix, HCC Validation Update, Slow Log update, Support Tickets enchancement, AMP server addition, Bulk Global Search, All Level Reports")
+    # print("Release Team Verification Suite(RTVS) Version: 1.7.2, Latest Update: Time capsule Additional Validations, Payment tool Fix, HCC Validation Update, Slow Log update, Support Tickets enchancement, AMP server addition")
+    # print("Release Team Verification Suite(RTVS) Version: 1.7.3, Latest Update: Support ticket 2 new fields, Time capsule Additional Validations, Payment tool Fix, HCC Validation Update, Slow Log updat")
+    # print("Release Team Verification Suite(RTVS) Version: 1.7.4, Latest Update: Export dashboard sidebar fix, Support ticket 2 new fields, Time capsule Additional Validations, Payment tool Fix, HCC Validation Update, Slow Log updat")
+    # print("Release Team Verification Suite(RTVS) Version: 1.8, Latest Update: Global Search Fix, Preferred Pharmacy addition, Minor fixes, Export dashboard sidebar fix, Support ticket 2 new fields, Time capsule Additional Validations")
+    print("Release Team Verification Suite(RTVS) Version: 1.8.4, Latest Update: Casemanagement redirect, Analytics Sidebar fix, Sidebar Fix part 2, Sidebar fix part 1, Global Search Fix, Preferred Pharmacy addition, Minor fixes,")
 
-    print("Requires : Chrome Version 127, Edge Version 124, Python 3.9+, Git(for live updates), Windows 10, 11")
+    print("Requires : Chrome Version 143, Edge Version 134, Python 3.9+, Git(for live updates), Windows 10, 11")
+
+
     print("Developed by: Writtwik Dey for the Cozeva Release Team")
     print("Current Client Count: " + str(len(db.getCustomerList()) - 2))
 

@@ -7,7 +7,7 @@ def summarize_report(sum_workbook, folder_path):
     '''
     The flow of this summary processor will be as follows
 
-    We pass the path of the report folder, this probram will load the report.xlsx into a workbook object.
+    We pass the path of the report folder, this program will load the report.xlsx into a workbook object.
 
     We will create a worksheet object for the first sheet and rename it to Test summary. We will then look through every other sheet.
 

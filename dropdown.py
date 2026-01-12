@@ -3,6 +3,7 @@ import traceback
 from tkinter import *
 
 import openpyxl
+import PIL
 from PIL import ImageTk, Image
 from tkinter import ttk
 import webbrowser
@@ -43,6 +44,7 @@ def master_gui():
         if scriptselectorvar[2] == 1:
             print("Running Support level list Validation")
 
+    print(PIL.__version__)
     cozeva_logo_image = ImageTk.PhotoImage(Image.open("assets/images/cozeva_logo.png").resize((280, 60)))
     help_icon_image = ImageTk.PhotoImage(Image.open("assets/images/help_icon.png").resize((15, 15)))
 

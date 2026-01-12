@@ -14,8 +14,7 @@ import Schema_processor as sp
 checklist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 roleset = {"Cozeva Support": "99999"}
 verification_specs = ["Name", 9999, "Onshore", roleset, checklist, "Default"]
-#verification_specs = ['OptumCare - Nevada', '4500', 'Onshore', {'Cozeva Support': '99999'}, [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Default']
-
+#verification_specs = ['Health Net (CAPCI)', '3050', 'Onshore', {'Cozeva Support': '99999'}, [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'Default']
 env = "PROD"
 headlessmode = 0
 Window_location = 1 #1 = left, 0 = Right
@@ -110,10 +109,20 @@ def launchgui():
             env = "PROD"
         elif env_selector_var.get() == 1:
             env = "CERT"
+        elif env_selector_var.get() == 2:
+            env = "AMP"
         headlessmode = headless_selector_var.get()
         verification_specs[0] = selected_cust.get()
         verification_specs[1] = db.fetchCustomerID(verification_specs[0])
-        verification_specs[5] = selected_my.get()
+        my_choice = selected_my.get()
+        quarter_choice = quarter_var.get()
+        if quarter_choice == "No quarters":
+            with open("assets/overwatch_my.pkl", "wb") as my_file:
+                verification_specs[5] = my_choice
+        else:
+            with open("assets/overwatch_my.pkl", "wb") as my_file:
+                verification_specs[5] = my_choice + " " + quarter_choice
+
         print(window_location_var.get())
         Window_location = window_location_var.get()
         print(Window_location)
@@ -402,6 +411,7 @@ def launchgui():
     radiobutton_env_label = Label(input_frame_1, text="Select Environment", font=("Nunito Sans", 10))
     radiobutton_env_prod = Radiobutton(input_frame_1, text="Production", variable=env_selector_var, value=0, font=("Nunito Sans", 10))
     radiobutton_env_cert = Radiobutton(input_frame_1, text="CERT", variable=env_selector_var, value=1, font=("Nunito Sans", 10))
+    radiobutton_env_amp = Radiobutton(input_frame_1, text="AMP", variable=env_selector_var, value=2, font=("Nunito Sans", 10))
 
     headless_selector_var = IntVar()
     radiobutton_headless_label = Label(input_frame_1, text="Select Headless mode Yes/No", font=("Nunito Sans", 10))
@@ -418,6 +428,12 @@ def launchgui():
 
     my_drop = ttk.Combobox(input_frame_1, textvariable=selected_my, values=selected_my_list, state='readonly',
                                  style='TCombobox', width=10, height=35)
+    quarter_var = StringVar()
+    quarter_var.set("No quarters")
+    quarter_list = ["Q4", "Q3", "Q2", "Q1"]
+    quarter_drop = ttk.Combobox(input_frame_1, textvariable=quarter_var, values=quarter_list, state='readonly',
+                                style='TCombobox', width=15, height=35)
+
 
 
     #widgets for frame 2
@@ -646,13 +662,15 @@ def launchgui():
     radiobutton_env_label.grid(row=9, column=2)
     radiobutton_env_prod.grid(row=10, column=2, sticky="w")
     radiobutton_env_cert.grid(row=11, column=2, sticky="w")
+    radiobutton_env_amp.grid(row=12, column=2, sticky="w")
     MY_label.grid(row=9, column=4)
     my_drop.grid(row=10, column=4)
+    quarter_drop.grid(row=11, column=4)
 
     # radiobutton_headless_label.grid(row=9, column=4)
     # radiobutton_headless_yes.grid(row=10, column=4, sticky="w")
     # radiobutton_headless_no.grid(row=11, column=4, sticky="w")
-    nextbutton1.grid(row=12, column=0, columnspan=5, pady=45)
+    nextbutton1.grid(row=13, column=0, columnspan=5, pady=45)
     Checkbox_cozeva.select()
 
     #packing elements into frame 2
@@ -758,7 +776,7 @@ def launchgui():
 
 
 
-# launchgui()
+#launchgui()
 # print(verification_specs)
 
 

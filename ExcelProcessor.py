@@ -75,7 +75,15 @@ def fetchCustomerName(ID):
     return name
 
 
+# clist = getCustomerList()
+# nl = []
+# for c in clist:
+#     nl.append(fetchCustomerID(c))
+#
+# print(nl)
+# print(clist)
 
+#print(fetchCustomerID("EPIC Management, L.P."))
 
 
 

@@ -146,7 +146,7 @@ def driver_setup_with_download(download_dir):
         options.use_chromium = True  # Ensure we're using the Chromium-based version of Edge
         options.add_argument("--disable-notifications")
         options.add_argument("--start-maximized")
-        options.add_argument("--"+locator.edge_profile_path)  # Path to your edge profile
+        options.add_argument("--"+locator.edge_profile_path)  # Path to edge profile
         if guiwindow.headlessmode == 1:
             options.add_argument("--headless")
 
@@ -324,6 +324,66 @@ def login_to_cozeva_cert(CusID):
     print("Logged in to Cozeva!")
 
 
+def login_to_cozeva_amp(CusID):
+    time.sleep(2)
+    driver.get(locator.logout_link_amp)
+    driver.get(locator.login_link_amp)
+    driver.maximize_window()
+    file = open(r"assets\loginInfo.txt", "r+")
+    global details
+    details = file.readlines()
+    js_clear_and_type = "arguments[0].value = arguments[1];"
+
+    # Clear and input username
+    username_field = driver.find_element_by_id("edit-name")
+    driver.execute_script(js_clear_and_type, username_field, details[0].strip())
+
+    # Clear and input password
+    password_field = driver.find_element_by_id("edit-pass")
+    driver.execute_script(js_clear_and_type, password_field, details[1].strip())
+    file.seek(0)
+    file.close()
+    driver.find_element_by_id("edit-submit").click()
+    time.sleep(4)
+    otpurl = driver.current_url
+    sub_str = "/twostepAuthSettings"
+    if otpurl.find(sub_str) != -1:
+        timeout = 60
+        t = Timer(timeout, print, ['You did not enter the OTP'])
+        t.start()
+        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+        otp = input(prompt)
+        t.cancel()
+
+        driver.find_element_by_id("edit-twostep-code").send_keys(otp)
+        time.sleep(1)
+
+        driver.find_element_by_id("edit-twostep").click()
+
+    WebDriverWait(driver, 90).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
+    time.sleep(0.5)
+    global cust_switched
+    cust_switched = 0
+    try:
+        #trying to switch customercontext before registries load
+        dropdown_element = Select(driver.find_element(By.ID, "select-customer"))
+        time.sleep(1)
+        dropdown_element.select_by_value(CusID)
+        #dropdown_element.select_by_visible_text("OPTUM")
+        time.sleep(0.5)
+        cust_switched = 1
+    except Exception as e:
+        cust_switched = 0
+        traceback.print_exc()
+
+
+    driver.find_element_by_id("edit-submit").click()
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    print("Logged in to Cozeva!")
+
 def login_to_cozeva_stage():
     driver.get(locator.logout_link_stage)
     driver.get(locator.login_link_stage)
@@ -472,8 +532,8 @@ def login_to_user(Username):
 
         switch_to_registries()
 
-        if guiwindow.verification_specs[5].isnumeric():
-            print("Non Default MY selected, Attempting to change MY")
+        if guiwindow.verification_specs[5].isnumeric() or "Q" in guiwindow.verification_specs[5]:
+            print("(Inside Masq) Non Default MY selected, Attempting to change MY")
             change_my(guiwindow.verification_specs[5])
 
     except Exception as e:
@@ -515,9 +575,23 @@ def switch_to_registries():
             print("Not in registries!")
             WebDriverWait(driver, 30).until(
                 EC.invisibility_of_element((By.ID, "toast-container")))
-            driver.find_element_by_xpath("//a[@data-target='app_dropdown']").click()
-            print("App_dropdown clicked")
-            driver.find_element_by_xpath("//a[@title='Registries']").click()
+            if not sf.check_sidebar_open_status(driver):
+                driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+                time.sleep(0.4)
+            window_switched = 0
+            driver.execute_script("arguments[0].scrollIntoView();",
+                                  driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']"))
+
+            driver.find_element(By.XPATH, "//div[@class='sidenav-app-list']").click()
+            time.sleep(0.4)
+            # driver.find_element_by_xpath(locator.xpath_app_Tray_Link).click()
+            driver.execute_script("arguments[0].scrollIntoView();",
+                                  driver.find_element(By.XPATH, "//img[@alt='Registries icon']"))
+            driver.find_element(By.XPATH, "//img[@alt='Registries icon']").click()
+            # driver.find_element_by_xpath(locator.xpath_app_Time_Capsule).click()
+            # driver.find_element_by_xpath("//a[@data-target='app_dropdown']").click()
+            # print("App_dropdown clicked")
+            # driver.find_element_by_xpath("//a[@title='Registries']").click()
             print("Registries clicked")
             time.sleep(1)
             driver.close()
@@ -538,15 +612,25 @@ def switch_to_registries():
 def change_my(Measurement_year):
     LOBdropdownelement = driver.find_element(By.XPATH, "//*[@id='qt-filter-label']")
     LOBdropdownelement.click()
+    time.sleep(1)
     default_quarter = driver.find_element(By.XPATH, "//*[@id='filter-quarter']//following-sibling::li[@class=' highlight ']/span/a")
     print(default_quarter.text)
-    LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
-    if (Measurement_year != "Default"):
+    print("Changing MY to "+Measurement_year)
+    LOBquarter = driver.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+    print("Total quarters present: "+str(len(LOBquarter)))
+    for test_ele in LOBquarter:
+
+        print(test_ele.text)
+    if Measurement_year != "Default":
+        print("Entered if Block Changing MY to " + Measurement_year)
         for i in range(0, len(LOBquarter)):
+            print("Checking "+LOBquarter[i].text+" Against "+Measurement_year)
             if LOBquarter[i].text == Measurement_year or LOBquarter[i].text == Measurement_year + " Q4":
+                driver.execute_script("arguments[0].scrollIntoView();",
+                                      LOBquarter[i])
                 LOBquarter[i].click()
                 break
-            LOBquarter = LOBdropdownelement.find_elements_by_xpath("//*[@id='filter-quarter']/li")
+            LOBquarter = driver.find_elements_by_xpath("//*[@id='filter-quarter']/li")
 
     time.sleep(4)
     driver.find_element(By.XPATH, "//*[@id='reg-filter-apply']").click()
@@ -631,7 +715,9 @@ def cozeva_support(environment):
             switch_customer_context(guiwindow.verification_specs[1])
         elif environment == "CERT":
             switch_customer_context_cert(guiwindow.verification_specs[1])
-
+    # if guiwindow.verification_specs[5].isnumeric() or "Q" in guiwindow.verification_specs[5]:
+    #     print("(Inside Cozevasupport)Non Default MY selected, Attempting to change MY")
+    #     change_my(guiwindow.verification_specs[5])
     ws = None
     run_from = "Cozeva Support"
     checklist = guiwindow.verification_specs[4]
@@ -649,6 +735,7 @@ def cozeva_support(environment):
     if checklist[3] == 1:
         print("Patient Dashboard")
         context_functions.patient_dashboard(driver, workbook, logger, run_from)
+        context_functions.check_preferred_pharmacy(driver, workbook, logger, run_from)
         workbook.save(report_folder + "\\Report.xlsx")
     if checklist[17] == 1:
         context_functions.patient_medication(driver,workbook, logger, report_folder, run_from)

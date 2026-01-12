@@ -33,10 +33,12 @@ if environment == "PROD":
     setups.login_to_cozeva(guiwindow.verification_specs[1])
 elif environment == "CERT":
     setups.login_to_cozeva_cert(guiwindow.verification_specs[1])
+elif environment == "AMP":
+    setups.login_to_cozeva_amp(guiwindow.verification_specs[1])
 
 
 if guiwindow.verification_specs[2] == "Onshore":
-    if guiwindow.verification_specs[5].isnumeric():
+    if guiwindow.verification_specs[5].isnumeric() or "Q" in guiwindow.verification_specs[5]:
         print("Non Default MY selected, Attempting to change MY")
         setups.change_my(guiwindow.verification_specs[5])
 

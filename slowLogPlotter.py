@@ -29,6 +29,9 @@ def launch_gui():
         end_date = cal2.get_date().split('/')
         global query_name
         query_name = str(query_name_tem.get())
+        custom_query_name = query_name_custom.get().strip()
+        if custom_query_name != "Enter Custom Query":
+            query_name = custom_query_name
         global time_range
         time_range = time_range_var.get()
 
@@ -48,7 +51,7 @@ def launch_gui():
 
         date1.config(text="Selected Start Date is: " + start_date_formatted)
         date2.config(text="Selected end Date is: " + end_date_formatted)
-        progress.grid(row=6,columnspan=2)
+        progress.grid(row=7,columnspan=2)
         root.update()
         filearray = generate_filename_array(start_date, end_date)
         build_time_array(filearray, progress, root, date_diff)
@@ -118,10 +121,12 @@ def launch_gui():
     # Set geometry
     # root.geometry("600x600")
 
-    query_label = Label(root, text="Select Query to run analysis", width="40", padx="40", font=("Nunito Sans", 10))
+    query_label = Label(root, text="Select Query or Enter custom query to run analysis", width="40", padx="40", font=("Nunito Sans", 10))
     global query_name
     query_name_tem = StringVar()
     query_name_tem.set("Select")
+    query_or_label = Label(root, text="or", width="40", padx="40", font=("Nunito Sans", 10))
+    query_name_custom = Entry(root, width=20)
     query_list_histo = [
         "ZipHealth.automatic_extract_controll",
         "ZipHealth.HP_patient_worker_event_composite_2",
@@ -342,7 +347,8 @@ def launch_gui():
         "ZipHealth.hill_add_patient_facility_claim_information_batch_1",
         "ZipHealth.HCC_lookup",
         "ZipHealth.update_chart_response_task_split",
-        "ZipHealth.add_or_edit_ehr_vitals"
+        "ZipHealth.add_or_edit_ehr_vitals",
+        "ZipHealth.get_batch_share_list"
     ]
     query_list_histo = [
         "ZipHealth.get_provider_list_for_a_metric",
@@ -462,7 +468,13 @@ def launch_gui():
         "ZipHealth._care_opp_details",
         "ZipHealth.set_contact_type_email",
         "ZipHealth.get_support_activity",
-        "ZipHealth.get_csg_di_details"
+        "ZipHealth.get_csg_di_details",
+        "ZipHealth.get_stickets",
+        "ZipHealth.get_attempted_gap_closure_list",
+        "ZipHealth.get_patient_list",
+        "ZipHealth.get_csm_patient_specific_task_list",
+        "ZipHealth.get_batch_share_list",
+        "ZipHealth.get_patient_list_for_member_support"
     ]
     query_drop = OptionMenu(root, query_name_tem, *query_list)
     to_date = datetime.date.today() + datetime.timedelta(days=1)
@@ -473,24 +485,26 @@ def launch_gui():
 
     query_label.grid(row=0, columnspan=2)
     query_drop.grid(row=1, columnspan=2)
-    cal1.grid(row=2, column=0)
-    cal2.grid(row=2, column=1)
+    query_name_custom.grid(row=2, columnspan=2)
+    query_name_custom.insert(0, "Enter Custom Query")
+    cal1.grid(row=3, column=0)
+    cal2.grid(row=3, column=1)
 
     Button(root, text="Analyze Data",
-           command=grad_date).grid(row=4, column=0)
-    Button(root, text="Generate top procs Histogram", command=generate_histogram).grid(row=4, column=1)
+           command=grad_date).grid(row=5, column=0)
+    Button(root, text="Generate top procs Histogram", command=generate_histogram).grid(row=5, column=1)
     time_range_var = IntVar()
     all_day_radio = Radiobutton(root, text="All Day", variable=time_range_var, value=0, font=("Nunito Sans", 10))
     business_hours_radio = Radiobutton(root, text="Business Hours only", variable=time_range_var, value=1, font=("Nunito Sans", 10))
 
-    all_day_radio.grid(row=3, column=0)
-    business_hours_radio.grid(row=3, column=1)
+    all_day_radio.grid(row=4, column=0)
+    business_hours_radio.grid(row=4, column=1)
 
 
     date1 = Label(root, text="")
     date2 = Label(root, text="")
-    date1.grid(row=5, column=0)
-    date2.grid(row=5, column=1)
+    date1.grid(row=6, column=0)
+    date2.grid(row=6, column=1)
 
 
 
@@ -540,7 +554,7 @@ def build_time_array_histogram(histo_query_name, filearray, progress, root, date
             #print("Found file:"+name)
             for row in csvreader:
                 #if row[0] == query_name:
-                if histo_query_name in row[0]:
+                if histo_query_name == row[0]:
                     querytime.append(float(row[1]))
                     #print(float(row[1]))
                     timestamp.append(row[2])
@@ -555,7 +569,7 @@ def build_time_array_histogram(histo_query_name, filearray, progress, root, date
             for time_taken, current_time in zip(querytime, timestamp):
                 if time_range == 1:
                     hour = int(current_time.split("T")[1].split(":")[0])
-                    if 7 < hour < 18:
+                    if 7 < hour < 17:
                         #print("Hour "+str(hour))
                         time_average = time_average + time_taken
                         #print("Business hours")
@@ -608,7 +622,7 @@ def build_time_array(filearray, progress, root, date_diff):
             print("Found file:"+name)
             for row in csvreader:
                 #if row[0] == query_name:
-                if query_name in row[0]:
+                if query_name == row[0]:
                     querytime.append(float(row[1]))
                     #print(float(row[1]))
                     timestamp.append(row[2])
@@ -623,7 +637,7 @@ def build_time_array(filearray, progress, root, date_diff):
             for time_taken, current_time in zip(querytime, timestamp):
                 if time_range == 1:
                     hour = int(current_time.split("T")[1].split(":")[0])
-                    if 7 < hour < 18:
+                    if 7 < hour < 17:
                         #print("Hour "+str(hour))
                         time_average = time_average + time_taken
                         #print("Business hours")

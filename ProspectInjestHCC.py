@@ -206,6 +206,70 @@ def login_to_cozeva(CusID, path):
         EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
     print("Logged in to Cozeva!")
 
+def login_to_cozeva_cert(CusID, path):
+    driver.get(locator.logout_link_cert)
+    driver.get(locator.login_link_cert)
+    driver.maximize_window()
+    file = open(path, "r+")
+    global details
+    details = file.readlines()
+    driver.find_element_by_id("edit-name").send_keys(details[0].strip())
+    driver.find_element_by_id("edit-pass").send_keys(details[1].strip())
+    file.seek(0)
+    file.close()
+    driver.find_element_by_id("edit-submit").click()
+    time.sleep(4)
+    otpurl = driver.current_url
+    sub_str = "/twostepAuthSettings"
+    if otpurl.find(sub_str) != -1:
+        # print("Need to enter OTP for login. Please paste the OTP here")
+        # wait_time = 60
+        # start_time = time.perf_counter()
+        # otp = ""
+        # while (time.perf_counter() - start_time) < wait_time:
+        #     otp = input()
+        #     if len(otp) > 0:
+        #         print("OTP Recieved")
+        # if len(otp) == 0:
+        #     print("You did not enter an OTP!!")
+        #     exit(999)
+
+        timeout = 60
+        t = Timer(timeout, print, ['You did not enter the OTP'])
+        t.start()
+        prompt = "You have %d seconds to enter the OTP here\n" % timeout
+        otp = input(prompt)
+        t.cancel()
+
+        driver.find_element_by_id("edit-twostep-code").send_keys(otp)
+        time.sleep(1)
+
+        driver.find_element_by_id("edit-twostep").click()
+
+    WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.ID, "reason_textbox")))
+    driver.find_element_by_id("reason_textbox").send_keys(details[4].strip())
+    time.sleep(0.5)
+
+    global cust_switched
+    cust_switched = 0
+    try:
+        # trying to switch customercontext before registries load
+        dropdown_element = Select(driver.find_element(By.ID, "select-customer"))
+        time.sleep(1)
+        dropdown_element.select_by_value(CusID)
+        # dropdown_element.select_by_visible_text("OPTUM")
+        time.sleep(0.5)
+        cust_switched = 1
+    except Exception as e:
+        cust_switched = 0
+        traceback.print_exc()
+
+    driver.find_element_by_id("edit-submit").click()
+    sf.ajax_preloader_wait(driver)
+    WebDriverWait(driver, 30).until(
+        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    print("Logged in to Cozeva!")
+
 def wait_to_load(element_xpath):
     try:
         WebDriverWait(driver, 100).until(EC.presence_of_element_located((By.XPATH, element_xpath)))
@@ -669,6 +733,7 @@ def verify_codingsheetHCC(driver,workbook,logger,run_from, path_task):
             task_link = driver.find_element_by_xpath(task_xpath)
             task_found=True
         except NoSuchElementException as e:
+            traceback.print_exc()
 
             sh1.append((task_id,"Task Not Found"))
             workbook.save("Report_HCCCoding.xlsx")
@@ -1323,7 +1388,9 @@ loc = config.get("runner","login_file")
 
 #login
 print("CustId = " + config.get("Quality","customer_id"))
-login_to_cozeva(config.get("Quality", "customer_id"), login_file)
+# login_to_cozeva(config.get("Quality", "customer_id"), login_file)
+login_to_cozeva_cert(config.get("Quality", "customer_id"), login_file)
+
 logger.info("Login successful")
 
 #Initialize Worksheet

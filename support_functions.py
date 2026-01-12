@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
-    ElementClickInterceptedException, StaleElementReferenceException
+    ElementClickInterceptedException, StaleElementReferenceException, UnexpectedAlertPresentException
 import time
 import py_compile
 
@@ -32,11 +32,17 @@ def ajax_preloader_wait1(driver):
     #    EC.invisibility_of_element((By.XPATH, "//div/div[contains(@class,'ajax_preloader')]")))
     WebDriverWait(driver, 300).until(
         EC.invisibility_of_element((By.CLASS_NAME, "ajax_preloader")))
+    time.sleep(0.5)
     WebDriverWait(driver, 300).until(EC.presence_of_element_located((By.CLASS_NAME, "ajax_preloader hide")))
 
     time.sleep(1)
 
-
+def sidebar_list_loading(driver):
+    try:
+        WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.XPATH, "//div[@class='dataTables_info']")))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 def ajax_preloader_wait(driver):
     time.sleep(1)
     #WebDriverWait(driver, 300).until(
@@ -63,6 +69,14 @@ def ajax_preloader_wait(driver):
     # current_url = driver.current_url
     # with open("visited_urls.txt", "a") as file:
     #     file.write(current_url + "\n")
+
+def wait_network_idle(driver):
+    wait = WebDriverWait(driver, 300)
+
+    def network_idle(driver):
+        return driver.execute_script("return window.performance.getEntriesByType('resource').length === 0")
+
+    wait.until(network_idle)
 
 
 def ajax_preloader_wait2(driver):
@@ -234,3 +248,35 @@ def action_click(element, driver):
     except (ElementNotInteractableException, ElementClickInterceptedException,StaleElementReferenceException):
         driver.execute_script("arguments[0].scrollIntoView(true);", element)
         driver.execute_script("arguments[0].click();", element)
+
+
+def skip_intro(driver):
+    time.sleep(2)
+    try:
+        while driver.find_element(By.CLASS_NAME, "introjs-tooltip"):
+            driver.find_element(By.XPATH, "//*[@class='introjs-skipbutton']").click()
+            time.sleep(2)
+    except NoSuchElementException:
+        print("No intro")
+    # if len(driver.find_element(By.CLASS_NAME,"introjs-tooltip")) != 0:
+    #     driver.find_element(By.XPATH, "//*[@class='introjs-skipbutton']").click()
+    # else:
+    #     print("no element")
+
+def wait_to_load_filter(driver):
+
+    loader = "sm_download_cssload_loader_wrap_for_filter"
+    try:
+        WebDriverWait(driver, 100).until(EC.invisibility_of_element_located((By.CLASS_NAME, loader)))
+    except UnexpectedAlertPresentException:
+        print("Unknown Error Occurred while loading page ")
+
+def check_sidebar_open_status(driver):
+    time.sleep(0.5)
+    sidebar = driver.find_element(By.ID, "sidenav_slide_out")
+    style_attribute = sidebar.get_attribute("style")
+    if "translateX(0%)" in style_attribute:
+        return True
+    elif "translateX(-105%)" in style_attribute:
+        return False
+

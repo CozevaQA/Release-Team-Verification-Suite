@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, ElementNotInteractableException, \
     ElementClickInterceptedException, TimeoutException
 
-ENV = 'PROD'
+ENV = 'CERT'
 Client_list = db.getCustomerList()
 print(Client_list)
 id_list = []
@@ -47,31 +47,40 @@ wb.save(report_folder+"\\"+filename)
 ws.append(["Client", "Hospital Activity", "Render time"])
 
 driver = setups.driver_setup()
-setups.login_to_cozeva("1500")
+setups.login_to_cozeva_cert("1500")
 
 for client_id in id_list:
-    setups.switch_customer_context(client_id)
-    sf.ajax_preloader_wait(driver)
-    WebDriverWait(driver, 30).until(
-        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+    try:
+        setups.switch_customer_context_cert(client_id)
+        sf.ajax_preloader_wait(driver)
+        WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
 
-    driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
-    time.sleep(0.5)
-    start_time = time.perf_counter()
-    driver.find_element(By.ID, "hospital_activity_tab").click()
-    sf.ajax_preloader_wait(driver)
-    total_time = time.perf_counter() - start_time - 2
-    if sf.CheckErrorMessage(driver) == 0:
-        if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
-            time.sleep(0.5)
-            datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
-        ws.append([db.fetchCustomerName(client_id), "Passed", str(total_time), datatable_info])
-    elif sf.CheckErrorMessage(driver) == 1:
-        if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
-            time.sleep(0.5)
-            datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
-        ws.append([db.fetchCustomerName(client_id), "Failed", str(total_time), "-"])
-    wb.save(report_folder + "\\" + filename)
+        driver.find_element_by_xpath(locator.xpath_side_nav_SlideOut).click()
+        time.sleep(0.5)
+        start_time = time.perf_counter()
+        driver.find_element(By.ID, "hospital_activity_tab").click()
+        sf.ajax_preloader_wait(driver)
+        total_time = time.perf_counter() - start_time - 2
+        if sf.CheckErrorMessage(driver) == 0:
+            if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
+                time.sleep(0.5)
+                datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
+            ws.append([db.fetchCustomerName(client_id), "Passed", str(total_time), datatable_info])
+        elif sf.CheckErrorMessage(driver) == 1:
+            if len(driver.find_elements_by_xpath(locator.xpath_data_Table_Info)) != 0:
+                time.sleep(0.5)
+                datatable_info = driver.find_element_by_xpath(locator.xpath_data_Table_Info).text
+            ws.append([db.fetchCustomerName(client_id), "Failed", str(total_time), "-"])
+        wb.save(report_folder + "\\" + filename)
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
+        ws.append([db.fetchCustomerName(client_id), "Failed", "x", driver.current_url])
+        wb.save(report_folder + "\\" + filename)
+
+
+
 
 rows = ws.max_row
 cols = ws.max_column
