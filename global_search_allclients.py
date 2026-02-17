@@ -352,6 +352,7 @@ def perform_global_search(functiondriver, ws, wsother, client_id):
             EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
         # time to do the global search
         print(strings_for_global_search)
+        print(client_name)
 
         def performPracSearch(practice_string):
             try:
@@ -501,9 +502,288 @@ def perform_global_search(functiondriver, ws, wsother, client_id):
                                'Unable to global search', driver.current_url])
                     driver.get(registry_url)
 
-        performPracSearch(strings_for_global_search[0])
-        performProvSearch(strings_for_global_search[1])
-        performPatSearch(strings_for_global_search[2])
+        def performGlobalSearchSingleString(to_search: str, string_type: str):
+            # Search the to_search string, Press enter.
+            collection_header_found = 0
+            try:
+                window_switched = 0
+                driver.find_element_by_id('globalsearch_input').send_keys(to_search)
+                start_time = time.perf_counter()
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, 'collection-header')))
+                if len(driver.find_elements(By.CLASS_NAME, 'collection-header')) != 0:
+                    print("Result got")
+                    collection_header_found = 1
+                driver.find_element_by_id('globalsearch_input').send_keys(Keys.RETURN)
+                sf.ajax_preloader_wait(driver)
+                time_taken = round((time.perf_counter() - start_time), 3)
+
+                if string_type == "Practice":
+                    try:
+                        driver.find_element_by_id('search_practices_link').click()
+                        WebDriverWait(driver, 30).until(
+                            EC.presence_of_element_located((By.ID, 'search_practices')))
+                        if collection_header_found == 1:
+                            ws.append([test_case_id, client_name,'Practice Global Search', 'Searching for: ' + to_search, 'Passed',
+                                       time_taken, "Suggestion dropdown loaded"])
+                        else:
+                            ws.append([test_case_id, client_name,'Practice Global Search', 'Searching for: ' + to_search, 'Failed',
+                                       time_taken, "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                        result_list = driver.find_element(By.XPATH,
+                                                          "//ul[@class = 'collection with-header']").find_elements(
+                            By.XPATH,
+                            ".//li[contains(@class,'collection-item')]")
+                        print(len(result_list))
+                        for index, result in enumerate(result_list):
+                            try:
+                                to_click = result.find_element(By.TAG_NAME, 'a')
+                                print("Practice Name = " + to_click.text)
+                                org_name = result.find_elements(By.XPATH, ".//div[contains(@class,'col')]")[6].text
+                                print("Organisation = " + org_name)
+                                # Within Prac
+                                if org_name == client_name:
+                                    start_time = time.perf_counter()
+                                    to_click.click()
+                                    driver.switch_to.window(driver.window_handles[1])
+                                    window_switched = 1
+                                    sf.ajax_preloader_wait(driver)
+                                    WebDriverWait(driver, 30).until(
+                                        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+                                    time_taken = round((time.perf_counter() - start_time), 3)
+                                    if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                                        ws.append(
+                                            [test_case_id,client_name, 'Practice Global Search', 'Context set to: ' + to_search,
+                                             'Passed', time_taken])
+                                    else:
+                                        ws.append(
+                                            [test_case_id, client_name,'Practice Global Search', 'Context set to: ' + to_search,
+                                             'Failed', 'x', "Unable to reach practice Registry", driver.current_url])
+
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    driver.get(registry_url)
+                                    break
+
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                if window_switched == 1:
+                                    ws.append(
+                                        [test_case_id, client_name,'Practice Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to reach practice Registry", driver.current_url])
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                elif window_switched == 0:
+                                    ws.append(
+                                        [test_case_id, client_name,'Practice Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to Click on practice name", driver.current_url])
+
+                                driver.get(registry_url)
+
+                                continue
+                    except Exception as e:
+                        traceback.print_exc()
+                        print(e)
+                        ws.append(
+                            [test_case_id, client_name,'Practice Global Search', 'Searching for: ' + to_search, 'Failed',
+                             time_taken,
+                             "Unable to Global Search", driver.current_url])
+
+                        driver.get(registry_url)
+
+                if string_type == "Provider":
+                    try:
+                        driver.find_element_by_id('search_providers_link').click()
+                        WebDriverWait(driver, 30).until(
+                            EC.presence_of_element_located((By.ID, 'search_providers')))
+                        if collection_header_found == 1:
+                            ws.append([test_case_id, client_name,'Provider Global Search', 'Searching for: ' + to_search, 'Passed',
+                                       time_taken, "Suggestion dropdown loaded"])
+                        else:
+                            ws.append([test_case_id, client_name,'Provider Global Search', 'Searching for: ' + to_search, 'Failed',
+                                       time_taken, "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                        result_list = driver.find_element(By.XPATH,
+                                                          "//ul[@class = 'collection with-header']").find_elements(
+                            By.XPATH,
+                            ".//li[contains(@class,'collection-item')]")
+                        print(len(result_list))
+                        for index, result in enumerate(result_list):
+                            try:
+                                to_click = result.find_elements(By.TAG_NAME, 'a')[0]
+                                print("Provider Name = " + to_click.text)
+                                org_name = result.find_elements(By.XPATH, ".//div[contains(@class,'col')]")[6].text
+                                print("Organisation = " + org_name)
+                                # Within Prov
+                                if org_name == client_name:
+                                    start_time = time.perf_counter()
+                                    to_click.click()
+                                    driver.switch_to.window(driver.window_handles[1])
+                                    window_switched = 1
+                                    sf.ajax_preloader_wait(driver)
+                                    WebDriverWait(driver, 30).until(
+                                        EC.presence_of_element_located((By.XPATH, locator.xpath_filter_measure_list)))
+                                    time_taken = round((time.perf_counter() - start_time), 3)
+                                    if len(driver.find_elements_by_xpath(locator.xpath_filter_measure_list)) != 0:
+                                        ws.append(
+                                            [test_case_id, client_name,'Provider Global Search', 'Context set to: ' + to_search,
+                                             'Passed', time_taken])
+                                    else:
+                                        ws.append(
+                                            [test_case_id, client_name,'Provider Global Search', 'Context set to: ' + to_search,
+                                             'Failed', 'x', "Unable to reach provider Registry", driver.current_url])
+
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    driver.get(registry_url)
+                                    break
+
+
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                if window_switched == 1:
+                                    ws.append(
+                                        [test_case_id, client_name,'Provider Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to reach provider Registry", driver.current_url])
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                elif window_switched == 0:
+                                    ws.append(
+                                        [test_case_id, client_name,'Provider Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to Click on provider name", driver.current_url])
+
+                                driver.get(registry_url)
+
+                                continue
+
+                    except Exception as e:
+                        traceback.print_exc()
+                        print(e)
+                        ws.append(
+                            [test_case_id, client_name,'Provider Global Search', 'Searching for: ' + to_search, 'Failed',
+                             time_taken,
+                             "Unable to Global Search", driver.current_url])
+
+                        driver.get(registry_url)
+
+                if string_type == "Patient":
+                    try:
+                        driver.find_element_by_id('search_patients_link').click()
+                        WebDriverWait(driver, 30).until(
+                            EC.presence_of_element_located((By.ID, 'search_patients')))
+                        if collection_header_found == 1:
+                            ws.append(
+                                [test_case_id, client_name,'Patient Global Search', 'Searching for: ' + to_search, 'Passed',
+                                 time_taken,
+                                 "Suggestion dropdown loaded"])
+                        else:
+                            ws.append(
+                                [test_case_id, client_name,'Patient Global Search', 'Searching for: ' + to_search, 'Failed',
+                                 time_taken,
+                                 "Suggestion Dropdown Failed to Load", driver.current_url])
+
+                        result_list = driver.find_element(By.XPATH,
+                                                          "//ul[@class = 'collection with-header']").find_elements(
+                            By.XPATH,
+                            ".//li[contains(@class,'collection-item')]")
+                        print(len(result_list))
+                        for index, result in enumerate(result_list):
+                            try:
+                                to_click = result.find_element(By.XPATH, ".//div[contains(@class,'patient_title')]")
+                                print("Patient Name = " + to_click.text)
+                                cz_id = result.find_element(By.XPATH, ".//div[contains(@class,'cozevaid')]")
+                                print("Cz ID = " + cz_id.text)
+                                org_name = result.find_element(By.XPATH,
+                                                               ".//div[contains(@class,'cust_name_content')]").text
+                                print("Organisation = " + org_name)
+                                # Within pat
+                                if org_name == client_name:
+                                    start_time = time.perf_counter()
+                                    to_click.click()
+                                    time.sleep(0.3)
+                                    driver.switch_to.window(driver.window_handles[1])
+                                    window_switched = 1
+                                    sf.ajax_preloader_wait(driver)
+                                    WebDriverWait(driver, 30).until(
+                                        EC.presence_of_element_located(
+                                            (By.XPATH, locator.xpath_patient_Header_Dropdown_Arrow)))
+                                    time_taken = round((time.perf_counter() - start_time), 3)
+                                    if len(driver.find_elements_by_xpath(
+                                            locator.xpath_patient_Header_Dropdown_Arrow)) != 0:
+                                        ws.append(
+                                            [test_case_id, client_name,'Patient Global Search', 'Context set to: ' + to_search,
+                                             'Passed', time_taken])
+                                    else:
+                                        ws.append(
+                                            [test_case_id, client_name,'Patient Global Search', 'Context set to: ' + to_search,
+                                             'Failed', 'x', "Unable to reach provider Registry", driver.current_url])
+
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                    driver.get(registry_url)
+                                    break
+
+
+
+                            except Exception as e:
+                                traceback.print_exc()
+                                print(e)
+                                if window_switched == 1:
+                                    ws.append(
+                                        [test_case_id, client_name,'Patient Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to reach Patient Dashboard", driver.current_url])
+                                    driver.close()
+                                    driver.switch_to.window(driver.window_handles[0])
+                                elif window_switched == 0:
+                                    ws.append(
+                                        [test_case_id, client_name,'Patient Global Search', 'Context set to: ' + to_search,
+                                         'Failed',
+                                         'x', "Unable to Click on Patient name", driver.current_url])
+
+                                driver.get(registry_url)
+                                continue
+                    except Exception as e:
+                        traceback.print_exc()
+                        print(e)
+                        ws.append(
+                            [test_case_id, client_name,'Patient Global Search', 'Searching for: ' + to_search, 'Failed', time_taken,
+                             "Unable to Global Search", driver.current_url])
+
+                        driver.get(registry_url)
+
+                    # for der in result_list:
+                    #    print(der.text)
+
+                driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
+
+
+            except Exception as e:
+                traceback.print_exc()
+                print(e)
+                ws.append([test_case_id, 'Practice Global Search', 'Searching for: ' + to_search, 'Failed', 'x',
+                           "Unable to Global Search", driver.current_url])
+                driver.get(registry_url)
+                sf.ajax_preloader_wait(driver)
+
+        # performPracSearch(strings_for_global_search[0])
+        # performProvSearch(strings_for_global_search[1])
+        # performPatSearch(strings_for_global_search[2])
+
+        performGlobalSearchSingleString(strings_for_global_search[0], "Practice")
+        performGlobalSearchSingleString(strings_for_global_search[1], "Provider")
+        performGlobalSearchSingleString(strings_for_global_search[2], "Patient")
+
+
+
+
 
 
 
