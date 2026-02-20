@@ -171,23 +171,39 @@ def driver_setup_with_download(download_dir):
         return driver
 
 
+# def create_folders(role):
+#     dateandtime = sf.date_time()
+#     datenow = date.today()
+#     path0 = os.path.join(locator.parent_dir, str(datenow))
+#     isdir = os.path.isdir(path0)
+#     if not isdir:
+#         os.mkdir(path0)
+#
+#     CustID_Name_string = str(guiwindow.verification_specs[1])+"_"+guiwindow.verification_specs[0]
+#     path1 = os.path.join(path0, CustID_Name_string)
+#     isdir = os.path.isdir(path1)
+#     if not isdir:
+#         os.mkdir(path1)
+#
+#     path = os.path.join(path1, str(role)+"_"+str(guiwindow.verification_specs[3][role])+"_"+dateandtime)
+#     os.mkdir(path)
+#     return str(path)
+
 def create_folders(role):
     dateandtime = sf.date_time()
     datenow = date.today()
     path0 = os.path.join(locator.parent_dir, str(datenow))
-    isdir = os.path.isdir(path0)
-    if not isdir:
-        os.mkdir(path0)
+    os.makedirs(path0, exist_ok=True)
 
-    CustID_Name_string = str(guiwindow.verification_specs[1])+"_"+guiwindow.verification_specs[0]
-    path1 = os.path.join(path0, CustID_Name_string)
-    isdir = os.path.isdir(path1)
-    if not isdir:
-        os.mkdir(path1)
+    cust = f"{guiwindow.verification_specs[1]}_{guiwindow.verification_specs[0]}"
+    path1 = os.path.join(path0, cust)
+    os.makedirs(path1, exist_ok=True)
 
-    path = os.path.join(path1, str(role)+"_"+str(guiwindow.verification_specs[3][role])+"_"+dateandtime)
+    # Make the final folder name unique even across parallel processes
+    path = os.path.join(path1, str(role) + "_" + str(guiwindow.verification_specs[3][role]) + "_" + dateandtime)
     os.mkdir(path)
     return str(path)
+
 
 
 def login_to_cozeva(CusID):
